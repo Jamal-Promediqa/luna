@@ -8,17 +8,30 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { EmailLinkAccount } from "./EmailLinkAccount";
 import { ComposeEmail } from "./ComposeEmail";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export const EmailSection = () => {
   const [isMicrosoftLinked, setIsMicrosoftLinked] = useState(false);
   const [showComposeDialog, setShowComposeDialog] = useState(false);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
 
-  const { data: session } = useQuery({
+  const { data: session, isLoading: sessionLoading } = useQuery({
     queryKey: ['session'],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      const hasMicrosoftProvider = session?.user?.app_metadata?.providers?.includes('azure');
+      console.log("Checking session...");
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error("Session error:", error);
+        setConnectionError("Failed to check session status");
+        return null;
+      }
+
+      const hasMicrosoftProvider = session?.user?.app_metadata?.provider === 'azure';
+      console.log("Microsoft linked status:", hasMicrosoftProvider);
+      console.log("User metadata:", session?.user?.app_metadata);
+      
       setIsMicrosoftLinked(!!hasMicrosoftProvider);
       return session;
     }
@@ -27,15 +40,25 @@ export const EmailSection = () => {
   const { data: emails, isLoading, refetch } = useQuery({
     queryKey: ['outlook-emails'],
     queryFn: async () => {
-      if (!session || !isMicrosoftLinked) return null;
+      if (!session || !isMicrosoftLinked) {
+        console.log("Skipping email fetch - no session or Microsoft not linked");
+        return null;
+      }
 
+      console.log("Fetching emails...");
       const { data, error } = await supabase
         .from('outlook_emails')
         .select('*')
         .order('received_at', { ascending: false })
         .limit(5);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Email fetch error:", error);
+        setConnectionError("Failed to fetch emails");
+        throw error;
+      }
+      
+      console.log("Fetched emails:", data);
       return data;
     },
     enabled: !!session && isMicrosoftLinked
@@ -43,12 +66,23 @@ export const EmailSection = () => {
 
   const syncEmails = async () => {
     try {
+      console.log("Starting email sync...");
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('No session');
+      if (!session) {
+        console.error("No session found for sync");
+        toast.error("Please sign in to sync emails");
+        return;
+      }
 
-      await supabase.functions.invoke('sync-outlook-emails', {
+      const { error } = await supabase.functions.invoke('sync-outlook-emails', {
         body: { userId: session.user.id }
       });
+
+      if (error) {
+        console.error("Sync error:", error);
+        toast.error("Failed to sync emails");
+        throw error;
+      }
 
       toast.success('Emails synced successfully');
       refetch();
@@ -58,8 +92,36 @@ export const EmailSection = () => {
     }
   };
 
+  if (sessionLoading) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center p-6">
+          <p className="text-sm text-muted-foreground">Checking connection status...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (!isMicrosoftLinked) {
     return <EmailLinkAccount />;
+  }
+
+  if (connectionError) {
+    return (
+      <Card>
+        <CardContent className="p-6">
+          <Alert variant="destructive">
+            <AlertDescription>{connectionError}</AlertDescription>
+          </Alert>
+          <Button
+            className="mt-4 w-full"
+            onClick={() => window.location.reload()}
+          >
+            Retry Connection
+          </Button>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
