@@ -48,6 +48,51 @@ export type Database = {
         }
         Relationships: []
       }
+      consultants: {
+        Row: {
+          availability_schedule: Json | null
+          created_at: string
+          email: string
+          id: string
+          image_url: string | null
+          location: string
+          name: string
+          phone: string
+          specialty: string
+          status: string
+          systems: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          availability_schedule?: Json | null
+          created_at?: string
+          email: string
+          id?: string
+          image_url?: string | null
+          location: string
+          name: string
+          phone: string
+          specialty: string
+          status?: string
+          systems?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          availability_schedule?: Json | null
+          created_at?: string
+          email?: string
+          id?: string
+          image_url?: string | null
+          location?: string
+          name?: string
+          phone?: string
+          specialty?: string
+          status?: string
+          systems?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           created_at: string

@@ -10,6 +10,7 @@ import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Consultants from "./pages/Consultants";
 import ConsultantProfile from "./pages/ConsultantProfile";
+import AddConsultant from "./pages/AddConsultant";
 
 const queryClient = new QueryClient();
 
@@ -68,6 +69,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <ConsultantProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/consultants/add"
+            element={
+              <ProtectedRoute>
+                <AddConsultant />
               </ProtectedRoute>
             }
           />

@@ -14,8 +14,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Mail, MoreHorizontal, Phone, SortAsc, SortDesc, MapPin, Tag, Bell } from "lucide-react";
+import { Mail, MoreHorizontal, Phone, SortAsc, SortDesc, MapPin, Tag, Bell, Plus } from "lucide-react";
 import { Consultant } from "@/types/consultant";
+import { useNavigate } from "react-router-dom";
 
 interface ConsultantTableProps {
   consultants: Consultant[];
@@ -32,9 +33,19 @@ export const ConsultantTable = ({
   onSort,
   onConsultantClick,
 }: ConsultantTableProps) => {
+  const navigate = useNavigate();
+
   return (
-    <div className="rounded-md border mt-6">
-      <Table>
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <Button onClick={() => navigate("/consultants/add")}>
+          <Plus className="h-4 w-4 mr-2" />
+          Lägg till ny konsult
+        </Button>
+      </div>
+
+      <div className="rounded-md border">
+        <Table>
         <TableHeader>
           <TableRow className="hover:bg-muted/0">
             <TableHead onClick={() => onSort("name")} className="cursor-pointer py-4">
@@ -147,7 +158,8 @@ export const ConsultantTable = ({
             </TableRow>
           ))}
         </TableBody>
-      </Table>
+        </Table>
+      </div>
     </div>
   );
 };
