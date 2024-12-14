@@ -14,7 +14,7 @@ export const EmailLinkAccount = () => {
       const redirectUrls = [
         `${window.location.origin}/dashboard`,
         'http://localhost:5173/dashboard',
-        'https://dlpvgzfmwjkdnewqjtqa.supabase.co/auth/v1/callback'
+        'https://wxdtjeprsqttdxadfxlv.supabase.co/auth/v1/callback'
       ];
 
       // Use HTTPS for production, HTTP for localhost
