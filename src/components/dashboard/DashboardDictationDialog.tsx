@@ -5,6 +5,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Mic, MicOff, Loader2, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { AudioWaveform } from "./AudioWaveform";
 
 interface DashboardDictationDialogProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ export const DashboardDictationDialog = ({ isOpen, onClose }: DashboardDictation
   const [isProcessing, setIsProcessing] = useState(false);
   const [transcription, setTranscription] = useState<string | null>(null);
   const [actionPlan, setActionPlan] = useState<string | null>(null);
+  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
 
   const startRecording = async () => {
     try {
@@ -38,6 +40,7 @@ export const DashboardDictationDialog = ({ isOpen, onClose }: DashboardDictation
 
       setMediaRecorder(recorder);
       setAudioChunks(chunks);
+      setMediaStream(stream);
       recorder.start();
       setIsRecording(true);
       setTranscription(null);
@@ -52,7 +55,10 @@ export const DashboardDictationDialog = ({ isOpen, onClose }: DashboardDictation
     if (mediaRecorder && isRecording) {
       mediaRecorder.stop();
       setIsRecording(false);
-      mediaRecorder.stream.getTracks().forEach(track => track.stop());
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        setMediaStream(null);
+      }
     }
   };
 
@@ -128,6 +134,11 @@ export const DashboardDictationDialog = ({ isOpen, onClose }: DashboardDictation
                     <p className="text-base text-muted-foreground">
                       {isRecording ? "Klicka för att avsluta inspelningen" : "Klicka för att börja spela in"}
                     </p>
+                    {isRecording && mediaStream && (
+                      <div className="w-full max-w-md mt-4">
+                        <AudioWaveform mediaStream={mediaStream} />
+                      </div>
+                    )}
                   </>
                 )}
               </div>
