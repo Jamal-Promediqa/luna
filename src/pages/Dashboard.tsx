@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Bell, Calendar, ChevronRight, Home, Settings, Users, Briefcase, FileCheck, Clock, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
@@ -11,6 +10,12 @@ import { QuickActions } from "@/components/dashboard/QuickActions";
 import { Notifications } from "@/components/dashboard/Notifications";
 import { Task } from "@/types/task";
 import { TaskCard } from "@/components/tasks/TaskCard";
+import { TaskNotifications } from "@/components/tasks/TaskNotifications";
+
+// Since this file is too long, let's extract some components
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation";
+import { DashboardMetrics } from "@/components/dashboard/DashboardMetrics";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -26,7 +31,6 @@ const Dashboard = () => {
     checkUser();
   }, [navigate]);
 
-  // Fetch assignments data
   const { data: assignments } = useQuery({
     queryKey: ['assignments'],
     queryFn: async () => {
@@ -92,81 +96,16 @@ const Dashboard = () => {
     }
   };
 
-  const navigationItems = [
-    { icon: <Home className="h-4 w-4" />, text: "Dashboard", path: "/dashboard" },
-    { icon: <Users className="h-4 w-4" />, text: "Konsulter", path: "/consultants" },
-    { icon: <Briefcase className="h-4 w-4" />, text: "Leads", path: "/leads" },
-    { icon: <FileCheck className="h-4 w-4" />, text: "Rapporter", path: "/reports" },
-    { icon: <Settings className="h-4 w-4" />, text: "Inställningar", path: "/settings" }
-  ];
-
-  const metrics = [
-    { title: "Antal konsulter kontaktade idag", value: assignments?.length || "0", icon: <Users className="h-6 w-6" />, color: "text-blue-500" },
-    { title: "Pågående referenstagningar", value: "5", icon: <Clock className="h-6 w-6" />, color: "text-orange-500" },
-    { title: "Antal bakgrundskontroller klara", value: "8", icon: <CheckCircle className="h-6 w-6" />, color: "text-green-500" },
-    { title: "Aktiva leads", value: "24", icon: <Briefcase className="h-6 w-6" />, color: "text-purple-500" }
-  ];
-
   const handleViewDetails = (task: Task) => {
-    // This is now handled by the TaskCard component's internal dialog
     console.log("Task details viewed:", task.id);
   };
 
   return (
     <div className="container mx-auto p-4 space-y-6">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-2xl font-bold mb-2">Välkommen tillbaka, {profile?.given_name || 'Användare'}</h1>
-          <p className="text-muted-foreground">
-            {new Date().toLocaleDateString("sv-SE", {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric"
-            })}
-          </p>
-        </div>
-        <div className="flex gap-4">
-          <Button variant="ghost" size="icon">
-            <Bell className="h-5 w-5" />
-          </Button>
-          <Button variant="ghost" size="icon" onClick={handleSignOut}>
-            <Settings className="h-5 w-5" />
-          </Button>
-        </div>
-      </div>
-
-      {/* Navigation */}
-      <div className="flex gap-4 mb-8 overflow-x-auto pb-2">
-        {navigationItems.map((item) => (
-          <Button
-            key={item.text}
-            variant="ghost"
-            className="whitespace-nowrap"
-            onClick={() => navigate(item.path)}
-          >
-            {item.icon}
-            <span className="ml-2">{item.text}</span>
-          </Button>
-        ))}
-      </div>
-
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {metrics.map((metric) => (
-          <Card key={metric.title} className="hover:-translate-y-1 transition-transform">
-            <CardContent className="pt-6">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-sm text-muted-foreground mb-2">{metric.title}</p>
-                  <h2 className="text-3xl font-bold">{metric.value}</h2>
-                </div>
-                <div className={metric.color}>{metric.icon}</div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <TaskNotifications />
+      <DashboardHeader profile={profile} onSignOut={handleSignOut} />
+      <DashboardNavigation navigate={navigate} />
+      <DashboardMetrics assignments={assignments} />
 
       {/* Main Content Area */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
