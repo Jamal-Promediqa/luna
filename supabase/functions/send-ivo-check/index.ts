@@ -18,7 +18,7 @@ serve(async (req) => {
   }
 
   try {
-    const { consultantName, personalNumber } = await req.json()
+    const { consultantName, personalNumber, specialty, requestType, additionalContext } = await req.json()
 
     // Use OpenAI to generate the email content
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -31,10 +31,18 @@ serve(async (req) => {
         model: "gpt-4o-mini",
         messages: [{
           role: "system",
-          content: "You are a professional assistant helping to generate formal emails in Swedish for background checks."
+          content: "Du är en professionell assistent som hjälper till att generera formella e-postmeddelanden på svenska för bakgrundskontroller. Använd ett professionellt och formellt språk."
         }, {
           role: "user",
-          content: `Generate a formal email in Swedish to IVO requesting background check information for ${consultantName} with personal number ${personalNumber}. The email should be professional and follow the standard format for such requests.`
+          content: `Skriv ett formellt e-postmeddelande till IVO för att begära bakgrundskontroll för ${consultantName} (personnummer: ${personalNumber}). 
+          Konsulten är en ${specialty}. ${additionalContext}
+          Inkludera följande:
+          - En professionell hälsningsfras
+          - Tydlig förklaring av syftet med förfrågan
+          - Konsultens fullständiga namn och personnummer
+          - Konsultens yrkesroll och specialitet
+          - En artig avslutning
+          - Kontaktinformation för återkoppling`
         }]
       })
     })
@@ -69,9 +77,11 @@ serve(async (req) => {
       .insert([
         {
           consultant_id: consultantName, // You might want to store the actual consultant ID here
-          check_type: 'IVO',
+          check_type: requestType,
           status: 'pending',
           request_date: new Date().toISOString(),
+          email_content: emailContent,
+          email_sent: true,
         }
       ])
 

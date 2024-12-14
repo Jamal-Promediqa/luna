@@ -73,6 +73,9 @@ export default function BackgroundChecks() {
         body: {
           consultantName: selectedConsultant.name,
           personalNumber: selectedConsultant.personalId,
+          specialty: selectedConsultant.specialty,
+          requestType: "IVO bakgrundskontroll",
+          additionalContext: `Konsulten är en ${selectedConsultant.specialty.toLowerCase()} baserad i ${selectedConsultant.location}.`
         },
       });
 
