@@ -12,6 +12,10 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useState } from "react";
+import { TaskForm } from "./TaskForm";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface TaskCardProps {
   task: Task;
@@ -35,6 +39,48 @@ const getVariantForStatus = (status: string) => {
 
 export const TaskCard = ({ task, onViewDetails }: TaskCardProps) => {
   const [showDetails, setShowDetails] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  const updateTaskMutation = useMutation({
+    mutationFn: async (updatedTask: Partial<Task>) => {
+      const { data, error } = await supabase
+        .from("tasks")
+        .update(updatedTask)
+        .eq("id", task.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      toast({
+        title: "Uppgift uppdaterad",
+        description: "Uppgiften har uppdaterats.",
+      });
+      setShowDetails(false);
+      setIsEditing(false);
+    },
+    onError: (error) => {
+      toast({
+        title: "Ett fel uppstod",
+        description: "Kunde inte uppdatera uppgiften. Försök igen.",
+        variant: "destructive",
+      });
+      console.error("Error updating task:", error);
+    },
+  });
+
+  const handleMarkAsCompleted = () => {
+    updateTaskMutation.mutate({ status: "klar" });
+  };
+
+  const handleUpdateTask = (data: any) => {
+    updateTaskMutation.mutate(data);
+  };
 
   return (
     <>
@@ -75,36 +121,61 @@ export const TaskCard = ({ task, onViewDetails }: TaskCardProps) => {
 
       <Dialog open={showDetails} onOpenChange={setShowDetails}>
         <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              {task.title}
-              <Badge variant={getVariantForStatus(task.status)}>{task.status}</Badge>
-            </DialogTitle>
-            {task.description && (
-              <DialogDescription className="text-foreground">
-                {task.description}
-              </DialogDescription>
-            )}
-          </DialogHeader>
-          <div className="space-y-4">
-            {task.due_date && (
-              <div className="flex items-center text-sm">
-                <Clock className="mr-2 h-4 w-4" />
-                <span>Förfaller: {new Date(task.due_date).toLocaleString("sv-SE")}</span>
+          {isEditing ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>Redigera uppgift</DialogTitle>
+              </DialogHeader>
+              <TaskForm 
+                onSubmit={handleUpdateTask} 
+                onCancel={() => setIsEditing(false)}
+                defaultValues={task}
+              />
+            </>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2">
+                  {task.title}
+                  <Badge variant={getVariantForStatus(task.status)}>{task.status}</Badge>
+                </DialogTitle>
+                {task.description && (
+                  <DialogDescription className="text-foreground">
+                    {task.description}
+                  </DialogDescription>
+                )}
+              </DialogHeader>
+              <div className="space-y-4">
+                {task.due_date && (
+                  <div className="flex items-center text-sm">
+                    <Clock className="mr-2 h-4 w-4" />
+                    <span>Förfaller: {new Date(task.due_date).toLocaleString("sv-SE")}</span>
+                  </div>
+                )}
+                {task.assigned_to && (
+                  <div className="flex items-center text-sm">
+                    <CheckCircle className="mr-2 h-4 w-4" />
+                    <span>Tilldelad: {task.assigned_to}</span>
+                  </div>
+                )}
               </div>
-            )}
-            {task.assigned_to && (
-              <div className="flex items-center text-sm">
-                <CheckCircle className="mr-2 h-4 w-4" />
-                <span>Tilldelad: {task.assigned_to}</span>
-              </div>
-            )}
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDetails(false)}>
-              Stäng
-            </Button>
-          </DialogFooter>
+              <DialogFooter className="flex justify-between sm:justify-between">
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={() => setIsEditing(true)}>
+                    Redigera
+                  </Button>
+                  {task.status !== "klar" && (
+                    <Button onClick={handleMarkAsCompleted}>
+                      Markera som klar
+                    </Button>
+                  )}
+                </div>
+                <Button variant="outline" onClick={() => setShowDetails(false)}>
+                  Stäng
+                </Button>
+              </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </>

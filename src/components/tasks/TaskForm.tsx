@@ -9,10 +9,19 @@ import { TaskFormValues } from "@/types/task";
 interface TaskFormProps {
   onSubmit: (data: TaskFormValues) => void;
   onCancel: () => void;
+  defaultValues?: TaskFormValues;
 }
 
-export const TaskForm = ({ onSubmit, onCancel }: TaskFormProps) => {
-  const form = useForm<TaskFormValues>();
+export const TaskForm = ({ onSubmit, onCancel, defaultValues }: TaskFormProps) => {
+  const form = useForm<TaskFormValues>({
+    defaultValues: defaultValues || {
+      title: "",
+      description: "",
+      status: "",
+      due_date: "",
+      assigned_to: "",
+    },
+  });
 
   return (
     <Form {...form}>
