@@ -36,8 +36,7 @@ export const DashboardHeader = ({ profile, onSignOut }: DashboardHeaderProps) =>
 
   const overdueCount = tasks?.filter(task => {
     if (!task.due_date) return false;
-    return new Date(task.due_date) < new Date() && 
-           (task.status === 'väntar' || task.status === 'pending');
+    return new Date(task.due_date) < new Date();
   }).length || 0;
 
   const getStatusIcon = (status: string) => {
