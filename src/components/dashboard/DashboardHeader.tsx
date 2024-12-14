@@ -21,7 +21,7 @@ export const DashboardHeader = ({ profile, onSignOut }: DashboardHeaderProps) =>
   const queryClient = useQueryClient();
 
   const { data: tasks } = useQuery({
-    queryKey: ['tasks'],  // Changed from 'tasks-notifications' to match the Tasks page
+    queryKey: ['tasks'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('tasks')
@@ -36,7 +36,8 @@ export const DashboardHeader = ({ profile, onSignOut }: DashboardHeaderProps) =>
 
   const overdueCount = tasks?.filter(task => {
     if (!task.due_date) return false;
-    return new Date(task.due_date) < new Date() && task.status !== 'completed';
+    return new Date(task.due_date) < new Date() && 
+           (task.status === 'väntar' || task.status === 'pending');
   }).length || 0;
 
   const getStatusIcon = (status: string) => {
