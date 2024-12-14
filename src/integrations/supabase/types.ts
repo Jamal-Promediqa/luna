@@ -9,7 +9,141 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      call_records: {
+        Row: {
+          action_plan: string | null
+          audio_url: string | null
+          contact_name: string
+          contact_phone: string
+          created_at: string | null
+          id: string
+          summary: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action_plan?: string | null
+          audio_url?: string | null
+          contact_name: string
+          contact_phone: string
+          created_at?: string | null
+          id?: string
+          summary?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action_plan?: string | null
+          audio_url?: string | null
+          contact_name?: string
+          contact_phone?: string
+          created_at?: string | null
+          id?: string
+          summary?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      outlook_emails: {
+        Row: {
+          body_preview: string | null
+          created_at: string | null
+          from_address: string | null
+          id: string
+          is_read: boolean | null
+          received_at: string | null
+          subject: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          body_preview?: string | null
+          created_at?: string | null
+          from_address?: string | null
+          id?: string
+          is_read?: boolean | null
+          received_at?: string | null
+          subject?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          body_preview?: string | null
+          created_at?: string | null
+          from_address?: string | null
+          id?: string
+          is_read?: boolean | null
+          received_at?: string | null
+          subject?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string | null
+          full_name: string | null
+          given_name: string | null
+          id: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          full_name?: string | null
+          given_name?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          full_name?: string | null
+          given_name?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      tasks: {
+        Row: {
+          assigned_to: string | null
+          created_at: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          status: string
+          title: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          assigned_to?: string | null
+          created_at?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          status?: string
+          title: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          assigned_to?: string | null
+          created_at?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          status?: string
+          title?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

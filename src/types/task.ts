@@ -5,6 +5,7 @@ export type Task = {
   due_date: string | null;
   assigned_to: string | null;
   description: string | null;
+  user_id: string;
   created_at: string;
   updated_at: string;
 };

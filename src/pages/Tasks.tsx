@@ -19,9 +19,13 @@ const Tasks = () => {
   const { data: tasks = [], isLoading, error } = useQuery({
     queryKey: ["tasks"],
     queryFn: async () => {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error("No user found");
+
       const { data, error } = await supabase
         .from("tasks")
         .select("*")
+        .eq('user_id', user.user.id)
         .order("created_at", { ascending: false });
 
       if (error) {
@@ -30,11 +34,13 @@ const Tasks = () => {
       }
       return (data || []) as Task[];
     },
-    retry: 1,
   });
 
   const addTaskMutation = useMutation({
     mutationFn: async (newTask: TaskFormValues) => {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error("No user found");
+
       const { data, error } = await supabase
         .from("tasks")
         .insert([{
@@ -43,6 +49,7 @@ const Tasks = () => {
           status: newTask.status,
           due_date: newTask.due_date,
           assigned_to: newTask.assigned_to,
+          user_id: user.user.id // Add user_id here
         }])
         .select()
         .single();
@@ -70,6 +77,9 @@ const Tasks = () => {
 
   const addTestTasksMutation = useMutation({
     mutationFn: async () => {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) throw new Error("No user found");
+
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
       
@@ -82,14 +92,16 @@ const Tasks = () => {
           description: "Detta är en testuppgift som är försenad",
           status: "pending",
           due_date: yesterday.toISOString(),
-          assigned_to: "Test User"
+          assigned_to: "Test User",
+          user_id: user.user.id // Add user_id here
         },
         {
           title: "Överskriden uppgift 2",
           description: "Detta är en annan testuppgift som är försenad",
           status: "pending",
           due_date: twoDaysAgo.toISOString(),
-          assigned_to: "Test User"
+          assigned_to: "Test User",
+          user_id: user.user.id // Add user_id here
         }
       ];
 
