@@ -97,12 +97,12 @@ export const CallRecordingDialog = ({ isOpen, onClose, contact }: CallRecordingD
       const { data: keyData, error: keyError } = await supabase.rpc('get_anon_key');
       if (keyError) throw keyError;
       if (!keyData) throw new Error('Could not retrieve anon key');
-      
+
       const response = await fetch('/functions/v1/process-call-recording', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${keyData.anon_key}`,
+          'Authorization': `Bearer ${(keyData as { anon_key: string }).anon_key}`,
         },
         body: JSON.stringify({
           audioUrl: publicUrl,
