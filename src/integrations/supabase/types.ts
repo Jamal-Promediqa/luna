@@ -68,7 +68,7 @@ export type Database = {
           id?: string
           notes?: string | null
           request_date?: string | null
-          response_date?: string
+          response_date?: string | null
           status?: string
         }
         Update: {
@@ -79,7 +79,7 @@ export type Database = {
           id?: string
           notes?: string | null
           request_date?: string | null
-          response_date?: string
+          response_date?: string | null
           status?: string
         }
         Relationships: [
@@ -363,7 +363,7 @@ export type Database = {
           status?: string
           title: string
           updated_at?: string
-          user_id: string
+          user_id?: string
         }
         Update: {
           assigned_to?: string | null
@@ -423,9 +423,7 @@ export type Database = {
     Functions: {
       get_anon_key: {
         Args: Record<PropertyKey, never>
-        Returns: {
-          anon_key: string
-        }
+        Returns: Json
       }
     }
     Enums: {
@@ -446,7 +444,7 @@ export type Tables<
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
         Database[PublicTableNameOrOptions["schema"]]["Views"])
-    : never,
+    : never = never,
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
       Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
@@ -458,10 +456,10 @@ export type Tables<
         PublicSchema["Views"])
     ? (PublicSchema["Tables"] &
         PublicSchema["Views"])[PublicTableNameOrOptions] extends {
-      Row: infer R
-    }
-    ? R
-    : never
+        Row: infer R
+      }
+      ? R
+      : never
     : never
 
 export type TablesInsert<
@@ -500,10 +498,10 @@ export type TablesUpdate<
     : never
   : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
     ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
-      Update: infer U
-    }
-    ? U
-    : never
+        Update: infer U
+      }
+      ? U
+      : never
     : never
 
 export type Enums<

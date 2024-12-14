@@ -94,7 +94,11 @@ export const CallRecordingDialog = ({ isOpen, onClose, contact }: CallRecordingD
       if (dbError) throw dbError;
 
       // Process the recording with Whisper and GPT
-      const { data: keyData, error: keyError } = await supabase.rpc('get_anon_key');
+      const { data: keyData, error: keyError } = await supabase.rpc('get_anon_key') as { 
+        data: { anon_key: string } | null;
+        error: Error | null;
+      };
+      
       if (keyError) throw keyError;
       if (!keyData) throw new Error('Could not retrieve anon key');
 
@@ -102,7 +106,7 @@ export const CallRecordingDialog = ({ isOpen, onClose, contact }: CallRecordingD
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(keyData as { anon_key: string }).anon_key}`,
+          'Authorization': `Bearer ${keyData.anon_key}`,
         },
         body: JSON.stringify({
           audioUrl: publicUrl,
