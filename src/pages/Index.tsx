@@ -31,8 +31,8 @@ const Index = () => {
       <header className="container mx-auto py-8 text-center">
         <div className="flex justify-center items-center mb-4">
           <img
-            src="/placeholder.svg"
-            alt="Co-Pilot Logo"
+            src="/lovable-uploads/039fe6f2-1823-467e-9222-1273291f5d48.png"
+            alt="Luna Logo"
             className="h-16 w-auto"
           />
         </div>
@@ -42,7 +42,7 @@ const Index = () => {
         <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8 space-y-8">
           <div className="text-center space-y-4">
             <h1 className="text-3xl font-bold text-copilot-blue">
-              Välkommen till Co-Pilot
+              Välkommen till Luna
             </h1>
             <p className="text-copilot-gray text-lg">
               Effektivisera din konsultadministration med vår smarta plattform
@@ -76,7 +76,7 @@ const Index = () => {
       </main>
 
       <footer className="container mx-auto py-6 text-center text-copilot-gray">
-        <p>© 2024 Co-Pilot. Alla rättigheter förbehållna.</p>
+        <p>© 2024 Luna. All rights reserved.</p>
       </footer>
     </div>
   );
