@@ -26,6 +26,7 @@ const Tasks = () => {
         .from("tasks")
         .select("*")
         .eq('user_id', user.user.id)
+        .neq('status', 'klar') // Filter out completed tasks
         .order("created_at", { ascending: false });
 
       if (error) {
