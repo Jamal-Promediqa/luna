@@ -1,11 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, FileCheck, PlusCircle } from "lucide-react";
-import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 export const QuickActions = () => {
+  const navigate = useNavigate();
+
   const handleAddConsultant = () => {
-    toast.success("Funktionen kommer snart!");
+    navigate("/background-checks");
   };
 
   const handleBookInterview = () => {
