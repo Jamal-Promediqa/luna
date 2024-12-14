@@ -16,7 +16,7 @@ const Tasks = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: tasks = [], isLoading } = useQuery({
+  const { data: tasks = [], isLoading, error } = useQuery({
     queryKey: ["tasks"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -26,10 +26,11 @@ const Tasks = () => {
 
       if (error) {
         console.error("Error fetching tasks:", error);
-        return [];
+        throw error;
       }
       return (data || []) as Task[];
     },
+    retry: 1,
   });
 
   const addTaskMutation = useMutation({
@@ -124,6 +125,14 @@ const Tasks = () => {
   const handleViewDetails = (task: Task) => {
     setSelectedTask(task);
   };
+
+  if (error) {
+    return (
+      <div className="container mx-auto p-8 text-center text-destructive">
+        Ett fel uppstod vid hämtning av uppgifter. Försök igen senare.
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto p-8">
