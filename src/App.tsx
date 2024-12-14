@@ -9,6 +9,7 @@ import Consultants from "@/pages/Consultants";
 import ConsultantProfile from "@/pages/ConsultantProfile";
 import BackgroundChecks from "@/pages/BackgroundChecks";
 import Tasks from "@/pages/Tasks";
+import Notifications from "@/pages/Notifications";
 
 const queryClient = new QueryClient();
 
@@ -24,6 +25,7 @@ function App() {
           <Route path="/consultants/:id" element={<ConsultantProfile />} />
           <Route path="/background-checks" element={<BackgroundChecks />} />
           <Route path="/tasks" element={<Tasks />} />
+          <Route path="/notifications" element={<Notifications />} />
         </Routes>
         <Toaster />
       </QueryClientProvider>
