@@ -7,9 +7,12 @@ import { Clock, Mic } from "lucide-react";
 import { useState } from "react";
 import { DashboardDictationDialog } from "@/components/dashboard/DashboardDictationDialog";
 import { supabase } from "@/integrations/supabase/client";
+import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation";
+import { useNavigate } from "react-router-dom";
 
 const AITranscriptions = () => {
   const [showDictation, setShowDictation] = useState(false);
+  const navigate = useNavigate();
 
   const { data: callRecords, isLoading } = useQuery({
     queryKey: ['call-records'],
@@ -40,6 +43,8 @@ const AITranscriptions = () => {
 
   return (
     <div className="container mx-auto p-4 space-y-6">
+      <DashboardNavigation navigate={navigate} />
+
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">AI Transcriptions</h1>
         <Button onClick={() => setShowDictation(true)}>
