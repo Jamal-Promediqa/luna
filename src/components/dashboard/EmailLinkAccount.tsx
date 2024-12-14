@@ -13,7 +13,7 @@ export const EmailLinkAccount = () => {
       console.log("1. Starting Microsoft authentication...");
       console.log("Current URL:", window.location.href);
       
-      // Use the correct callback URL format for the current Supabase project
+      // Use the correct Supabase project URL
       const redirectUrl = `${window.location.protocol}//${window.location.host}/dashboard`;
       console.log("2. Redirect URL:", redirectUrl);
 
