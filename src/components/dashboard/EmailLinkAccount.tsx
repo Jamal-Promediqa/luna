@@ -10,27 +10,29 @@ export const EmailLinkAccount = () => {
   const handleMicrosoftLink = async () => {
     setIsLinking(true);
     try {
+      console.log("Starting Microsoft authentication...");
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'azure',
         options: {
           scopes: 'email Mail.Read Mail.Send Mail.ReadWrite offline_access profile User.Read',
-          redirectTo: window.location.hostname === 'localhost' 
-            ? 'http://localhost:5173/dashboard'
-            : `${window.location.origin}/dashboard`,
+          redirectTo: `${window.location.origin}/dashboard`,
         }
       });
+
+      console.log("Authentication response:", { data, error });
 
       if (error) {
         console.error('Azure OAuth error:', error);
         if (error.message.includes("provider is not enabled")) {
           toast.error('Microsoft authentication is not properly configured. Please ensure the Azure provider is enabled in Supabase.');
         } else {
-          toast.error('Failed to connect to Microsoft account. Please try again later.');
+          toast.error(`Failed to connect: ${error.message}`);
         }
         throw error;
       }
 
       if (!data) {
+        console.error('No response data received');
         toast.error('No response received from Microsoft. Please try again.');
         throw new Error('No OAuth response data');
       }
@@ -39,6 +41,7 @@ export const EmailLinkAccount = () => {
       
     } catch (error) {
       console.error('Error linking Microsoft account:', error);
+      toast.error(`Connection error: ${error.message}`);
     } finally {
       setIsLinking(false);
     }
