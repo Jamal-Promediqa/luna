@@ -4,6 +4,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { getMicrosoftAuthConfig } from "@/utils/microsoftAuth";
 
 export const EmailLinkAccount = () => {
   const [isLinking, setIsLinking] = useState(false);
@@ -19,66 +20,66 @@ export const EmailLinkAccount = () => {
       console.log("1. Starting Microsoft authentication...");
       
       // Get the current URL for the redirect
-      const redirectUrl = `${window.location.origin}/dashboard`;
-      console.log("2. Redirect URL:", redirectUrl);
+      const baseUrl = window.location.origin;
+      const redirectUrl = `${baseUrl}/dashboard`;
+      console.log("2. Base URL:", baseUrl);
+      console.log("3. Redirect URL:", redirectUrl);
 
-      // Check if we're in development or production
-      const isDevelopment = window.location.hostname === 'localhost' || 
-                           window.location.hostname === '127.0.0.1';
+      const authConfig = getMicrosoftAuthConfig(redirectUrl);
+      console.log("4. Auth configuration:", authConfig);
 
-      // Use the appropriate redirect URL based on environment
-      const finalRedirectUrl = isDevelopment 
-        ? 'http://localhost:5173/dashboard'
-        : encodeURIComponent(redirectUrl);
+      const { data, error } = await supabase.auth.signInWithOAuth(authConfig);
 
-      console.log("3. Using encoded redirect URL:", finalRedirectUrl);
-
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'azure',
-        options: {
-          scopes: 'email Mail.Read Mail.Send Mail.ReadWrite offline_access profile User.Read',
-          redirectTo: finalRedirectUrl,
-          queryParams: {
-            prompt: 'consent'  // Force consent screen to appear
-          }
-        }
-      });
-
-      console.log("4. Authentication response:", { data, error });
+      console.log("5. Authentication response:", { data, error });
 
       if (error) {
-        console.error('5. Azure OAuth error:', {
+        console.error('6. Azure OAuth error:', {
           message: error.message,
           status: error.status,
           stack: error.stack
         });
         
+        let userMessage = "Failed to connect to Microsoft. ";
+        
+        if (error.message.includes("refused to connect")) {
+          userMessage += "Please check if you have allowed pop-ups for this site and try again.";
+        } else if (error.message.includes("redirect_uri_mismatch")) {
+          userMessage += "There's a configuration issue with the redirect URL. Please contact support.";
+        } else if (error.message.includes("invalid_scope")) {
+          userMessage += "There's a permissions configuration issue. Please contact support.";
+        } else {
+          userMessage += "Please try again or contact support if the issue persists.";
+        }
+        
         setShowError(true);
-        setErrorMessage(error.message || "Failed to connect to Microsoft");
-        toast.error("Failed to connect to Microsoft. Please try again.");
+        setErrorMessage(userMessage);
+        toast.error(userMessage);
         throw error;
       }
 
       if (!data) {
-        console.error('6. No response data received');
+        console.error('7. No response data received');
         setShowError(true);
-        setErrorMessage('No response received from Microsoft');
-        toast.error('No response received from Microsoft. Please try again.');
+        setErrorMessage('No response received from Microsoft. Please try again.');
+        toast.error('Authentication failed. Please try again.');
         throw new Error('No OAuth response data');
       }
 
       if (data.url) {
-        console.log("7. Redirecting to:", data.url);
-        window.location.href = data.url;
+        console.log("8. Redirecting to:", data.url);
+        // Add a small delay to ensure logs are sent
+        setTimeout(() => {
+          window.location.href = data.url;
+        }, 100);
       } else {
-        console.error('8. No redirect URL in response');
+        console.error('9. No redirect URL in response');
         setShowError(true);
         setErrorMessage('Invalid response from authentication service');
         toast.error('Authentication configuration error. Please try again later.');
       }
       
     } catch (error) {
-      console.error('9. Error linking Microsoft account:', {
+      console.error('10. Error linking Microsoft account:', {
         error,
         message: error.message,
         stack: error.stack
@@ -101,8 +102,7 @@ export const EmailLinkAccount = () => {
       {showError && (
         <Alert variant="destructive" className="mt-4">
           <AlertDescription>
-            {errorMessage || "Unable to connect to Microsoft. Please make sure you have a valid Microsoft account and try again."}
-            {errorMessage.includes("refused to connect") && " This might be due to browser security settings or network connectivity issues."}
+            {errorMessage}
           </AlertDescription>
         </Alert>
       )}
