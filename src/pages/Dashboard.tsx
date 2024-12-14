@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { Notifications } from "@/components/dashboard/Notifications";
+import { Task } from "@/types/task";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -38,6 +39,21 @@ const Dashboard = () => {
     }
   });
 
+  // Fetch tasks data
+  const { data: tasks, isLoading: tasksLoading } = useQuery({
+    queryKey: ['tasks'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5);
+      
+      if (error) throw error;
+      return data as Task[];
+    }
+  });
+
   // Fetch user profile with error handling
   const { data: profile } = useQuery({
     queryKey: ['profile'],
@@ -50,18 +66,16 @@ const Dashboard = () => {
           .from('profiles')
           .select('*')
           .eq('personal_number', session.user.id)
-          .maybeSingle(); // Use maybeSingle() instead of single()
+          .maybeSingle();
         
         if (error) throw error;
         
-        // If no profile exists, return a default profile
         return data || {
           given_name: session.user.email?.split('@')[0] || 'Användare',
           full_name: session.user.email || 'Användare'
         };
       } catch (error) {
         console.error('Error fetching profile:', error);
-        // Return a default profile on error
         return {
           given_name: session.user.email?.split('@')[0] || 'Användare',
           full_name: session.user.email || 'Användare'
@@ -94,12 +108,20 @@ const Dashboard = () => {
     { title: "Aktiva leads", value: "24", icon: <Briefcase className="h-6 w-6" />, color: "text-purple-500" }
   ];
 
-  const tasks = [
-    { title: "Granska CV för Erik Andersson", status: "Brådskande", variant: "destructive" as const },
-    { title: "Boka intervju med Maria Nilsson", status: "Pågående", variant: "default" as const },
-    { title: "Följ upp referenstagning", status: "Väntar", variant: "secondary" as const },
-    { title: "Uppdatera konsultprofil", status: "Klar", variant: "outline" as const }
-  ];
+  const getVariantForStatus = (status: string) => {
+    switch (status.toLowerCase()) {
+      case "brådskande":
+        return "destructive";
+      case "pågående":
+        return "default";
+      case "väntar":
+        return "secondary";
+      case "klar":
+        return "outline";
+      default:
+        return "default";
+    }
+  };
 
   return (
     <div className="container mx-auto p-4 space-y-6">
@@ -175,15 +197,34 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {tasks.map((task) => (
-                <div
-                  key={task.title}
-                  className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted/80 transition-colors"
-                >
-                  <span>{task.title}</span>
-                  <Badge variant={task.variant}>{task.status}</Badge>
-                </div>
-              ))}
+              {tasksLoading ? (
+                <div className="text-center text-muted-foreground">Laddar uppgifter...</div>
+              ) : tasks && tasks.length > 0 ? (
+                tasks.map((task) => (
+                  <div
+                    key={task.id}
+                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted/80 transition-colors"
+                  >
+                    <div className="space-y-1">
+                      <span className="font-medium">{task.title}</span>
+                      {task.description && (
+                        <p className="text-sm text-muted-foreground">{task.description}</p>
+                      )}
+                      {task.due_date && (
+                        <div className="flex items-center text-sm text-muted-foreground">
+                          <Clock className="mr-1 h-4 w-4" />
+                          <span>
+                            {new Date(task.due_date).toLocaleString("sv-SE")}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <Badge variant={getVariantForStatus(task.status)}>{task.status}</Badge>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center text-muted-foreground">Inga uppgifter att visa</div>
+              )}
             </div>
           </CardContent>
         </Card>
