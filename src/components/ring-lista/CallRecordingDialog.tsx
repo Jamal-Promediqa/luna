@@ -59,6 +59,9 @@ export const CallRecordingDialog = ({ isOpen, onClose, contact }: CallRecordingD
   const processRecording = async (audioBlob: Blob) => {
     setIsProcessing(true);
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No user found");
+
       // Upload audio file to Supabase Storage
       const fileName = `call-recordings/${Date.now()}.webm`;
       const { data: uploadData, error: uploadError } = await supabase.storage
@@ -79,6 +82,7 @@ export const CallRecordingDialog = ({ isOpen, onClose, contact }: CallRecordingD
           contact_name: contact.name,
           contact_phone: contact.phone,
           audio_url: publicUrl,
+          user_id: user.id
         })
         .select()
         .single();
