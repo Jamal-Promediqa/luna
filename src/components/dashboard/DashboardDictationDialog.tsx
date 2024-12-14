@@ -21,7 +21,6 @@ export const DashboardDictationDialog = ({ isOpen, onClose }: DashboardDictation
   const [transcription, setTranscription] = useState<string | null>(null);
   const [actionPlan, setActionPlan] = useState<string | null>(null);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
-  const [recordingDuration, setRecordingDuration] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   const createTaskMutation = useMutation({
@@ -45,6 +44,32 @@ export const DashboardDictationDialog = ({ isOpen, onClose }: DashboardDictation
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
       toast.success("Uppgift skapad från diktering");
+    },
+  });
+
+  const saveCallRecordMutation = useMutation({
+    mutationFn: async ({ transcription, actionPlan, audioUrl }: { transcription: string, actionPlan: string, audioUrl: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No user found");
+
+      const { data, error } = await supabase
+        .from('call_records')
+        .insert([{
+          contact_name: "Dashboard Dictation",
+          contact_phone: "",
+          audio_url: audioUrl,
+          summary: transcription,
+          action_plan: actionPlan,
+          user_id: user.id
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['call-records'] });
     },
   });
 
@@ -134,6 +159,13 @@ export const DashboardDictationDialog = ({ isOpen, onClose }: DashboardDictation
       const { transcription: newTranscription, actionPlan: newActionPlan } = data;
       setTranscription(newTranscription);
       setActionPlan(newActionPlan);
+
+      // Save the transcription to the database
+      await saveCallRecordMutation.mutateAsync({
+        transcription: newTranscription,
+        actionPlan: newActionPlan,
+        audioUrl: publicUrl
+      });
       
       toast.success("Dikteringen har sparats och transkriberats");
     } catch (error) {
