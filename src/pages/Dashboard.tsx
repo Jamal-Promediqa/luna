@@ -2,11 +2,13 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Calendar, ChevronRight, Home, Settings, Users, Briefcase, FileCheck, AlertCircle, PlusCircle, Clock, CheckCircle } from "lucide-react";
+import { Bell, Calendar, ChevronRight, Home, Settings, Users, Briefcase, FileCheck, Clock, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
+import { QuickActions } from "@/components/dashboard/QuickActions";
+import { Notifications } from "@/components/dashboard/Notifications";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -99,24 +101,6 @@ const Dashboard = () => {
     { title: "Uppdatera konsultprofil", status: "Klar", variant: "outline" as const }
   ];
 
-  const notifications = [
-    { text: "Ny ansökan från Johan Svensson", time: "10 min sedan", icon: <AlertCircle className="h-4 w-4" /> },
-    { text: "Referenstagning klar för Anna Kim", time: "1 timme sedan", icon: <CheckCircle className="h-4 w-4" /> },
-    { text: "Påminnelse: Uppföljningsmöte kl 14:00", time: "2 timmar sedan", icon: <Clock className="h-4 w-4" /> }
-  ];
-
-  const handleAddConsultant = () => {
-    toast.success("Funktionen kommer snart!");
-  };
-
-  const handleBookInterview = () => {
-    toast.success("Funktionen kommer snart!");
-  };
-
-  const handleStartReference = () => {
-    toast.success("Funktionen kommer snart!");
-  };
-
   return (
     <div className="container mx-auto p-4 space-y-6">
       {/* Header Section */}
@@ -202,48 +186,8 @@ const Dashboard = () => {
 
         {/* Side Panel */}
         <div className="space-y-6">
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Snabbåtgärder</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Button className="w-full" variant="default" onClick={handleAddConsultant}>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Lägg till ny konsult
-              </Button>
-              <Button className="w-full" variant="secondary" onClick={handleBookInterview}>
-                <Calendar className="mr-2 h-4 w-4" />
-                Boka intervju
-              </Button>
-              <Button className="w-full" variant="secondary" onClick={handleStartReference}>
-                <FileCheck className="mr-2 h-4 w-4" />
-                Starta referenstagning
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Notifications */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Notifikationer</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {notifications.map((notification) => (
-                <div key={notification.text} className="flex gap-3 items-start">
-                  <div className="text-muted-foreground mt-0.5">
-                    {notification.icon}
-                  </div>
-                  <div>
-                    <p className="text-sm">{notification.text}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {notification.time}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
+          <QuickActions />
+          <Notifications />
         </div>
       </div>
     </div>
