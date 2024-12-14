@@ -103,7 +103,7 @@ const Login = () => {
           <div className="mb-8">
             <img
               src="/lovable-uploads/ae8d8a41-3fa8-40bf-bc84-638301c00648.png"
-              alt="Co-Pilot Logo"
+              alt="Luna Logo"
               className="mx-auto h-24 w-auto"
             />
           </div>
@@ -167,7 +167,7 @@ const Login = () => {
       </div>
 
       <footer className="container mx-auto py-6 text-center text-copilot-gray">
-        <p>© 2024 Co-Pilot. Alla rättigheter förbehållna.</p>
+        <p>© 2024 Luna. All rights reserved.</p>
       </footer>
     </div>
   );
