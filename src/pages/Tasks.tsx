@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar } from "lucide-react";
+import { Calendar, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
@@ -64,13 +64,62 @@ const Tasks = () => {
     },
   });
 
+  const addTestTasksMutation = useMutation({
+    mutationFn: async () => {
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      const twoDaysAgo = new Date();
+      twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+      
+      const testTasks = [
+        {
+          title: "Överskriden uppgift 1",
+          description: "Detta är en testuppgift som är försenad",
+          status: "pending",
+          due_date: yesterday.toISOString(),
+          assigned_to: "Test User"
+        },
+        {
+          title: "Överskriden uppgift 2",
+          description: "Detta är en annan testuppgift som är försenad",
+          status: "pending",
+          due_date: twoDaysAgo.toISOString(),
+          assigned_to: "Test User"
+        }
+      ];
+
+      const { data, error } = await supabase
+        .from("tasks")
+        .insert(testTasks)
+        .select();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["tasks"] });
+      toast({
+        title: "Testuppgifter skapade",
+        description: "Testuppgifter med förfallna datum har lagts till.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Ett fel uppstod",
+        description: "Kunde inte skapa testuppgifterna. Försök igen.",
+        variant: "destructive",
+      });
+      console.error("Error adding test tasks:", error);
+    },
+  });
+
   const handleSubmit = (data: TaskFormValues) => {
     addTaskMutation.mutate(data);
   };
 
   const handleViewDetails = (task: Task) => {
     setSelectedTask(task);
-    // Implement view details functionality
     console.log("View details for task:", task);
   };
 
@@ -79,20 +128,30 @@ const Tasks = () => {
       <TasksNavigation />
 
       <div className="flex justify-between items-center mb-8">
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Calendar className="mr-2 h-4 w-4" />
-              Lägg till ny uppgift
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Lägg till ny uppgift</DialogTitle>
-            </DialogHeader>
-            <TaskForm onSubmit={handleSubmit} onCancel={() => setOpen(false)} />
-          </DialogContent>
-        </Dialog>
+        <div className="flex gap-4">
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Lägg till ny uppgift
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Lägg till ny uppgift</DialogTitle>
+              </DialogHeader>
+              <TaskForm onSubmit={handleSubmit} onCancel={() => setOpen(false)} />
+            </DialogContent>
+          </Dialog>
+
+          <Button 
+            variant="outline"
+            onClick={() => addTestTasksMutation.mutate()}
+          >
+            <Calendar className="mr-2 h-4 w-4" />
+            Lägg till testuppgifter
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4">
