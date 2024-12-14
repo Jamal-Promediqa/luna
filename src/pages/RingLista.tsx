@@ -3,12 +3,12 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ChevronLeft, PhoneCall, Search, Mic, Plus, Clock } from "lucide-react";
+import { ChevronLeft, PhoneCall, Search, Plus, Clock } from "lucide-react";
 import { CallRecordingDialog } from "@/components/ring-lista/CallRecordingDialog";
+import { ContactList } from "@/components/ring-lista/ContactList";
+import { CallHistory } from "@/components/ring-lista/CallHistory";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { format } from "date-fns";
 
 const RingLista = () => {
   const navigate = useNavigate();
@@ -16,7 +16,6 @@ const RingLista = () => {
   const [selectedContact, setSelectedContact] = useState<{ name: string; phone: string } | null>(null);
   const [callRecords, setCallRecords] = useState<any[]>([]);
 
-  // Fetch call records
   useEffect(() => {
     const fetchCallRecords = async () => {
       const { data: user } = await supabase.auth.getUser();
@@ -49,10 +48,6 @@ const RingLista = () => {
     item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.phone.includes(searchQuery)
   );
-
-  const handleStartCall = (contact: { name: string; phone: string }) => {
-    setSelectedContact(contact);
-  };
 
   return (
     <div className="container mx-auto p-4 space-y-6">
@@ -92,46 +87,11 @@ const RingLista = () => {
               Att ringa idag
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            {ringListItems.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-start gap-4 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-              >
-                <div className="flex-shrink-0">
-                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
-                    {item.name.charAt(0)}
-                  </div>
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="font-medium">{item.name}</div>
-                      <div className="text-sm text-muted-foreground">{item.phone}</div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleStartCall(item)}
-                      >
-                        <Mic className="h-4 w-4 mr-2" />
-                        Spela in
-                      </Button>
-                      <Button variant="default" size="sm">
-                        <PhoneCall className="h-4 w-4 mr-2" />
-                        Ring
-                      </Button>
-                    </div>
-                  </div>
-                  {item.notes && (
-                    <div className="text-sm text-muted-foreground mt-2">
-                      {item.notes}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
+          <CardContent>
+            <ContactList 
+              contacts={ringListItems}
+              onStartCall={setSelectedContact}
+            />
             {ringListItems.length === 0 && (
               <div className="text-center text-muted-foreground py-8">
                 <PhoneCall className="h-12 w-12 mx-auto mb-4 opacity-20" />
@@ -149,38 +109,7 @@ const RingLista = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="h-[500px] pr-4">
-              <div className="space-y-4">
-                {callRecords.map((record) => (
-                  <div
-                    key={record.id}
-                    className="p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div>
-                        <div className="font-medium">{record.contact_name}</div>
-                        <div className="text-sm text-muted-foreground">
-                          {record.contact_phone} • {format(new Date(record.created_at), 'dd MMM yyyy HH:mm')}
-                        </div>
-                      </div>
-                    </div>
-                    {record.summary && (
-                      <div className="mt-4 space-y-2">
-                        <div className="text-sm whitespace-pre-line bg-accent/50 p-4 rounded-lg">
-                          {record.summary}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-                {callRecords.length === 0 && (
-                  <div className="text-center text-muted-foreground py-8">
-                    <Clock className="h-12 w-12 mx-auto mb-4 opacity-20" />
-                    Inga tidigare samtal att visa
-                  </div>
-                )}
-              </div>
-            </ScrollArea>
+            <CallHistory callRecords={callRecords} />
           </CardContent>
         </Card>
       </div>
