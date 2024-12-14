@@ -164,7 +164,11 @@ const Dashboard = () => {
         <Card className="lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
             <CardTitle>Prioriterade uppgifter</CardTitle>
-            <Button variant="ghost" className="text-sm">
+            <Button 
+              variant="ghost" 
+              className="text-sm"
+              onClick={() => navigate('/tasks')}
+            >
               Visa alla
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>

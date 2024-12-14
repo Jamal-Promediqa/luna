@@ -8,6 +8,7 @@ import Dashboard from "@/pages/Dashboard";
 import Consultants from "@/pages/Consultants";
 import ConsultantProfile from "@/pages/ConsultantProfile";
 import BackgroundChecks from "@/pages/BackgroundChecks";
+import Tasks from "@/pages/Tasks";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ function App() {
           <Route path="/consultants" element={<Consultants />} />
           <Route path="/consultants/:id" element={<ConsultantProfile />} />
           <Route path="/background-checks" element={<BackgroundChecks />} />
+          <Route path="/tasks" element={<Tasks />} />
         </Routes>
         <Toaster />
       </QueryClientProvider>
