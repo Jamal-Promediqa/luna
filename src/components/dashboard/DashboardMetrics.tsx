@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { KPI } from "@/integrations/supabase/types";
 
 interface DashboardMetricsProps {
   assignments: any[];
@@ -22,7 +23,7 @@ export const DashboardMetrics = ({ assignments }: DashboardMetricsProps) => {
   });
   const queryClient = useQueryClient();
 
-  const { data: kpis } = useQuery({
+  const { data: kpis } = useQuery<KPI | null>({
     queryKey: ['kpis'],
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -33,10 +34,11 @@ export const DashboardMetrics = ({ assignments }: DashboardMetricsProps) => {
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
-        .limit(1);
+        .limit(1)
+        .single();
       
       if (error) throw error;
-      return data?.[0];
+      return data;
     }
   });
 
