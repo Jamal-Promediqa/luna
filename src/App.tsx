@@ -10,6 +10,7 @@ import ConsultantProfile from "@/pages/ConsultantProfile";
 import BackgroundChecks from "@/pages/BackgroundChecks";
 import Tasks from "@/pages/Tasks";
 import Notifications from "@/pages/Notifications";
+import RingLista from "@/pages/RingLista";
 
 const queryClient = new QueryClient();
 
@@ -26,6 +27,7 @@ function App() {
           <Route path="/background-checks" element={<BackgroundChecks />} />
           <Route path="/tasks" element={<Tasks />} />
           <Route path="/notifications" element={<Notifications />} />
+          <Route path="/ring-lista" element={<RingLista />} />
         </Routes>
         <Toaster />
       </QueryClientProvider>
