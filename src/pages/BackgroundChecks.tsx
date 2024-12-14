@@ -49,7 +49,7 @@ export default function BackgroundChecks() {
       status: "Godkänd",
       date: "2023-11-01",
       action: "Ingen åtgärd krävs",
-      indicator: "default",
+      indicator: "default" as const,
     },
     {
       consultant: "Erik Eriksson",
@@ -57,7 +57,7 @@ export default function BackgroundChecks() {
       status: "Väntar",
       date: "2023-11-02",
       action: "Väntar på svar",
-      indicator: "secondary",
+      indicator: "secondary" as const,
     },
   ];
 
