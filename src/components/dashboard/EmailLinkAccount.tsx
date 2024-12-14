@@ -10,7 +10,16 @@ export const EmailLinkAccount = () => {
   const handleMicrosoftLink = async () => {
     setIsLinking(true);
     try {
-      const redirectTo = `${window.location.origin}/dashboard`;
+      // Add multiple redirect URLs based on environment
+      const redirectUrls = [
+        `${window.location.origin}/dashboard`,
+        'http://localhost:5173/dashboard',
+        // Add your production URL here if needed
+        // 'https://your-production-url.com/dashboard'
+      ];
+
+      // Use the first matching origin or default to current origin
+      const redirectTo = redirectUrls.find(url => url.startsWith(window.location.origin)) || redirectUrls[0];
       console.log('Redirecting to:', redirectTo); // Debug log
 
       const { data, error } = await supabase.auth.signInWithOAuth({
