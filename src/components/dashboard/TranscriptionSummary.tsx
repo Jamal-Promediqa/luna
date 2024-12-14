@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Download, Share2, MessageSquare, Clock, Flag, ChevronRight, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
+import { addDays } from "date-fns";
 
 interface TranscriptionSummaryProps {
   title: string;
@@ -12,7 +13,7 @@ interface TranscriptionSummaryProps {
   date?: string;
   summary: string;
   actionItems: string[];
-  onCreateTask?: (task: string) => void;
+  onCreateTask?: (task: string, dueDate: Date) => void;
 }
 
 export const TranscriptionSummary = ({
@@ -25,7 +26,9 @@ export const TranscriptionSummary = ({
 }: TranscriptionSummaryProps) => {
   const handleCreateTask = (item: string) => {
     if (onCreateTask) {
-      onCreateTask(item);
+      // Add 7 days to current date for the deadline
+      const dueDate = addDays(new Date(), 7);
+      onCreateTask(item, dueDate);
       toast.success("Uppgift skapad");
     }
   };
