@@ -48,6 +48,50 @@ export type Database = {
         }
         Relationships: []
       }
+      background_check_requests: {
+        Row: {
+          check_type: string
+          consultant_id: string | null
+          email_content: string | null
+          email_sent: boolean | null
+          id: string
+          notes: string | null
+          request_date: string | null
+          response_date: string | null
+          status: string
+        }
+        Insert: {
+          check_type: string
+          consultant_id?: string | null
+          email_content?: string | null
+          email_sent?: boolean | null
+          id?: string
+          notes?: string | null
+          request_date?: string | null
+          response_date?: string | null
+          status?: string
+        }
+        Update: {
+          check_type?: string
+          consultant_id?: string | null
+          email_content?: string | null
+          email_sent?: boolean | null
+          id?: string
+          notes?: string | null
+          request_date?: string | null
+          response_date?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "background_check_requests_consultant_id_fkey"
+            columns: ["consultant_id"]
+            isOneToOne: false
+            referencedRelation: "consultants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       consultants: {
         Row: {
           availability_schedule: Json | null
