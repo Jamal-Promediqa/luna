@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Bell, Calendar, ChevronRight, Home, Settings, Users, Briefcase, FileCheck, AlertCircle, PlusCircle, Clock, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -20,6 +21,38 @@ const Dashboard = () => {
 
     checkUser();
   }, [navigate]);
+
+  // Fetch assignments data
+  const { data: assignments } = useQuery({
+    queryKey: ['assignments'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('assignments')
+        .select('*')
+        .limit(5);
+      
+      if (error) throw error;
+      return data;
+    }
+  });
+
+  // Fetch user profile
+  const { data: profile } = useQuery({
+    queryKey: ['profile'],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('No session');
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('personal_number', session.user.id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    }
+  });
 
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
@@ -39,7 +72,7 @@ const Dashboard = () => {
   ];
 
   const metrics = [
-    { title: "Antal konsulter kontaktade idag", value: "12", icon: <Users className="h-6 w-6" />, color: "text-blue-500" },
+    { title: "Antal konsulter kontaktade idag", value: assignments?.length || "0", icon: <Users className="h-6 w-6" />, color: "text-blue-500" },
     { title: "Pågående referenstagningar", value: "5", icon: <Clock className="h-6 w-6" />, color: "text-orange-500" },
     { title: "Antal bakgrundskontroller klara", value: "8", icon: <CheckCircle className="h-6 w-6" />, color: "text-green-500" },
     { title: "Aktiva leads", value: "24", icon: <Briefcase className="h-6 w-6" />, color: "text-purple-500" }
@@ -58,12 +91,24 @@ const Dashboard = () => {
     { text: "Påminnelse: Uppföljningsmöte kl 14:00", time: "2 timmar sedan", icon: <Clock className="h-4 w-4" /> }
   ];
 
+  const handleAddConsultant = () => {
+    toast.success("Funktionen kommer snart!");
+  };
+
+  const handleBookInterview = () => {
+    toast.success("Funktionen kommer snart!");
+  };
+
+  const handleStartReference = () => {
+    toast.success("Funktionen kommer snart!");
+  };
+
   return (
     <div className="container mx-auto p-4 space-y-6">
       {/* Header Section */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-2xl font-bold mb-2">Välkommen tillbaka, Caroline</h1>
+          <h1 className="text-2xl font-bold mb-2">Välkommen tillbaka, {profile?.given_name || 'Användare'}</h1>
           <p className="text-muted-foreground">
             {new Date().toLocaleDateString("sv-SE", {
               weekday: "long",
@@ -77,7 +122,7 @@ const Dashboard = () => {
           <Button variant="ghost" size="icon">
             <Bell className="h-5 w-5" />
           </Button>
-          <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" onClick={handleSignOut}>
             <Settings className="h-5 w-5" />
           </Button>
         </div>
@@ -144,15 +189,15 @@ const Dashboard = () => {
               <CardTitle>Snabbåtgärder</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button className="w-full" variant="default">
+              <Button className="w-full" variant="default" onClick={handleAddConsultant}>
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Lägg till ny konsult
               </Button>
-              <Button className="w-full" variant="secondary">
+              <Button className="w-full" variant="secondary" onClick={handleBookInterview}>
                 <Calendar className="mr-2 h-4 w-4" />
                 Boka intervju
               </Button>
-              <Button className="w-full" variant="secondary">
+              <Button className="w-full" variant="secondary" onClick={handleStartReference}>
                 <FileCheck className="mr-2 h-4 w-4" />
                 Starta referenstagning
               </Button>
