@@ -152,6 +152,13 @@ const Login = () => {
             providers={[]}
             redirectTo={`${window.location.origin}/dashboard`}
             onlyThirdPartyProviders={false}
+            options={{
+              emailRedirectTo: `${window.location.origin}/dashboard`,
+              metaData: {
+                given_name: undefined as string | undefined,
+                surname: undefined as string | undefined,
+              },
+            }}
           />
         </div>
       </main>
