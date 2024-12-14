@@ -1,7 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
 import { Client } from '@microsoft/microsoft-graph-client';
-import { TokenCredentialAuthenticationProvider } from '@microsoft/microsoft-graph-client/authProviders/azureTokenCredentials';
-import { ClientSecretCredential } from '@azure/identity';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,20 +11,6 @@ const handleCors = (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
-};
-
-const getGraphClient = () => {
-  const credential = new ClientSecretCredential(
-    Deno.env.get('AZURE_TENANT_ID') || '',
-    Deno.env.get('AZURE_CLIENT_ID') || '',
-    Deno.env.get('AZURE_CLIENT_SECRET') || ''
-  );
-
-  const authProvider = new TokenCredentialAuthenticationProvider(credential, {
-    scopes: ['https://graph.microsoft.com/.default']
-  });
-
-  return Client.initWithMiddleware({ authProvider });
 };
 
 const supabase = createClient(
@@ -42,7 +26,22 @@ Deno.serve(async (req) => {
     const { userId } = await req.json();
     console.log('Syncing emails for user:', userId);
 
-    const graphClient = getGraphClient();
+    // Get the user's Microsoft access token from their session
+    const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(userId);
+    if (userError) throw userError;
+
+    const accessToken = user?.app_metadata?.azure_access_token;
+    if (!accessToken) {
+      throw new Error('No Microsoft access token found');
+    }
+
+    // Initialize Microsoft Graph client with the user's access token
+    const graphClient = Client.init({
+      authProvider: (done) => {
+        done(null, accessToken);
+      },
+    });
+
     const emails = await graphClient.api('/me/messages')
       .select('id,subject,bodyPreview,body,from,toRecipients,receivedDateTime,isRead')
       .top(50)

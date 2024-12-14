@@ -6,13 +6,26 @@ import { Button } from "@/components/ui/button";
 import { Mail, RefreshCw, ChevronRight } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { EmailLinkAccount } from "./EmailLinkAccount";
+import { useState } from "react";
 
 export const EmailSection = () => {
+  const [isMicrosoftLinked, setIsMicrosoftLinked] = useState(false);
+
+  const { data: session } = useQuery({
+    queryKey: ['session'],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      const hasMicrosoftProvider = session?.user?.app_metadata?.providers?.includes('azure');
+      setIsMicrosoftLinked(!!hasMicrosoftProvider);
+      return session;
+    }
+  });
+
   const { data: emails, isLoading, refetch } = useQuery({
     queryKey: ['outlook-emails'],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('No session');
+      if (!session || !isMicrosoftLinked) return null;
 
       const { data, error } = await supabase
         .from('outlook_emails')
@@ -22,7 +35,8 @@ export const EmailSection = () => {
 
       if (error) throw error;
       return data;
-    }
+    },
+    enabled: !!session && isMicrosoftLinked
   });
 
   const syncEmails = async () => {
@@ -41,6 +55,10 @@ export const EmailSection = () => {
       toast.error('Failed to sync emails');
     }
   };
+
+  if (!isMicrosoftLinked) {
+    return <EmailLinkAccount />;
+  }
 
   return (
     <Card>
