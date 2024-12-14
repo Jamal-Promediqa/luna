@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Mic, MicOff, Loader2, CheckCircle } from "lucide-react";
+import { Mic, MicOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { AudioWaveform } from "./AudioWaveform";
+import { TranscriptionSummary } from "./TranscriptionSummary";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 interface DashboardDictationDialogProps {
   isOpen: boolean;
@@ -20,6 +21,32 @@ export const DashboardDictationDialog = ({ isOpen, onClose }: DashboardDictation
   const [transcription, setTranscription] = useState<string | null>(null);
   const [actionPlan, setActionPlan] = useState<string | null>(null);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
+  const [recordingDuration, setRecordingDuration] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+
+  const createTaskMutation = useMutation({
+    mutationFn: async (title: string) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No user found");
+
+      const { data, error } = await supabase
+        .from('tasks')
+        .insert([{
+          title,
+          status: 'väntar',
+          user_id: user.id
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      toast.success("Uppgift skapad från diktering");
+    },
+  });
 
   const startRecording = async () => {
     try {
@@ -117,78 +144,69 @@ export const DashboardDictationDialog = ({ isOpen, onClose }: DashboardDictation
     }
   };
 
+  const handleCreateTask = (task: string) => {
+    createTaskMutation.mutate(task);
+  };
+
+  const getActionItemsFromPlan = (plan: string): string[] => {
+    if (!plan) return [];
+    const actionSection = plan.split('ÅTGÄRDER:')[1]?.split('UPPFÖLJNING:')[0];
+    if (!actionSection) return [];
+    return actionSection
+      .split('\n')
+      .filter(line => line.trim().startsWith('-'))
+      .map(line => line.trim().substring(2));
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[800px] h-[80vh] p-0">
-        <ScrollArea className="h-full">
+        {!transcription ? (
           <div className="p-8">
             <DialogHeader className="mb-8">
               <DialogTitle className="text-2xl">Diktera anteckning</DialogTitle>
             </DialogHeader>
             
-            <div className="space-y-8">
-              <div className="flex flex-col items-center justify-center gap-4 py-8">
-                {isProcessing ? (
-                  <div className="flex flex-col items-center gap-4">
-                    <Loader2 className="h-16 w-16 animate-spin text-primary" />
-                    <p className="text-muted-foreground">Bearbetar inspelningen...</p>
-                  </div>
-                ) : (
-                  <>
-                    <Button
-                      size="lg"
-                      variant={isRecording ? "destructive" : "default"}
-                      onClick={isRecording ? stopRecording : startRecording}
-                      className="rounded-full w-24 h-24 p-0 transition-all hover:scale-105"
-                    >
-                      {isRecording ? (
-                        <MicOff className="h-12 w-12" />
-                      ) : (
-                        <Mic className="h-12 w-12" />
-                      )}
-                    </Button>
-                    <p className="text-base text-muted-foreground">
-                      {isRecording ? "Klicka för att avsluta inspelningen" : "Klicka för att börja spela in"}
-                    </p>
-                    {isRecording && mediaStream && (
-                      <div className="w-full max-w-md mt-4">
-                        <AudioWaveform mediaStream={mediaStream} />
-                      </div>
-                    )}
-                  </>
-                )}
-              </div>
-
-              {(transcription || actionPlan) && (
-                <div className="space-y-6 border-t pt-8">
-                  {transcription && (
-                    <div className="space-y-3">
-                      <h3 className="text-lg font-semibold flex items-center gap-2">
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                        Transkription
-                      </h3>
-                      <div className="text-base leading-relaxed text-muted-foreground bg-accent/50 p-6 rounded-lg">
-                        {transcription}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {actionPlan && (
-                    <div className="space-y-3">
-                      <h3 className="text-lg font-semibold flex items-center gap-2">
-                        <CheckCircle className="h-5 w-5 text-green-500" />
-                        Sammanfattning & Åtgärder
-                      </h3>
-                      <div className="text-base leading-relaxed text-muted-foreground bg-accent/50 p-6 rounded-lg whitespace-pre-line">
-                        {actionPlan}
-                      </div>
-                    </div>
-                  )}
+            <div className="flex flex-col items-center justify-center gap-4 py-8">
+              {isProcessing ? (
+                <div className="flex flex-col items-center gap-4">
+                  <Loader2 className="h-16 w-16 animate-spin text-primary" />
+                  <p className="text-muted-foreground">Bearbetar inspelningen...</p>
                 </div>
+              ) : (
+                <>
+                  <Button
+                    size="lg"
+                    variant={isRecording ? "destructive" : "default"}
+                    onClick={isRecording ? stopRecording : startRecording}
+                    className="rounded-full w-24 h-24 p-0 transition-all hover:scale-105"
+                  >
+                    {isRecording ? (
+                      <MicOff className="h-12 w-12" />
+                    ) : (
+                      <Mic className="h-12 w-12" />
+                    )}
+                  </Button>
+                  <p className="text-base text-muted-foreground">
+                    {isRecording ? "Klicka för att avsluta inspelningen" : "Klicka för att börja spela in"}
+                  </p>
+                  {isRecording && mediaStream && (
+                    <div className="w-full max-w-md mt-4">
+                      <AudioWaveform mediaStream={mediaStream} />
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
-        </ScrollArea>
+        ) : (
+          <TranscriptionSummary
+            title="Diktering"
+            summary={transcription}
+            actionItems={getActionItemsFromPlan(actionPlan || "")}
+            onCreateTask={handleCreateTask}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );
