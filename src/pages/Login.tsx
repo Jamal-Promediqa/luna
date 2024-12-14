@@ -45,26 +45,23 @@ const Login = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!mounted) return;
         console.log("Auth state changed:", event, session);
         
         switch (event) {
           case 'SIGNED_IN':
-            if (mounted) {
-              toast({
-                title: "Success",
-                description: "Successfully signed in!",
-              });
-              navigate("/dashboard");
-            }
+            toast({
+              title: "Success",
+              description: "Successfully signed in!",
+            });
+            navigate("/dashboard");
             break;
           
           case 'SIGNED_OUT':
-            if (mounted) {
-              toast({
-                title: "Info",
-                description: "Signed out",
-              });
-            }
+            toast({
+              title: "Info",
+              description: "Signed out",
+            });
             break;
           
           case 'USER_UPDATED':
@@ -72,22 +69,17 @@ const Login = () => {
             break;
           
           case 'PASSWORD_RECOVERY':
-            if (mounted) {
-              toast({
-                title: "Info",
-                description: "Password recovery email sent",
-              });
-            }
+            toast({
+              title: "Info",
+              description: "Password recovery email sent",
+            });
             break;
           
           default:
-            if (mounted && event === 'TOKEN_REFRESHED') {
+            if (event === 'TOKEN_REFRESHED') {
               console.log("Token refreshed");
-            } else if (mounted) {
-              toast({
-                title: "Info",
-                description: `Auth state: ${event}`,
-              });
+            } else {
+              console.log("Auth event:", event);
             }
             break;
         }
