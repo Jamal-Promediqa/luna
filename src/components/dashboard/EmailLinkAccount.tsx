@@ -10,6 +10,7 @@ export const EmailLinkAccount = () => {
   const handleMicrosoftLink = async () => {
     setIsLinking(true);
     try {
+      console.log('Attempting to link Microsoft account...');
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'azure',
         options: {
@@ -27,6 +28,8 @@ export const EmailLinkAccount = () => {
         console.error('Error details:', error);
         throw error;
       }
+      
+      console.log('OAuth response:', data);
       
     } catch (error) {
       console.error('Error linking Microsoft account:', error);
