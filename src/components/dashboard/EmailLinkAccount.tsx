@@ -18,11 +18,18 @@ export const EmailLinkAccount = () => {
         }
       });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes("provider is not enabled")) {
+          toast.error('Microsoft authentication is not enabled. Please contact your administrator to enable the Azure provider in Supabase.');
+        } else {
+          toast.error(`Failed to link Microsoft account: ${error.message}`);
+        }
+        console.error('Error details:', error);
+        throw error;
+      }
       
     } catch (error) {
       console.error('Error linking Microsoft account:', error);
-      toast.error('Failed to link Microsoft account');
     } finally {
       setIsLinking(false);
     }
