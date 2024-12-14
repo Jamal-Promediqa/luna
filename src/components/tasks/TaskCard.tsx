@@ -89,7 +89,7 @@ export const TaskCard = ({ task, onViewDetails }: TaskCardProps) => {
     <>
       <Card 
         className={`hover:bg-muted/50 transition-all duration-300 ${
-          isCompleting ? 'scale-95 opacity-50' : ''
+          isCompleting ? 'scale-95 opacity-50 bg-green-50 dark:bg-green-950/10' : ''
         }`}
       >
         <CardContent className="pt-6">
@@ -99,7 +99,7 @@ export const TaskCard = ({ task, onViewDetails }: TaskCardProps) => {
                 <h3 className="font-semibold">{task.title}</h3>
                 <Badge 
                   variant={getVariantForStatus(task.status)}
-                  className={task.status === "klar" ? "animate-fade-in" : ""}
+                  className={task.status === "klar" ? "animate-fade-in bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-100" : ""}
                 >
                   {task.status}
                 </Badge>
@@ -151,7 +151,7 @@ export const TaskCard = ({ task, onViewDetails }: TaskCardProps) => {
                   {task.title}
                   <Badge 
                     variant={getVariantForStatus(task.status)}
-                    className={task.status === "klar" ? "animate-fade-in" : ""}
+                    className={task.status === "klar" ? "animate-fade-in bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-100" : ""}
                   >
                     {task.status}
                   </Badge>
@@ -184,7 +184,7 @@ export const TaskCard = ({ task, onViewDetails }: TaskCardProps) => {
                   {task.status !== "klar" && (
                     <Button 
                       onClick={handleMarkAsCompleted}
-                      className="relative overflow-hidden group"
+                      className="relative overflow-hidden group bg-green-500 hover:bg-green-600 text-white"
                     >
                       <span className={`inline-block transition-transform duration-300 ${
                         isCompleting ? 'translate-y-full' : ''
