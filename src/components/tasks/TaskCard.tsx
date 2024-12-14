@@ -1,41 +1,16 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Clock, CheckCircle } from "lucide-react";
 import { Task } from "@/types/task";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { useState } from "react";
-import { TaskForm } from "./TaskForm";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { TaskCardContent } from "./TaskCardContent";
+import { TaskCardDialog } from "./TaskCardDialog";
 
 interface TaskCardProps {
   task: Task;
   onViewDetails: (task: Task) => void;
 }
-
-const getVariantForStatus = (status: string) => {
-  switch (status.toLowerCase()) {
-    case "brådskande":
-      return "destructive";
-    case "pågående":
-      return "default";
-    case "väntar":
-      return "secondary";
-    case "klar":
-      return "outline";
-    default:
-      return "default";
-  }
-};
 
 export const TaskCard = ({ task, onViewDetails }: TaskCardProps) => {
   const [showDetails, setShowDetails] = useState(false);
@@ -93,120 +68,25 @@ export const TaskCard = ({ task, onViewDetails }: TaskCardProps) => {
         }`}
       >
         <CardContent className="pt-6">
-          <div className="flex justify-between items-start">
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <h3 className="font-semibold">{task.title}</h3>
-                <Badge 
-                  variant={getVariantForStatus(task.status)}
-                  className={task.status === "klar" ? "animate-fade-in bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-100" : ""}
-                >
-                  {task.status}
-                </Badge>
-              </div>
-              {task.description && (
-                <p className="text-sm text-muted-foreground line-clamp-2">{task.description}</p>
-              )}
-              <div className="flex items-center text-sm text-muted-foreground space-x-4">
-                {task.due_date && (
-                  <div className="flex items-center">
-                    <Clock className="mr-1 h-4 w-4" />
-                    <span>
-                      Förfaller: {new Date(task.due_date).toLocaleString("sv-SE")}
-                    </span>
-                  </div>
-                )}
-                {task.assigned_to && (
-                  <div className="flex items-center">
-                    <CheckCircle className="mr-1 h-4 w-4" />
-                    <span>Tilldelad: {task.assigned_to}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-            <Button variant="ghost" size="sm" onClick={() => setShowDetails(true)}>
-              Visa detaljer
-            </Button>
-          </div>
+          <TaskCardContent
+            task={task}
+            onViewDetails={() => setShowDetails(true)}
+            isCompleting={isCompleting}
+          />
         </CardContent>
       </Card>
 
-      <Dialog open={showDetails} onOpenChange={setShowDetails}>
-        <DialogContent className="sm:max-w-[425px]">
-          {isEditing ? (
-            <>
-              <DialogHeader>
-                <DialogTitle>Redigera uppgift</DialogTitle>
-              </DialogHeader>
-              <TaskForm 
-                onSubmit={handleUpdateTask} 
-                onCancel={() => setIsEditing(false)}
-                defaultValues={task}
-              />
-            </>
-          ) : (
-            <>
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2">
-                  {task.title}
-                  <Badge 
-                    variant={getVariantForStatus(task.status)}
-                    className={task.status === "klar" ? "animate-fade-in bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-100" : ""}
-                  >
-                    {task.status}
-                  </Badge>
-                </DialogTitle>
-                {task.description && (
-                  <DialogDescription className="text-foreground">
-                    {task.description}
-                  </DialogDescription>
-                )}
-              </DialogHeader>
-              <div className="space-y-4">
-                {task.due_date && (
-                  <div className="flex items-center text-sm">
-                    <Clock className="mr-2 h-4 w-4" />
-                    <span>Förfaller: {new Date(task.due_date).toLocaleString("sv-SE")}</span>
-                  </div>
-                )}
-                {task.assigned_to && (
-                  <div className="flex items-center text-sm">
-                    <CheckCircle className="mr-2 h-4 w-4" />
-                    <span>Tilldelad: {task.assigned_to}</span>
-                  </div>
-                )}
-              </div>
-              <DialogFooter className="flex justify-between sm:justify-between">
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => setIsEditing(true)}>
-                    Redigera
-                  </Button>
-                  {task.status !== "klar" && (
-                    <Button 
-                      onClick={handleMarkAsCompleted}
-                      className="relative overflow-hidden group bg-green-500 hover:bg-green-600 text-white"
-                    >
-                      <span className={`inline-block transition-transform duration-300 ${
-                        isCompleting ? 'translate-y-full' : ''
-                      }`}>
-                        Markera som klar
-                      </span>
-                      <CheckCircle 
-                        className={`absolute inset-0 m-auto transition-all duration-300 ${
-                          isCompleting ? 'scale-150 opacity-100' : 'scale-50 opacity-0'
-                        }`}
-                      />
-                    </Button>
-                  )}
-                </div>
-                <Button variant="outline" onClick={() => setShowDetails(false)}>
-                  Stäng
-                </Button>
-              </DialogFooter>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      <TaskCardDialog
+        task={task}
+        isOpen={showDetails}
+        onClose={() => setShowDetails(false)}
+        isEditing={isEditing}
+        onEdit={() => setIsEditing(true)}
+        onCancelEdit={() => setIsEditing(false)}
+        onUpdate={handleUpdateTask}
+        onComplete={handleMarkAsCompleted}
+        isCompleting={isCompleting}
+      />
     </>
   );
 };
