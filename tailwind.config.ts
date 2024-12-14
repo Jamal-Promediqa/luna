@@ -20,8 +20,9 @@ export default {
     extend: {
       colors: {
         copilot: {
-          blue: "#007AFF",
-          green: "#228B22",
+          teal: "#20B2AA", // Main brand color matching the logo
+          "teal-light": "#3ECDC4",
+          "teal-dark": "#188F89",
           gray: "#8E9196",
         },
         border: "hsl(var(--border))",
