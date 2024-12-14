@@ -1,4 +1,4 @@
-import { Bell, Settings, Mic } from "lucide-react";
+import { Bell, Settings, Mic, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -146,8 +146,13 @@ export const DashboardHeader = ({ profile, onSignOut }: DashboardHeaderProps) =>
             )}
           </DropdownMenuContent>
         </DropdownMenu>
-        <Button variant="ghost" size="icon" onClick={handleSignOut}>
-          <Settings className="h-5 w-5" />
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={handleSignOut}
+          title="Logga ut"
+        >
+          <LogOut className="h-5 w-5" />
         </Button>
       </div>
 
