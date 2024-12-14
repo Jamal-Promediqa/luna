@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { KPI } from "@/integrations/supabase/types";
+import { KPI } from "@/types/metrics";
 
 interface DashboardMetricsProps {
   assignments: any[];

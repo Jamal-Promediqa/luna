@@ -4,10 +4,9 @@ export type Tables<T extends keyof Database['public']['Tables']> = Database['pub
 export type Insertable<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Insert'];
 export type Updatable<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Update'];
 
-// Convenience types
-export type Task = Tables<'tasks'>;
-export type Profile = Tables<'profiles'>;
-export type OutlookEmail = Tables<'outlook_emails'>;
-export type CallRecord = Tables<'call_records'>;
-export type Assignment = Tables<'assignments'>;
-export type Consultant = Tables<'consultants'>;
+// Re-export all types
+export type { Task } from './task';
+export type { Profile } from './auth';
+export type { OutlookEmail, CallRecord } from './communication';
+export type { Assignment, Consultant } from './consultant';
+export type { KPI } from './metrics';
