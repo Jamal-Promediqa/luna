@@ -18,7 +18,7 @@ export const TaskBreakdownTable = ({ tasks }: TaskBreakdownTableProps) => {
   return (
     <div className="rounded-lg border bg-white">
       <div className="p-4 border-b bg-green-50">
-        <h2 className="text-lg font-semibold text-green-800">Slutförda kontroller denna vecka</h2>
+        <h2 className="text-lg font-semibold text-green-800">Slutförda uppgifter denna vecka</h2>
       </div>
       <Table>
         <TableHeader>
@@ -43,7 +43,7 @@ export const TaskBreakdownTable = ({ tasks }: TaskBreakdownTableProps) => {
           {tasks.length === 0 && (
             <TableRow>
               <TableCell colSpan={3} className="text-center text-muted-foreground">
-                Inga slutförda kontroller denna vecka
+                Inga slutförda uppgifter denna vecka
               </TableCell>
             </TableRow>
           )}
