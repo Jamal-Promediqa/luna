@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   Select,
   SelectContent,
@@ -8,10 +7,10 @@ import {
 } from "@/components/ui/select";
 
 interface Consultant {
-  id: number;
+  id: string;
   name: string;
   specialty: string;
-  personalId: string;
+  personal_id: string;
   location: string;
 }
 
@@ -57,7 +56,7 @@ export const ConsultantSelector = ({
               </p>
             </div>
             <div className="text-right space-y-1">
-              <p className="text-sm">{selectedConsultant.personalId}</p>
+              <p className="text-sm font-medium">{selectedConsultant.personal_id}</p>
               <p className="text-sm text-muted-foreground">
                 {selectedConsultant.location}
               </p>

@@ -19,28 +19,32 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ConsultantSelector } from "@/components/background-checks/ConsultantSelector";
 import { ChecksTable } from "@/components/background-checks/ChecksTable";
+import { useQuery } from "@tanstack/react-query";
+
+interface Consultant {
+  id: string;
+  name: string;
+  specialty: string;
+  personal_id: string;
+  location: string;
+}
 
 export default function BackgroundChecks() {
-  const [selectedConsultant, setSelectedConsultant] = useState<any>(null);
+  const [selectedConsultant, setSelectedConsultant] = useState<Consultant | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const consultants = [
-    {
-      id: 1,
-      name: "Anna Andersson",
-      specialty: "Sjuksköterska",
-      personalId: "198505121234",
-      location: "Stockholm",
+  const { data: consultants = [], isLoading: isLoadingConsultants } = useQuery({
+    queryKey: ["consultants"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("consultants")
+        .select("id, name, specialty, personal_id, location");
+      
+      if (error) throw error;
+      return data;
     },
-    {
-      id: 2,
-      name: "Erik Eriksson",
-      specialty: "Läkare",
-      personalId: "197012301234",
-      location: "Göteborg",
-    },
-  ];
+  });
 
   const checksHistory = [
     {
@@ -67,12 +71,17 @@ export default function BackgroundChecks() {
       return;
     }
 
+    if (!selectedConsultant.personal_id) {
+      toast.error("Konsulten saknar personnummer");
+      return;
+    }
+
     setIsLoading(true);
     try {
       const { data, error } = await supabase.functions.invoke('send-ivo-check', {
         body: {
           consultantName: selectedConsultant.name,
-          personalNumber: selectedConsultant.personalId,
+          personalNumber: selectedConsultant.personal_id,
           specialty: selectedConsultant.specialty,
           requestType: "IVO bakgrundskontroll",
           additionalContext: `Konsulten är en ${selectedConsultant.specialty.toLowerCase()} baserad i ${selectedConsultant.location}.`
