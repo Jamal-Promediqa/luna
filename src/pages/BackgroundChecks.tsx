@@ -34,10 +34,13 @@ import {
   Check,
   AlertCircle,
 } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function BackgroundChecks() {
   const [selectedConsultant, setSelectedConsultant] = useState<any>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const consultants = [
     {
@@ -74,6 +77,40 @@ export default function BackgroundChecks() {
       indicator: "secondary",
     },
   ];
+
+  const handleSendRequest = async () => {
+    if (!selectedConsultant) {
+      toast.error("Välj en konsult först");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch('/functions/v1/send-ivo-check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+        },
+        body: JSON.stringify({
+          consultantName: selectedConsultant.name,
+          personalNumber: selectedConsultant.personalId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send request');
+      }
+
+      toast.success("Förfrågan har skickats");
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error("Ett fel uppstod vid sändning av förfrågan");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="container mx-auto p-8 space-y-8">
@@ -186,9 +223,12 @@ export default function BackgroundChecks() {
       {/* Action Buttons */}
       <div className="flex justify-between">
         <div className="flex gap-4">
-          <Button onClick={() => setIsDialogOpen(true)}>
+          <Button 
+            onClick={() => setIsDialogOpen(true)}
+            disabled={!selectedConsultant || isLoading}
+          >
             <Check className="mr-2 h-4 w-4" />
-            Skicka förfrågan
+            {isLoading ? "Skickar..." : "Skicka förfrågan"}
           </Button>
           <Button>Markera som klar</Button>
         </div>
@@ -210,13 +250,13 @@ export default function BackgroundChecks() {
           <DialogHeader>
             <DialogTitle>Bekräfta åtgärd</DialogTitle>
           </DialogHeader>
-          <p>Är du säker på att du vill skicka denna förfrågan?</p>
+          <p>Är du säker på att du vill skicka denna förfrågan till IVO?</p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
               Avbryt
             </Button>
-            <Button onClick={() => setIsDialogOpen(false)}>
-              Bekräfta
+            <Button onClick={handleSendRequest} disabled={isLoading}>
+              {isLoading ? "Skickar..." : "Bekräfta"}
             </Button>
           </DialogFooter>
         </DialogContent>
