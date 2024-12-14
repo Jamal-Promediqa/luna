@@ -6,141 +6,93 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export type Database = {
+export interface Database {
   public: {
     Tables: {
-      call_records: {
+      assignments: {
         Row: {
-          action_plan: string | null
-          audio_url: string | null
-          contact_name: string
-          contact_phone: string
-          created_at: string | null
           id: string
-          summary: string | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          action_plan?: string | null
-          audio_url?: string | null
-          contact_name: string
-          contact_phone: string
-          created_at?: string | null
-          id?: string
-          summary?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          action_plan?: string | null
-          audio_url?: string | null
-          contact_name?: string
-          contact_phone?: string
-          created_at?: string | null
-          id?: string
-          summary?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      outlook_emails: {
-        Row: {
-          body_preview: string | null
-          created_at: string | null
-          from_address: string | null
-          id: string
-          is_read: boolean | null
-          received_at: string | null
-          subject: string | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          body_preview?: string | null
-          created_at?: string | null
-          from_address?: string | null
-          id?: string
-          is_read?: boolean | null
-          received_at?: string | null
-          subject?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          body_preview?: string | null
-          created_at?: string | null
-          from_address?: string | null
-          id?: string
-          is_read?: boolean | null
-          received_at?: string | null
-          subject?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      profiles: {
-        Row: {
-          created_at: string | null
-          full_name: string | null
-          given_name: string | null
-          id: string
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          full_name?: string | null
-          given_name?: string | null
-          id?: string
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          full_name?: string | null
-          given_name?: string | null
-          id?: string
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Relationships: []
-      }
-      tasks: {
-        Row: {
-          assigned_to: string | null
-          created_at: string | null
-          description: string | null
-          due_date: string | null
-          id: string
+          consultant_name: string
           status: string
-          title: string
-          updated_at: string | null
           user_id: string | null
+          created_at: string | null
+          updated_at: string | null
         }
         Insert: {
-          assigned_to?: string | null
-          created_at?: string | null
-          description?: string | null
-          due_date?: string | null
           id?: string
+          consultant_name: string
           status?: string
-          title: string
-          updated_at?: string | null
           user_id?: string | null
+          created_at?: string | null
+          updated_at?: string | null
         }
         Update: {
-          assigned_to?: string | null
-          created_at?: string | null
-          description?: string | null
-          due_date?: string | null
           id?: string
+          consultant_name?: string
           status?: string
-          title?: string
-          updated_at?: string | null
           user_id?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      consultants: {
+        Row: {
+          id: string
+          name: string
+          specialty: string
+          personal_id: string
+          location: string
+          user_id: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          specialty: string
+          personal_id: string
+          location: string
+          user_id?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          name?: string
+          specialty?: string
+          personal_id?: string
+          location?: string
+          user_id?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      assignments: {
+        Row: {
+          id: string
+          consultant_name: string
+          status: string
+          user_id: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          consultant_name: string
+          status?: string
+          user_id?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          consultant_name?: string
+          status?: string
+          user_id?: string | null
+          created_at?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -160,11 +112,9 @@ export type Database = {
   }
 }
 
-type PublicSchema = Database[Extract<keyof Database, "public">]
-
 export type Tables<
   PublicTableNameOrOptions extends
-    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
+    | keyof (Database["public"]["Tables"] & Database["public"]["Views"])
     | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
@@ -177,19 +127,19 @@ export type Tables<
     }
     ? R
     : never
-  : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
-        PublicSchema["Views"])
-    ? (PublicSchema["Tables"] &
-        PublicSchema["Views"])[PublicTableNameOrOptions] extends {
-        Row: infer R
-      }
-      ? R
-      : never
+  : PublicTableNameOrOptions extends keyof (Database["public"]["Tables"] &
+      Database["public"]["Views"])
+  ? (Database["public"]["Tables"] &
+      Database["public"]["Views"])[PublicTableNameOrOptions] extends {
+      Row: infer R
+    }
+    ? R
     : never
+  : never
 
 export type TablesInsert<
   PublicTableNameOrOptions extends
-    | keyof PublicSchema["Tables"]
+    | keyof Database["public"]["Tables"]
     | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
@@ -200,8 +150,8 @@ export type TablesInsert<
     }
     ? I
     : never
-  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+  : PublicTableNameOrOptions extends keyof Database["public"]["Tables"]
+    ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -210,7 +160,7 @@ export type TablesInsert<
 
 export type TablesUpdate<
   PublicTableNameOrOptions extends
-    | keyof PublicSchema["Tables"]
+    | keyof Database["public"]["Tables"]
     | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
@@ -221,8 +171,8 @@ export type TablesUpdate<
     }
     ? U
     : never
-  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+  : PublicTableNameOrOptions extends keyof Database["public"]["Tables"]
+    ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -231,20 +181,20 @@ export type TablesUpdate<
 
 export type Enums<
   PublicEnumNameOrOptions extends
-    | keyof PublicSchema["Enums"]
+    | keyof Database["public"]["Enums"]
     | { schema: keyof Database },
   EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
     ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
 > = PublicEnumNameOrOptions extends { schema: keyof Database }
   ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
-    ? PublicSchema["Enums"][PublicEnumNameOrOptions]
+  : PublicEnumNameOrOptions extends keyof Database["public"]["Enums"]
+    ? Database["public"]["Enums"][PublicEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof PublicSchema["CompositeTypes"]
+    | keyof Database["public"]["CompositeTypes"]
     | { schema: keyof Database },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof Database
@@ -253,6 +203,6 @@ export type CompositeTypes<
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
   ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
-    ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+  : PublicCompositeTypeNameOrOptions extends keyof Database["public"]["CompositeTypes"]
+    ? Database["public"]["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
