@@ -7,7 +7,7 @@ export const ConsultantHeader = () => {
       <h2 className="text-2xl font-bold">Konsulter</h2>
       <Button className="ml-auto">
         <Download className="mr-2 h-4 w-4" />
-        Exportera
+        Bakgrundskontroller
       </Button>
     </div>
   );
