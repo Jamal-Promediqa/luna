@@ -1,7 +1,5 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 import { Consultant } from "@/types/consultant";
 
 interface ConsultantTableProps {
@@ -19,23 +17,8 @@ export function ConsultantTable({
   onSort,
   onConsultantClick,
 }: ConsultantTableProps) {
-  const navigate = useNavigate();
-
-  const handleAddConsultant = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    navigate("/consultants/add");
-  };
-
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button onClick={handleAddConsultant}>
-          <Plus className="mr-2 h-4 w-4" />
-          Lägg till ny konsult
-        </Button>
-      </div>
-      
       <Table>
         <TableHeader>
           <TableRow>
