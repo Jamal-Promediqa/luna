@@ -98,74 +98,73 @@ const Login = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col animate-fade-in">
-      <header className="container mx-auto py-8 text-center">
-        <div className="flex justify-center items-center mb-4">
-          <img
-            src="/placeholder.svg"
-            alt="Co-Pilot Logo"
-            className="h-16 w-auto"
-          />
-        </div>
-      </header>
-
-      <main className="flex-1 container mx-auto flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
-          <Auth
-            supabaseClient={supabase}
-            appearance={{
-              theme: ThemeSupa,
-              variables: {
-                default: {
-                  colors: {
-                    brand: '#007AFF',
-                    brandAccent: '#0056b3',
+      <div className="flex-1 flex flex-col items-center justify-center">
+        <div className="w-full max-w-md px-4">
+          <div className="mb-8">
+            <img
+              src="/lovable-uploads/ae8d8a41-3fa8-40bf-bc84-638301c00648.png"
+              alt="Co-Pilot Logo"
+              className="mx-auto h-24 w-auto"
+            />
+          </div>
+          <div className="bg-white rounded-xl shadow-lg p-8">
+            <Auth
+              supabaseClient={supabase}
+              appearance={{
+                theme: ThemeSupa,
+                variables: {
+                  default: {
+                    colors: {
+                      brand: '#007AFF',
+                      brandAccent: '#0056b3',
+                    },
                   },
                 },
-              },
-              style: {
-                button: {
-                  borderRadius: '0.75rem',
+                style: {
+                  button: {
+                    borderRadius: '0.75rem',
+                  },
+                  input: {
+                    borderRadius: '0.75rem',
+                  },
+                  message: {
+                    borderRadius: '0.75rem',
+                    backgroundColor: '#f8d7da',
+                    borderColor: '#f5c6cb',
+                    color: '#721c24',
+                    padding: '1rem',
+                  },
                 },
-                input: {
-                  borderRadius: '0.75rem',
+                className: {
+                  container: 'auth-container',
+                  button: 'auth-button',
+                  input: 'auth-input',
+                  message: 'auth-message',
                 },
-                message: {
-                  borderRadius: '0.75rem',
-                  backgroundColor: '#f8d7da',
-                  borderColor: '#f5c6cb',
-                  color: '#721c24',
-                  padding: '1rem',
+              }}
+              theme="light"
+              providers={[]}
+              redirectTo={`${window.location.origin}/dashboard`}
+              onlyThirdPartyProviders={false}
+              localization={{
+                variables: {
+                  sign_up: {
+                    email_label: "Email",
+                    password_label: "Password",
+                    email_input_placeholder: "Your email",
+                    password_input_placeholder: "Your password",
+                    button_label: "Sign up",
+                    loading_button_label: "Signing up ...",
+                    social_provider_text: "Sign in with {{provider}}",
+                    link_text: "Don't have an account? Sign up",
+                    confirmation_text: "Check your email for the confirmation link",
+                  },
                 },
-              },
-              className: {
-                container: 'auth-container',
-                button: 'auth-button',
-                input: 'auth-input',
-                message: 'auth-message',
-              },
-            }}
-            theme="light"
-            providers={[]}
-            redirectTo={`${window.location.origin}/dashboard`}
-            onlyThirdPartyProviders={false}
-            localization={{
-              variables: {
-                sign_up: {
-                  email_label: "Email",
-                  password_label: "Password",
-                  email_input_placeholder: "Your email",
-                  password_input_placeholder: "Your password",
-                  button_label: "Sign up",
-                  loading_button_label: "Signing up ...",
-                  social_provider_text: "Sign in with {{provider}}",
-                  link_text: "Don't have an account? Sign up",
-                  confirmation_text: "Check your email for the confirmation link",
-                },
-              },
-            }}
-          />
+              }}
+            />
+          </div>
         </div>
-      </main>
+      </div>
 
       <footer className="container mx-auto py-6 text-center text-copilot-gray">
         <p>© 2024 Co-Pilot. Alla rättigheter förbehållna.</p>
