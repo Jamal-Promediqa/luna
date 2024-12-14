@@ -1,5 +1,4 @@
 import { createClient } from '@supabase/supabase-js';
-import { Client } from '@microsoft/microsoft-graph-client';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -35,22 +34,22 @@ Deno.serve(async (req) => {
       throw new Error('No Microsoft access token found');
     }
 
-    // Initialize Microsoft Graph client with the user's access token
-    const graphClient = Client.init({
-      authProvider: (done) => {
-        done(null, accessToken);
-      },
+    // Fetch emails using Microsoft Graph REST API
+    const response = await fetch('https://graph.microsoft.com/v1.0/me/messages?$top=50&$orderby=receivedDateTime desc&$select=id,subject,bodyPreview,body,from,toRecipients,receivedDateTime,isRead', {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      }
     });
 
-    const emails = await graphClient.api('/me/messages')
-      .select('id,subject,bodyPreview,body,from,toRecipients,receivedDateTime,isRead')
-      .top(50)
-      .orderBy('receivedDateTime DESC')
-      .get();
+    if (!response.ok) {
+      throw new Error(`Failed to fetch emails: ${response.statusText}`);
+    }
 
-    console.log('Fetched emails from Outlook:', emails.value.length);
+    const { value: emails } = await response.json();
+    console.log('Fetched emails from Outlook:', emails.length);
 
-    for (const email of emails.value) {
+    for (const email of emails) {
       const { data, error } = await supabase
         .from('outlook_emails')
         .upsert({
