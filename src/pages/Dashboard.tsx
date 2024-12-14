@@ -30,64 +30,82 @@ const Dashboard = () => {
     checkUser();
   }, [navigate]);
 
-  const { data: assignments } = useQuery({
+  const { data: assignments, isError: assignmentsError } = useQuery({
     queryKey: ['assignments'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('assignments')
-        .select('*')
-        .limit(5);
-      
-      if (error) {
-        console.error('Error fetching assignments:', error);
+      try {
+        const { data, error } = await supabase
+          .from('assignments')
+          .select('*')
+          .limit(5);
+        
+        if (error) {
+          console.error('Error fetching assignments:', error);
+          throw error;
+        }
+        return data || [];
+      } catch (error) {
+        console.error('Error in assignments query:', error);
         return [];
       }
-      return data || [];
-    }
+    },
+    retry: false
   });
 
-  const { data: tasks, isLoading: tasksLoading, error: tasksError } = useQuery({
+  const { data: tasks, isLoading: tasksLoading, isError: tasksError } = useQuery({
     queryKey: ['tasks'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('tasks')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(5);
-      
-      if (error) {
-        console.error('Error fetching tasks:', error);
+      try {
+        const { data, error } = await supabase
+          .from('tasks')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(5);
+        
+        if (error) {
+          console.error('Error fetching tasks:', error);
+          throw error;
+        }
+        return data as Task[] || [];
+      } catch (error) {
+        console.error('Error in tasks query:', error);
         return [];
       }
-      return data as Task[] || [];
-    }
+    },
+    retry: false
   });
 
   const { data: profile } = useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return null;
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return null;
 
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('personal_number', session.user.id)
-        .maybeSingle();
-      
-      if (error) {
-        console.error('Error fetching profile:', error);
-        return {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('personal_number', session.user.id)
+          .maybeSingle();
+        
+        if (error) {
+          console.error('Error fetching profile:', error);
+          return {
+            given_name: session.user.email?.split('@')[0] || 'Användare',
+            full_name: session.user.email || 'Användare'
+          };
+        }
+        
+        return data || {
           given_name: session.user.email?.split('@')[0] || 'Användare',
           full_name: session.user.email || 'Användare'
         };
+      } catch (error) {
+        console.error('Error in profile query:', error);
+        return null;
       }
-      
-      return data || {
-        given_name: session.user.email?.split('@')[0] || 'Användare',
-        full_name: session.user.email || 'Användare'
-      };
-    }
+    },
+    retry: false
   });
 
   const handleSignOut = async () => {
@@ -102,6 +120,10 @@ const Dashboard = () => {
   const handleViewDetails = (task: Task) => {
     console.log("Task details viewed:", task.id);
   };
+
+  if (assignmentsError || tasksError) {
+    toast.error("Ett fel uppstod vid hämtning av data");
+  }
 
   return (
     <div className="container mx-auto p-4 space-y-6">
