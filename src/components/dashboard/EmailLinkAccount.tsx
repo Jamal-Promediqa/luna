@@ -10,26 +10,30 @@ export const EmailLinkAccount = () => {
   const handleMicrosoftLink = async () => {
     setIsLinking(true);
     try {
-      console.log('Attempting to link Microsoft account...');
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'azure',
         options: {
-          scopes: 'email Mail.Read Mail.ReadWrite offline_access',
+          scopes: 'email Mail.Read',
           redirectTo: `${window.location.origin}/dashboard`
         }
       });
 
       if (error) {
+        console.error('Azure OAuth error:', error);
         if (error.message.includes("provider is not enabled")) {
-          toast.error('Microsoft authentication is not enabled. Please contact your administrator to enable the Azure provider in Supabase.');
+          toast.error('Microsoft authentication is not properly configured. Please ensure the Azure provider is enabled in Supabase.');
         } else {
-          toast.error(`Failed to link Microsoft account: ${error.message}`);
+          toast.error('Failed to connect to Microsoft account. Please try again later.');
         }
-        console.error('Error details:', error);
         throw error;
       }
-      
-      console.log('OAuth response:', data);
+
+      if (!data) {
+        toast.error('No response received from Microsoft. Please try again.');
+        throw new Error('No OAuth response data');
+      }
+
+      toast.success('Redirecting to Microsoft login...');
       
     } catch (error) {
       console.error('Error linking Microsoft account:', error);
@@ -41,16 +45,16 @@ export const EmailLinkAccount = () => {
   return (
     <div className="flex flex-col items-center justify-center p-6 space-y-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border rounded-lg">
       <Mail className="h-12 w-12 text-muted-foreground" />
-      <h3 className="text-lg font-semibold">Link Your Microsoft Account</h3>
+      <h3 className="text-lg font-semibold">Connect Microsoft Account</h3>
       <p className="text-sm text-muted-foreground text-center">
-        Connect your Microsoft account to sync and view your emails in Co-Pilot
+        Link your Microsoft account to view your emails in Co-Pilot
       </p>
       <Button 
         onClick={handleMicrosoftLink} 
         disabled={isLinking}
         className="w-full"
       >
-        {isLinking ? 'Linking...' : 'Link Microsoft Account'}
+        {isLinking ? 'Connecting...' : 'Connect Microsoft Account'}
       </Button>
     </div>
   );
