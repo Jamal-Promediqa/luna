@@ -98,10 +98,10 @@ const Reports = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-secondary/30">
+        <Card className="bg-[#F2FCE2]/50">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <CheckCircle className="h-5 w-5 text-primary" />
+              <CheckCircle className="h-5 w-5 text-[#8B5CF6]" />
               <div>
                 <p className="text-sm text-muted-foreground">Genomförda kontroller</p>
                 <p className="text-2xl font-bold">{completedTasks}</p>
@@ -110,10 +110,10 @@ const Reports = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-secondary/30">
+        <Card className="bg-[#FEF7CD]/50">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <TrendingUp className="h-5 w-5 text-primary" />
+              <TrendingUp className="h-5 w-5 text-[#D946EF]" />
               <div>
                 <p className="text-sm text-muted-foreground">Godkännandegrad</p>
                 <p className="text-2xl font-bold">{successRate}%</p>
@@ -122,10 +122,10 @@ const Reports = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-secondary/30">
+        <Card className="bg-[#FEC6A1]/50">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <Clock className="h-5 w-5 text-primary" />
+              <Clock className="h-5 w-5 text-[#F97316]" />
               <div>
                 <p className="text-sm text-muted-foreground">Genomsnittlig handläggningstid</p>
                 <p className="text-2xl font-bold">2.4d</p>
@@ -134,10 +134,10 @@ const Reports = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-secondary/30">
+        <Card className="bg-[#E5DEFF]/50">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
-              <AlertCircle className="h-5 w-5 text-primary" />
+              <AlertCircle className="h-5 w-5 text-[#0EA5E9]" />
               <div>
                 <p className="text-sm text-muted-foreground">Väntande kontroller</p>
                 <p className="text-2xl font-bold">{pendingTasks}</p>
@@ -147,10 +147,10 @@ const Reports = () => {
         </Card>
       </div>
 
-      <Card className="bg-background">
+      <Card className="bg-white">
         <CardHeader>
           <div className="flex items-center gap-2">
-            <Brain className="h-5 w-5 text-primary" />
+            <Brain className="h-5 w-5 text-[#8B5CF6]" />
             <CardTitle>AI Insikter</CardTitle>
           </div>
         </CardHeader>
@@ -182,7 +182,7 @@ const Reports = () => {
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="bg-background">
+        <Card className="bg-white">
           <CardHeader>
             <CardTitle className="text-lg">Kontrolltyper</CardTitle>
           </CardHeader>
@@ -194,10 +194,10 @@ const Reports = () => {
                   {
                     data: [40, 25, 20, 15],
                     backgroundColor: [
-                      "hsl(var(--primary) / 0.8)",
-                      "hsl(var(--secondary) / 0.8)",
-                      "hsl(var(--accent) / 0.8)",
-                      "hsl(var(--muted) / 0.8)",
+                      "#8B5CF6",
+                      "#D946EF",
+                      "#F97316",
+                      "#0EA5E9",
                     ],
                   },
                 ],
@@ -214,7 +214,7 @@ const Reports = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-background">
+        <Card className="bg-white">
           <CardHeader>
             <CardTitle className="text-lg">Daglig genomförandegrad</CardTitle>
           </CardHeader>
@@ -226,8 +226,8 @@ const Reports = () => {
                   {
                     label: "Genomförda kontroller",
                     data: [8, 12, 9, 11, 7],
-                    borderColor: "hsl(var(--primary))",
-                    backgroundColor: "hsl(var(--primary) / 0.1)",
+                    borderColor: "#8B5CF6",
+                    backgroundColor: "#E5DEFF",
                     tension: 0.1,
                   },
                 ],
@@ -244,7 +244,7 @@ const Reports = () => {
           </CardContent>
         </Card>
 
-        <Card className="bg-background">
+        <Card className="bg-white">
           <CardHeader>
             <CardTitle className="text-lg">Prioritetsfördelning</CardTitle>
           </CardHeader>
@@ -256,7 +256,11 @@ const Reports = () => {
                   {
                     label: "Kontroller",
                     data: [15, 25, 7],
-                    backgroundColor: "hsl(var(--primary) / 0.8)",
+                    backgroundColor: [
+                      "#D946EF",
+                      "#F97316",
+                      "#0EA5E9",
+                    ],
                   },
                 ],
               }}
