@@ -1,4 +1,4 @@
-import { Bell, Settings, Mic, LogOut } from "lucide-react";
+import { Bell, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -7,42 +7,20 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { DashboardDictationDialog } from "./DashboardDictationDialog";
-import { toast } from "sonner";
+import { LogoutButton } from "./LogoutButton";
 
 interface DashboardHeaderProps {
   profile: any;
-  onSignOut: () => void;
 }
 
-export const DashboardHeader = ({ profile, onSignOut }: DashboardHeaderProps) => {
+export const DashboardHeader = ({ profile }: DashboardHeaderProps) => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const [showDictationDialog, setShowDictationDialog] = useState(false);
-
-  const handleSignOut = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) {
-        console.error('Error signing out:', error);
-        toast.error('Ett fel uppstod vid utloggning');
-        return;
-      }
-      
-      // Clear all React Query caches
-      queryClient.clear();
-      
-      toast.success('Du har loggats ut');
-      navigate('/login');
-    } catch (error) {
-      console.error('Error during sign out:', error);
-      toast.error('Ett fel uppstod vid utloggning');
-    }
-  };
 
   const { data: tasks } = useQuery({
     queryKey: ['tasks'],
@@ -146,14 +124,7 @@ export const DashboardHeader = ({ profile, onSignOut }: DashboardHeaderProps) =>
             )}
           </DropdownMenuContent>
         </DropdownMenu>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={handleSignOut}
-          title="Logga ut"
-        >
-          <LogOut className="h-5 w-5" />
-        </Button>
+        <LogoutButton />
       </div>
 
       <DashboardDictationDialog
