@@ -22,10 +22,6 @@ export const EmailLinkAccount = () => {
         options: {
           scopes: 'email Mail.Read Mail.Send Mail.ReadWrite offline_access profile User.Read',
           redirectTo: redirectUrl,
-          queryParams: {
-            // Add Azure specific configuration from your Supabase settings
-            client_id: 'e56ca84f-8a73-4b76-b9e6-00031d43056a',
-          }
         }
       });
 
