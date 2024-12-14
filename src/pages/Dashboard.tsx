@@ -46,10 +46,10 @@ const Dashboard = () => {
   ];
 
   const tasks = [
-    { title: "Granska CV för Erik Andersson", status: "Brådskande", variant: "destructive" },
-    { title: "Boka intervju med Maria Nilsson", status: "Pågående", variant: "default" },
-    { title: "Följ upp referenstagning", status: "Väntar", variant: "secondary" },
-    { title: "Uppdatera konsultprofil", status: "Klar", variant: "outline" }
+    { title: "Granska CV för Erik Andersson", status: "Brådskande", variant: "destructive" as const },
+    { title: "Boka intervju med Maria Nilsson", status: "Pågående", variant: "default" as const },
+    { title: "Följ upp referenstagning", status: "Väntar", variant: "secondary" as const },
+    { title: "Uppdatera konsultprofil", status: "Klar", variant: "outline" as const }
   ];
 
   const notifications = [
