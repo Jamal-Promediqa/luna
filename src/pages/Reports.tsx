@@ -1,23 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
-import {
-  BarChart,
-  CheckCircle,
-  Clock,
-  LineChart,
-  AlertCircle,
-  TrendingUp,
-  Brain,
-} from "lucide-react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -30,7 +14,9 @@ import {
   Legend,
   ArcElement,
 } from "chart.js";
-import { Line, Bar, Pie } from "react-chartjs-2";
+import { MetricsCards } from "@/components/reports/MetricsCards";
+import { AIInsights } from "@/components/reports/AIInsights";
+import { TaskBreakdownCharts } from "@/components/reports/TaskBreakdownCharts";
 
 ChartJS.register(
   CategoryScale,
@@ -84,6 +70,11 @@ const Reports = () => {
   const totalTasks = tasks?.length || 0;
   const successRate = totalTasks ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
+  // Sample data for task breakdown
+  const tasksByType = [40, 25, 20, 15];
+  const tasksByPriority = [15, 25, 7];
+  const dailyCompletionData = [8, 12, 9, 11, 7];
+
   return (
     <div className="container mx-auto p-4 space-y-6">
       <div className="flex flex-col gap-2">
@@ -97,185 +88,19 @@ const Reports = () => {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-[#F2FCE2]/50">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="h-5 w-5 text-[#8B5CF6]" />
-              <div>
-                <p className="text-sm text-muted-foreground">Genomförda kontroller</p>
-                <p className="text-2xl font-bold">{completedTasks}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <MetricsCards
+        completedTasks={completedTasks}
+        pendingTasks={pendingTasks}
+        successRate={successRate}
+      />
 
-        <Card className="bg-[#FEF7CD]/50">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <TrendingUp className="h-5 w-5 text-[#D946EF]" />
-              <div>
-                <p className="text-sm text-muted-foreground">Godkännandegrad</p>
-                <p className="text-2xl font-bold">{successRate}%</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <AIInsights />
 
-        <Card className="bg-[#FEC6A1]/50">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <Clock className="h-5 w-5 text-[#F97316]" />
-              <div>
-                <p className="text-sm text-muted-foreground">Genomsnittlig handläggningstid</p>
-                <p className="text-2xl font-bold">2.4d</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-[#E5DEFF]/50">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="h-5 w-5 text-[#0EA5E9]" />
-              <div>
-                <p className="text-sm text-muted-foreground">Väntande kontroller</p>
-                <p className="text-2xl font-bold">{pendingTasks}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card className="bg-white">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Brain className="h-5 w-5 text-[#8B5CF6]" />
-            <CardTitle>AI Insikter</CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div>
-              <h3 className="font-semibold mb-2">Kontrollmönster</h3>
-              <p className="text-muted-foreground">
-                Bakgrundskontroller har ökat med 15% jämfört med förra veckan.
-                Högst effektivitet observerad under morgontimmarna.
-              </p>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-2">Effektivitetsanalys</h3>
-              <p className="text-muted-foreground">
-                Genomsnittlig handläggningstid minskade med 1 dag.
-                IVO-kontroller visar snabbast handläggning.
-              </p>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-2">Rekommendationer</h3>
-              <p className="text-muted-foreground">
-                Prioritera morgontider för kritiska kontroller.
-                Implementera gruppering av liknande kontrolltyper.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="bg-white">
-          <CardHeader>
-            <CardTitle className="text-lg">Kontrolltyper</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Pie
-              data={{
-                labels: ["IVO", "Belastningsregister", "Referenser", "Övrigt"],
-                datasets: [
-                  {
-                    data: [40, 25, 20, 15],
-                    backgroundColor: [
-                      "#8B5CF6",
-                      "#D946EF",
-                      "#F97316",
-                      "#0EA5E9",
-                    ],
-                  },
-                ],
-              }}
-              options={{
-                responsive: true,
-                plugins: {
-                  legend: {
-                    position: 'bottom',
-                  },
-                },
-              }}
-            />
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white">
-          <CardHeader>
-            <CardTitle className="text-lg">Daglig genomförandegrad</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Line
-              data={{
-                labels: ["Mån", "Tis", "Ons", "Tor", "Fre"],
-                datasets: [
-                  {
-                    label: "Genomförda kontroller",
-                    data: [8, 12, 9, 11, 7],
-                    borderColor: "#8B5CF6",
-                    backgroundColor: "#E5DEFF",
-                    tension: 0.1,
-                  },
-                ],
-              }}
-              options={{
-                responsive: true,
-                plugins: {
-                  legend: {
-                    position: 'bottom',
-                  },
-                },
-              }}
-            />
-          </CardContent>
-        </Card>
-
-        <Card className="bg-white">
-          <CardHeader>
-            <CardTitle className="text-lg">Prioritetsfördelning</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Bar
-              data={{
-                labels: ["Hög", "Medium", "Låg"],
-                datasets: [
-                  {
-                    label: "Kontroller",
-                    data: [15, 25, 7],
-                    backgroundColor: [
-                      "#D946EF",
-                      "#F97316",
-                      "#0EA5E9",
-                    ],
-                  },
-                ],
-              }}
-              options={{
-                responsive: true,
-                plugins: {
-                  legend: {
-                    position: 'bottom',
-                  },
-                },
-              }}
-            />
-          </CardContent>
-        </Card>
-      </div>
+      <TaskBreakdownCharts
+        tasksByType={tasksByType}
+        tasksByPriority={tasksByPriority}
+        dailyCompletionData={dailyCompletionData}
+      />
     </div>
   );
 };
