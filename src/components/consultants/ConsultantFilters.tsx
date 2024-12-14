@@ -55,19 +55,31 @@ export const ConsultantFilters = ({ onFilterChange }: ConsultantFiltersProps) =>
     <div className="space-y-6">
       <Tabs defaultValue="all" className="w-full" onValueChange={handleCategoryChange}>
         <TabsList className="w-full justify-start h-auto flex-wrap gap-3 bg-transparent p-1">
-          <TabsTrigger value="all" className="data-[state=active]:bg-primary px-6">
+          <TabsTrigger 
+            value="all" 
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-6 rounded-full transition-all duration-200"
+          >
             Alla
             <Badge variant="secondary" className="ml-2">123</Badge>
           </TabsTrigger>
-          <TabsTrigger value="doctor" className="data-[state=active]:bg-primary px-6">
+          <TabsTrigger 
+            value="doctor" 
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-6 rounded-full transition-all duration-200"
+          >
             Läkare
             <Badge variant="secondary" className="ml-2">45</Badge>
           </TabsTrigger>
-          <TabsTrigger value="nurse" className="data-[state=active]:bg-primary px-6">
+          <TabsTrigger 
+            value="nurse" 
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-6 rounded-full transition-all duration-200"
+          >
             Sjuksköterska
             <Badge variant="secondary" className="ml-2">38</Badge>
           </TabsTrigger>
-          <TabsTrigger value="social" className="data-[state=active]:bg-primary px-6">
+          <TabsTrigger 
+            value="social" 
+            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-6 rounded-full transition-all duration-200"
+          >
             Socionom
             <Badge variant="secondary" className="ml-2">40</Badge>
           </TabsTrigger>
