@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "@/hooks/use-toast";
 
 export const useDictationMutations = () => {
   const queryClient = useQueryClient();
