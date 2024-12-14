@@ -19,6 +19,11 @@ export default function Consultants() {
   const [sortField, setSortField] = useState("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [filters, setFilters] = useState({
+    search: "",
+    status: "",
+    location: "",
+  });
 
   const { data: consultants, isLoading, error } = useConsultants();
 
@@ -44,6 +49,17 @@ export default function Consultants() {
     setIsDrawerOpen(true);
   };
 
+  const filteredConsultants = consultants?.filter((consultant) => {
+    const matchesSearch = consultant.name.toLowerCase().includes(filters.search.toLowerCase()) ||
+      consultant.specialty.toLowerCase().includes(filters.search.toLowerCase()) ||
+      consultant.email.toLowerCase().includes(filters.search.toLowerCase());
+    
+    const matchesStatus = !filters.status || consultant.status === filters.status;
+    const matchesLocation = !filters.location || consultant.location === filters.location;
+
+    return matchesSearch && matchesStatus && matchesLocation;
+  });
+
   if (error) {
     toast({
       title: "Ett fel uppstod",
@@ -57,7 +73,7 @@ export default function Consultants() {
       {/* Header with Navigation */}
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-2xl font-bold mb-2">Konsultlista</h1>
+          <h1 className="text-2xl font-bold mb-2">Konsulter</h1>
           <p className="text-muted-foreground">
             {new Date().toLocaleDateString("sv-SE", {
               weekday: "long",
@@ -95,14 +111,14 @@ export default function Consultants() {
       <Card>
         <CardContent>
           <ConsultantHeader />
-          <ConsultantFilters />
+          <ConsultantFilters onFilterChange={setFilters} />
           {isLoading ? (
             <div className="flex justify-center items-center h-64">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
             </div>
-          ) : consultants ? (
+          ) : filteredConsultants ? (
             <ConsultantTable
-              consultants={consultants}
+              consultants={filteredConsultants}
               sortField={sortField}
               sortDirection={sortDirection}
               onSort={handleSort}
@@ -112,7 +128,7 @@ export default function Consultants() {
 
           <div className="flex justify-between items-center mt-4">
             <span className="text-sm text-muted-foreground">
-              Visar {consultants?.length ?? 0} konsulter
+              Visar {filteredConsultants?.length ?? 0} konsulter
             </span>
             <div className="flex gap-2">
               <Button variant="outline" disabled>
