@@ -342,6 +342,48 @@ export type Database = {
         }
         Relationships: []
       }
+      outlook_sent_emails: {
+        Row: {
+          bcc_addresses: string[] | null
+          body_content: string | null
+          cc_addresses: string[] | null
+          created_at: string
+          id: string
+          is_draft: boolean | null
+          sent_at: string | null
+          subject: string | null
+          to_addresses: string[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          bcc_addresses?: string[] | null
+          body_content?: string | null
+          cc_addresses?: string[] | null
+          created_at?: string
+          id?: string
+          is_draft?: boolean | null
+          sent_at?: string | null
+          subject?: string | null
+          to_addresses: string[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          bcc_addresses?: string[] | null
+          body_content?: string | null
+          cc_addresses?: string[] | null
+          created_at?: string
+          id?: string
+          is_draft?: boolean | null
+          sent_at?: string | null
+          subject?: string | null
+          to_addresses?: string[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
