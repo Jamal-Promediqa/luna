@@ -10,25 +10,13 @@ export const EmailLinkAccount = () => {
   const handleMicrosoftLink = async () => {
     setIsLinking(true);
     try {
-      // Ensure we're using HTTPS for production URLs
-      const redirectUrls = [
-        `${window.location.origin}/dashboard`,
-        'http://localhost:5173/dashboard',
-        'https://wxdtjeprsqttdxadfxlv.supabase.co/auth/v1/callback'
-      ];
-
-      // Use HTTPS for production, HTTP for localhost
-      const redirectTo = window.location.hostname === 'localhost' 
-        ? 'http://localhost:5173/dashboard'
-        : `https://${window.location.host}/dashboard`;
-
-      console.log('Redirecting to:', redirectTo); // Debug log
-
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'azure',
         options: {
           scopes: 'email Mail.Read Mail.Send Mail.ReadWrite offline_access profile User.Read',
-          redirectTo,
+          redirectTo: window.location.hostname === 'localhost' 
+            ? 'http://localhost:5173/dashboard'
+            : `${window.location.origin}/dashboard`,
         }
       });
 
