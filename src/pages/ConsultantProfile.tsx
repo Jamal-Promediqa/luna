@@ -1,15 +1,24 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MapPin, Mail, Phone, FileText, Briefcase, Star, Upload, PenSquare } from "lucide-react";
+import { MapPin, Mail, Phone, FileText, Briefcase, Star, Upload, PenSquare, ChevronLeft } from "lucide-react";
 import { useConsultants } from "@/hooks/useConsultants";
 import { useState } from "react";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 
 export default function ConsultantProfile() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { data: consultants } = useConsultants();
   const consultant = consultants?.find(c => c.id.toString() === id);
   const [activeTab, setActiveTab] = useState("overview");
@@ -20,6 +29,33 @@ export default function ConsultantProfile() {
 
   return (
     <div className="container mx-auto p-6 space-y-6">
+      {/* Navigation */}
+      <div className="flex items-center justify-between mb-6">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/consultants">Konsulter</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{consultant.name}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+        <Button
+          variant="ghost"
+          className="gap-2"
+          onClick={() => navigate('/consultants')}
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Tillbaka till konsulter
+        </Button>
+      </div>
+
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center gap-6">
