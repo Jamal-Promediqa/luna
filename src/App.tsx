@@ -7,6 +7,7 @@ import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import Consultants from "@/pages/Consultants";
 import ConsultantProfile from "@/pages/ConsultantProfile";
+import AddConsultant from "@/pages/AddConsultant";
 
 const queryClient = new QueryClient();
 
@@ -19,6 +20,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/consultants" element={<Consultants />} />
+          <Route path="/consultants/add" element={<AddConsultant />} />
           <Route path="/consultants/:id" element={<ConsultantProfile />} />
         </Routes>
         <Toaster />
