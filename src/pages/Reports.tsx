@@ -98,7 +98,7 @@ const Reports = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
+        <Card className="bg-secondary/30">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <CheckCircle className="h-5 w-5 text-primary" />
@@ -110,7 +110,7 @@ const Reports = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-secondary/30">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <TrendingUp className="h-5 w-5 text-primary" />
@@ -122,7 +122,7 @@ const Reports = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-secondary/30">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <Clock className="h-5 w-5 text-primary" />
@@ -134,7 +134,7 @@ const Reports = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-secondary/30">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3">
               <AlertCircle className="h-5 w-5 text-primary" />
@@ -147,7 +147,7 @@ const Reports = () => {
         </Card>
       </div>
 
-      <Card>
+      <Card className="bg-background">
         <CardHeader>
           <div className="flex items-center gap-2">
             <Brain className="h-5 w-5 text-primary" />
@@ -182,7 +182,7 @@ const Reports = () => {
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card>
+        <Card className="bg-background">
           <CardHeader>
             <CardTitle className="text-lg">Kategorifördelning</CardTitle>
           </CardHeader>
@@ -194,10 +194,10 @@ const Reports = () => {
                   {
                     data: [40, 25, 20, 15],
                     backgroundColor: [
-                      "hsl(var(--primary))",
-                      "hsl(var(--secondary))",
-                      "hsl(var(--accent))",
-                      "hsl(var(--muted))",
+                      "hsl(var(--primary) / 0.8)",
+                      "hsl(var(--secondary) / 0.8)",
+                      "hsl(var(--accent) / 0.8)",
+                      "hsl(var(--muted) / 0.8)",
                     ],
                   },
                 ],
@@ -214,7 +214,7 @@ const Reports = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-background">
           <CardHeader>
             <CardTitle className="text-lg">Daglig slutförandegrad</CardTitle>
           </CardHeader>
@@ -227,6 +227,7 @@ const Reports = () => {
                     label: "Avslutade uppgifter",
                     data: [8, 12, 9, 11, 7],
                     borderColor: "hsl(var(--primary))",
+                    backgroundColor: "hsl(var(--primary) / 0.1)",
                     tension: 0.1,
                   },
                 ],
@@ -243,7 +244,7 @@ const Reports = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-background">
           <CardHeader>
             <CardTitle className="text-lg">Prioritetsfördelning</CardTitle>
           </CardHeader>
@@ -255,7 +256,7 @@ const Reports = () => {
                   {
                     label: "Uppgifter",
                     data: [15, 25, 7],
-                    backgroundColor: "hsl(var(--primary))",
+                    backgroundColor: "hsl(var(--primary) / 0.8)",
                   },
                 ],
               }}
