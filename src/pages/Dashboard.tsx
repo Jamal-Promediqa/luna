@@ -40,7 +40,6 @@ const Dashboard = () => {
     }
   });
 
-  // Fetch tasks data
   const { data: tasks, isLoading: tasksLoading } = useQuery({
     queryKey: ['tasks'],
     queryFn: async () => {
@@ -108,28 +107,13 @@ const Dashboard = () => {
     { title: "Aktiva leads", value: "24", icon: <Briefcase className="h-6 w-6" />, color: "text-purple-500" }
   ];
 
-  const getVariantForStatus = (status: string) => {
-    switch (status.toLowerCase()) {
-      case "brådskande":
-        return "destructive";
-      case "pågående":
-        return "default";
-      case "väntar":
-        return "secondary";
-      case "klar":
-        return "outline";
-      default:
-        return "default";
-    }
-  };
-
   const handleViewDetails = (task: Task) => {
-    navigate(`/tasks/${task.id}`);
+    // This is now handled by the TaskCard component's internal dialog
+    console.log("Task details viewed:", task.id);
   };
 
   return (
     <div className="container mx-auto p-4 space-y-6">
-      {/* Header Section */}
       <div className="flex justify-between items-center mb-8">
         <div>
           <h1 className="text-2xl font-bold mb-2">Välkommen tillbaka, {profile?.given_name || 'Användare'}</h1>
