@@ -11,11 +11,10 @@ import { Notifications } from "@/components/dashboard/Notifications";
 import { Task } from "@/types/task";
 import { TaskCard } from "@/components/tasks/TaskCard";
 import { TaskNotifications } from "@/components/tasks/TaskNotifications";
-
-// Since this file is too long, let's extract some components
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation";
 import { DashboardMetrics } from "@/components/dashboard/DashboardMetrics";
+import { EmailSection } from "@/components/dashboard/EmailSection";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -144,6 +143,7 @@ const Dashboard = () => {
         {/* Side Panel */}
         <div className="space-y-6">
           <QuickActions />
+          <EmailSection />
           <Notifications />
         </div>
       </div>
