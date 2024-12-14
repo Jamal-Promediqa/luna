@@ -51,7 +51,6 @@ export const CallRecordingDialog = ({ isOpen, onClose, contact }: CallRecordingD
     if (mediaRecorder && isRecording) {
       mediaRecorder.stop();
       setIsRecording(false);
-      // Stop all audio tracks
       mediaRecorder.stream.getTracks().forEach(track => track.stop());
     }
   };
@@ -89,7 +88,26 @@ export const CallRecordingDialog = ({ isOpen, onClose, contact }: CallRecordingD
 
       if (dbError) throw dbError;
 
-      toast.success("Samtalet har sparats");
+      // Process the recording with Whisper and GPT
+      const response = await fetch('/functions/v1/process-call-recording', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.SUPABASE_ANON_KEY}`,
+        },
+        body: JSON.stringify({
+          audioUrl: publicUrl,
+          contactName: contact.name,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to process recording');
+      }
+
+      const { transcription, actionPlan } = await response.json();
+      
+      toast.success("Samtalet har sparats och transkriberats");
       onClose();
     } catch (error) {
       console.error('Error processing recording:', error);
@@ -125,7 +143,11 @@ export const CallRecordingDialog = ({ isOpen, onClose, contact }: CallRecordingD
             )}
           </div>
           <div className="text-center text-sm text-muted-foreground">
-            {isRecording ? "Klicka för att avsluta inspelningen" : "Klicka för att börja spela in"}
+            {isProcessing 
+              ? "Bearbetar inspelningen..." 
+              : isRecording 
+                ? "Klicka för att avsluta inspelningen" 
+                : "Klicka för att börja spela in"}
           </div>
         </div>
       </DialogContent>
