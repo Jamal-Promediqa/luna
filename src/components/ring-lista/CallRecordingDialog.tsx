@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Mic, MicOff, Loader2 } from "lucide-react";
+import { Mic, MicOff, Loader2, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -19,6 +19,8 @@ export const CallRecordingDialog = ({ isOpen, onClose, contact }: CallRecordingD
   const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [transcription, setTranscription] = useState<string | null>(null);
+  const [actionPlan, setActionPlan] = useState<string | null>(null);
 
   const startRecording = async () => {
     try {
@@ -41,6 +43,9 @@ export const CallRecordingDialog = ({ isOpen, onClose, contact }: CallRecordingD
       setAudioChunks(chunks);
       recorder.start();
       setIsRecording(true);
+      // Reset any previous results
+      setTranscription(null);
+      setActionPlan(null);
     } catch (error) {
       console.error('Error accessing microphone:', error);
       toast.error("Kunde inte komma åt mikrofonen");
@@ -105,10 +110,11 @@ export const CallRecordingDialog = ({ isOpen, onClose, contact }: CallRecordingD
         throw new Error('Failed to process recording');
       }
 
-      const { transcription, actionPlan } = await response.json();
+      const { transcription: newTranscription, actionPlan: newActionPlan } = await response.json();
+      setTranscription(newTranscription);
+      setActionPlan(newActionPlan);
       
       toast.success("Samtalet har sparats och transkriberats");
-      onClose();
     } catch (error) {
       console.error('Error processing recording:', error);
       toast.error("Kunde inte spara samtalet");
@@ -119,11 +125,11 @@ export const CallRecordingDialog = ({ isOpen, onClose, contact }: CallRecordingD
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Spela in samtal med {contact.name}</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="flex justify-center p-6">
             {isProcessing ? (
               <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -149,6 +155,34 @@ export const CallRecordingDialog = ({ isOpen, onClose, contact }: CallRecordingD
                 ? "Klicka för att avsluta inspelningen" 
                 : "Klicka för att börja spela in"}
           </div>
+
+          {(transcription || actionPlan) && (
+            <div className="space-y-4 mt-6 border-t pt-6">
+              {transcription && (
+                <div className="space-y-2">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    Transkription
+                  </h3>
+                  <div className="text-sm text-muted-foreground bg-muted p-4 rounded-lg">
+                    {transcription}
+                  </div>
+                </div>
+              )}
+              
+              {actionPlan && (
+                <div className="space-y-2">
+                  <h3 className="font-semibold flex items-center gap-2">
+                    <CheckCircle className="h-4 w-4 text-green-500" />
+                    Sammanfattning & Åtgärder
+                  </h3>
+                  <div className="text-sm text-muted-foreground bg-muted p-4 rounded-lg whitespace-pre-line">
+                    {actionPlan}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>
