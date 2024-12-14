@@ -14,7 +14,7 @@ export const EmailLinkAccount = () => {
         provider: 'azure',
         options: {
           scopes: 'email Mail.Read',
-          redirectTo: 'https://wxdtjeprsqttdxadfxlv.supabase.co/auth/v1/callback'
+          redirectTo: window.location.origin + '/dashboard'
         }
       });
 
