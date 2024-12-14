@@ -25,7 +25,10 @@ export const useDictationMutations = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      toast.success("Uppgift skapad från diktering");
+      toast({
+        title: "Uppgift skapad",
+        description: "Uppgift skapad från diktering"
+      });
     },
   });
 
