@@ -15,7 +15,7 @@ export const EmailLinkAccount = () => {
         provider: 'azure',
         options: {
           scopes: 'email Mail.Read Mail.Send Mail.ReadWrite offline_access profile User.Read',
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: `${window.location.protocol}//${window.location.host}/dashboard`,
         }
       });
 
