@@ -14,7 +14,7 @@ interface TranscriptionSummaryProps {
   date?: string;
   summary: string;
   actionItems: string[];
-  onCreateTask?: (task: string, dueDate: Date) => void;
+  onCreateTask?: (task: string) => void;
 }
 
 export const TranscriptionSummary = ({
@@ -29,11 +29,9 @@ export const TranscriptionSummary = ({
 
   const handleCreateTask = (item: string) => {
     if (onCreateTask) {
-      // Add 7 days to current date for the deadline
-      const dueDate = addDays(new Date(), 7);
-      onCreateTask(item, dueDate);
+      onCreateTask(item);
       toast.success("Uppgift skapad", {
-        description: `"${item}" har lagts till med deadline ${dueDate.toLocaleDateString("sv-SE")}`,
+        description: `"${item}" har lagts till med deadline ${addDays(new Date(), 7).toLocaleDateString("sv-SE")}`,
         action: {
           label: "Visa uppgifter",
           onClick: () => navigate("/tasks")
