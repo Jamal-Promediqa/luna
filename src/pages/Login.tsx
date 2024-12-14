@@ -3,26 +3,41 @@ import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
-import { toast } from "sonner";
+import { toast } from "@/hooks/use-toast";
 
 const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    let mounted = true;
+
     const checkUser = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const { data, error } = await supabase.auth.getSession();
+        
+        if (!mounted) return;
+
         if (error) {
           console.error("Session check error:", error);
-          toast.error("Error checking session");
+          toast({
+            title: "Error",
+            description: "Error checking session",
+            variant: "destructive",
+          });
           return;
         }
-        if (session) {
+
+        if (data.session) {
           navigate("/dashboard");
         }
       } catch (error) {
+        if (!mounted) return;
         console.error("Session check error:", error);
-        toast.error("Error checking session");
+        toast({
+          title: "Error",
+          description: "Error checking session",
+          variant: "destructive",
+        });
       }
     };
 
@@ -32,17 +47,26 @@ const Login = () => {
       async (event, session) => {
         console.log("Auth state changed:", event, session);
         if (event === 'SIGNED_IN') {
-          toast.success('Successfully signed in!');
+          toast({
+            title: "Success",
+            description: "Successfully signed in!",
+          });
           navigate("/dashboard");
         } else if (event === 'SIGNED_OUT') {
-          toast.info('Signed out');
+          toast({
+            title: "Info",
+            description: "Signed out",
+          });
         } else if (event === 'USER_UPDATED') {
           console.log("User updated");
         }
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [navigate]);
 
   return (
