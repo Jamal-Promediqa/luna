@@ -14,16 +14,23 @@ serve(async (req) => {
 
   try {
     const { audioUrl, contactName } = await req.json()
+    console.log('Processing audio from URL:', audioUrl)
 
     // Download the audio file
     const response = await fetch(audioUrl)
+    if (!response.ok) {
+      throw new Error(`Failed to download audio file: ${response.statusText}`)
+    }
     const audioBlob = await response.blob()
+    console.log('Successfully downloaded audio file')
 
     // Transcribe with Whisper
     const formData = new FormData()
     formData.append('file', audioBlob, 'audio.webm')
     formData.append('model', 'whisper-1')
+    formData.append('language', 'sv')
 
+    console.log('Sending audio to Whisper API')
     const transcriptionResponse = await fetch('https://api.openai.com/v1/audio/transcriptions', {
       method: 'POST',
       headers: {
@@ -32,9 +39,16 @@ serve(async (req) => {
       body: formData,
     })
 
+    if (!transcriptionResponse.ok) {
+      const error = await transcriptionResponse.text()
+      throw new Error(`Whisper API error: ${error}`)
+    }
+
     const { text: transcription } = await transcriptionResponse.json()
+    console.log('Received transcription:', transcription)
 
     // Generate action plan with GPT
+    console.log('Generating action plan with GPT')
     const completion = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -42,11 +56,21 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
-            content: 'You are an AI assistant that helps create action plans from call summaries. Format the response in clear, actionable items.'
+            content: `You are an AI assistant that helps create action plans from call summaries. 
+                     Format the response in Swedish with these sections:
+                     
+                     SAMMANFATTNING:
+                     [A brief summary of the call]
+                     
+                     ÅTGÄRDER:
+                     [Bullet points of specific actions that need to be taken]
+                     
+                     UPPFÖLJNING:
+                     [When and how to follow up]`
           },
           {
             role: 'user',
@@ -56,8 +80,14 @@ serve(async (req) => {
       }),
     })
 
+    if (!completion.ok) {
+      const error = await completion.text()
+      throw new Error(`GPT API error: ${error}`)
+    }
+
     const { choices } = await completion.json()
     const actionPlan = choices[0].message.content
+    console.log('Generated action plan:', actionPlan)
 
     // Update the call record in the database
     const supabase = createClient(
@@ -72,7 +102,12 @@ serve(async (req) => {
       })
       .eq('audio_url', audioUrl)
 
-    if (updateError) throw updateError
+    if (updateError) {
+      console.error('Error updating call record:', updateError)
+      throw updateError
+    }
+
+    console.log('Successfully updated call record')
 
     return new Response(
       JSON.stringify({ transcription, actionPlan }),
