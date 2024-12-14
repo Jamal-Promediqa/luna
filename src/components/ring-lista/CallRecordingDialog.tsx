@@ -96,7 +96,7 @@ export const CallRecordingDialog = ({ isOpen, onClose, contact }: CallRecordingD
       // Process the recording with Whisper and GPT
       const { data, error: keyError } = await supabase.rpc('get_anon_key');
       if (keyError) throw keyError;
-      if (!data?.anon_key) throw new Error('Could not retrieve anon key');
+      if (!data) throw new Error('Could not retrieve anon key');
       
       const response = await fetch('/functions/v1/process-call-recording', {
         method: 'POST',

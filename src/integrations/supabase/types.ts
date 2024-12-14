@@ -423,7 +423,7 @@ export type Database = {
     Functions: {
       get_anon_key: {
         Args: Record<PropertyKey, never>
-        Returns: Json
+        Returns: { anon_key: string }
       }
     }
     Enums: {
