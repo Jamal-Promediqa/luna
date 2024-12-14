@@ -9,6 +9,13 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+} from "@/components/ui/navigation-menu";
+import { Link } from "react-router-dom";
+import {
   FileText,
   Download,
   Check,
@@ -18,6 +25,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ConsultantSelector } from "@/components/background-checks/ConsultantSelector";
 import { ChecksTable } from "@/components/background-checks/ChecksTable";
 import { useQuery } from "@tanstack/react-query";
+import { navigationMenuTriggerStyle } from "@/components/ui/navigation-menu";
 
 interface Consultant {
   id: string;
@@ -100,6 +108,26 @@ export default function BackgroundChecks() {
 
   return (
     <div className="container mx-auto p-8 space-y-8">
+      <NavigationMenu className="mb-8">
+        <NavigationMenuList>
+          <NavigationMenuItem>
+            <Link to="/dashboard" className={navigationMenuTriggerStyle()}>
+              Dashboard
+            </Link>
+          </NavigationMenuItem>
+          <NavigationMenuItem>
+            <Link to="/consultants" className={navigationMenuTriggerStyle()}>
+              Konsulter
+            </Link>
+          </NavigationMenuItem>
+          <NavigationMenuItem>
+            <Link to="/background-checks" className={navigationMenuTriggerStyle()}>
+              Bakgrundskontroller
+            </Link>
+          </NavigationMenuItem>
+        </NavigationMenuList>
+      </NavigationMenu>
+
       <header className="pb-6">
         <h1 className="text-2xl font-bold">Bakgrundskontroller</h1>
       </header>
