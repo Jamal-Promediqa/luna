@@ -23,6 +23,7 @@ export const DashboardDictationDialog = ({ isOpen, onClose }: DashboardDictation
 
   const startRecording = async () => {
     try {
+      console.log('Starting recording...');
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const recorder = new MediaRecorder(stream);
       const chunks: Blob[] = [];
@@ -45,6 +46,7 @@ export const DashboardDictationDialog = ({ isOpen, onClose }: DashboardDictation
       setIsRecording(true);
       setTranscription(null);
       setActionPlan(null);
+      console.log('Recording started successfully');
     } catch (error) {
       console.error('Error accessing microphone:', error);
       toast.error("Kunde inte komma åt mikrofonen");
@@ -53,6 +55,7 @@ export const DashboardDictationDialog = ({ isOpen, onClose }: DashboardDictation
 
   const stopRecording = () => {
     if (mediaRecorder && isRecording) {
+      console.log('Stopping recording...');
       mediaRecorder.stop();
       setIsRecording(false);
       if (mediaStream) {
@@ -65,20 +68,29 @@ export const DashboardDictationDialog = ({ isOpen, onClose }: DashboardDictation
   const processRecording = async (audioBlob: Blob) => {
     setIsProcessing(true);
     try {
+      console.log('Processing recording...');
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("No user found");
 
       const fileName = `dictation/${Date.now()}.webm`;
+      console.log('Uploading file:', fileName);
+      
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('call_recordings')
         .upload(fileName, audioBlob);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
+
+      console.log('File uploaded successfully:', uploadData);
 
       const { data: { publicUrl } } = supabase.storage
         .from('call_recordings')
         .getPublicUrl(fileName);
 
+      console.log('Processing with Edge Function:', publicUrl);
       const { data, error } = await supabase.functions.invoke('process-call-recording', {
         body: {
           audioUrl: publicUrl,
@@ -86,8 +98,12 @@ export const DashboardDictationDialog = ({ isOpen, onClose }: DashboardDictation
         },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Edge Function error:', error);
+        throw error;
+      }
 
+      console.log('Edge Function response:', data);
       const { transcription: newTranscription, actionPlan: newActionPlan } = data;
       setTranscription(newTranscription);
       setActionPlan(newActionPlan);
