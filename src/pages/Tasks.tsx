@@ -16,7 +16,7 @@ const Tasks = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: tasks, isLoading } = useQuery({
+  const { data: tasks = [], isLoading } = useQuery({
     queryKey: ["tasks"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -24,8 +24,11 @@ const Tasks = () => {
         .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      return data as Task[];
+      if (error) {
+        console.error("Error fetching tasks:", error);
+        return [];
+      }
+      return (data || []) as Task[];
     },
   });
 
@@ -38,7 +41,7 @@ const Tasks = () => {
           description: newTask.description,
           status: newTask.status,
           due_date: newTask.due_date,
-          assigned_to: newTask.assigned_to
+          assigned_to: newTask.assigned_to,
         }])
         .select()
         .single();
@@ -55,12 +58,12 @@ const Tasks = () => {
       setOpen(false);
     },
     onError: (error) => {
+      console.error("Error adding task:", error);
       toast({
         title: "Ett fel uppstod",
         description: "Kunde inte skapa uppgiften. Försök igen.",
         variant: "destructive",
       });
-      console.error("Error adding task:", error);
     },
   });
 
@@ -105,12 +108,12 @@ const Tasks = () => {
       });
     },
     onError: (error) => {
+      console.error("Error adding test tasks:", error);
       toast({
         title: "Ett fel uppstod",
         description: "Kunde inte skapa testuppgifterna. Försök igen.",
         variant: "destructive",
       });
-      console.error("Error adding test tasks:", error);
     },
   });
 
@@ -120,7 +123,6 @@ const Tasks = () => {
 
   const handleViewDetails = (task: Task) => {
     setSelectedTask(task);
-    console.log("View details for task:", task);
   };
 
   return (
@@ -157,8 +159,12 @@ const Tasks = () => {
       <div className="grid gap-4">
         {isLoading ? (
           <div>Laddar uppgifter...</div>
+        ) : tasks.length === 0 ? (
+          <div className="text-center text-muted-foreground">
+            Inga uppgifter att visa
+          </div>
         ) : (
-          tasks?.map((task) => (
+          tasks.map((task) => (
             <TaskCard
               key={task.id}
               task={task}
