@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Download, Share2, MessageSquare, Clock, Flag, ChevronRight, AlertCircle } from "lucide-react";
+import { Download, Share2, MessageSquare, Clock, Flag, ChevronRight, AlertCircle, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { addDays } from "date-fns";
 
@@ -63,16 +63,17 @@ export const TranscriptionSummary = ({
           <CardContent>
             <ul className="space-y-3">
               {actionItems.map((item, index) => (
-                <li key={index} className="flex items-center gap-3">
+                <li key={index} className="flex items-center justify-between gap-3 group">
+                  <span className="flex-1">{item}</span>
                   <Button
-                    size="icon"
+                    size="sm"
                     variant="default"
-                    className="h-8 w-8 rounded-full shrink-0"
+                    className="gap-2"
                     onClick={() => handleCreateTask(item)}
                   >
-                    <ChevronRight className="h-4 w-4" />
+                    <Plus className="h-4 w-4" />
+                    Skapa uppgift
                   </Button>
-                  <span>{item}</span>
                 </li>
               ))}
             </ul>
