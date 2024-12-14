@@ -70,10 +70,13 @@ serve(async (req) => {
                      [A brief summary of the call]
                      
                      ÅTGÄRDER:
-                     [Bullet points of specific actions that need to be taken]
+                     [Bullet points of specific actions that need to be taken, each on a new line starting with a dash (-)]
                      
                      UPPFÖLJNING:
-                     [When and how to follow up]`
+                     [When and how to follow up]
+                     
+                     Make sure each action item in ÅTGÄRDER is clear, actionable, and starts with a verb.
+                     Each action should be on its own line and start with a dash (-).`
           },
           {
             role: 'user',
