@@ -13,6 +13,7 @@ export const EmailLinkAccount = () => {
       console.log("1. Starting Microsoft authentication...");
       console.log("Current URL:", window.location.href);
       
+      // Use the correct callback URL format for the current Supabase project
       const redirectUrl = `${window.location.protocol}//${window.location.host}/dashboard`;
       console.log("2. Redirect URL:", redirectUrl);
 
@@ -21,6 +22,10 @@ export const EmailLinkAccount = () => {
         options: {
           scopes: 'email Mail.Read Mail.Send Mail.ReadWrite offline_access profile User.Read',
           redirectTo: redirectUrl,
+          queryParams: {
+            // Add Azure specific configuration from your Supabase settings
+            client_id: 'e56ca84f-8a73-4b76-b9e6-00031d43056a',
+          }
         }
       });
 
