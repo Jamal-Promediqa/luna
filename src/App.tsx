@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Consultants from "./pages/Consultants";
+import ConsultantProfile from "./pages/ConsultantProfile";
 
 const queryClient = new QueryClient();
 
@@ -59,6 +60,14 @@ const App = () => (
             element={
               <ProtectedRoute>
                 <Consultants />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/consultants/:id"
+            element={
+              <ProtectedRoute>
+                <ConsultantProfile />
               </ProtectedRoute>
             }
           />

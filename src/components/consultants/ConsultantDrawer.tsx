@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/drawer";
 import { Mail, Phone } from "lucide-react";
 import { Consultant } from "@/types/consultant";
+import { useNavigate } from "react-router-dom";
 
 interface ConsultantDrawerProps {
   consultant: Consultant | null;
@@ -23,7 +24,14 @@ export const ConsultantDrawer = ({
   isOpen,
   onClose,
 }: ConsultantDrawerProps) => {
+  const navigate = useNavigate();
+
   if (!consultant) return null;
+
+  const handleProfileClick = () => {
+    onClose();
+    navigate(`/consultants/${consultant.id}`);
+  };
 
   return (
     <Drawer open={isOpen} onOpenChange={onClose}>
@@ -74,7 +82,7 @@ export const ConsultantDrawer = ({
           </div>
         </div>
         <DrawerFooter className="flex-row gap-3 sm:justify-end">
-          <Button variant="default">
+          <Button variant="default" onClick={handleProfileClick}>
             Gå till kontakt kort
           </Button>
           <DrawerClose asChild>
