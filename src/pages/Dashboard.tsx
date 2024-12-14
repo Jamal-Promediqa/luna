@@ -30,46 +30,36 @@ const Dashboard = () => {
     checkUser();
   }, [navigate]);
 
-  const { data: assignments, error: assignmentsError } = useQuery({
+  const { data: assignments } = useQuery({
     queryKey: ['assignments'],
     queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from('assignments')
-          .select('*')
-          .limit(5);
-        
-        if (error) {
-          console.error('Error fetching assignments:', error);
-          return [];
-        }
-        return data;
-      } catch (error) {
+      const { data, error } = await supabase
+        .from('assignments')
+        .select('*')
+        .limit(5);
+      
+      if (error) {
         console.error('Error fetching assignments:', error);
         return [];
       }
+      return data || [];
     }
   });
 
   const { data: tasks, isLoading: tasksLoading, error: tasksError } = useQuery({
     queryKey: ['tasks'],
     queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from('tasks')
-          .select('*')
-          .order('created_at', { ascending: false })
-          .limit(5);
-        
-        if (error) {
-          console.error('Error fetching tasks:', error);
-          return [];
-        }
-        return data as Task[];
-      } catch (error) {
+      const { data, error } = await supabase
+        .from('tasks')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5);
+      
+      if (error) {
         console.error('Error fetching tasks:', error);
         return [];
       }
+      return data as Task[] || [];
     }
   });
 
@@ -77,34 +67,26 @@ const Dashboard = () => {
     queryKey: ['profile'],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error('No session');
+      if (!session) return null;
 
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('personal_number', session.user.id)
-          .maybeSingle();
-        
-        if (error) {
-          console.error('Error fetching profile:', error);
-          return {
-            given_name: session.user.email?.split('@')[0] || 'Användare',
-            full_name: session.user.email || 'Användare'
-          };
-        }
-        
-        return data || {
-          given_name: session.user.email?.split('@')[0] || 'Användare',
-          full_name: session.user.email || 'Användare'
-        };
-      } catch (error) {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('personal_number', session.user.id)
+        .maybeSingle();
+      
+      if (error) {
         console.error('Error fetching profile:', error);
         return {
           given_name: session.user.email?.split('@')[0] || 'Användare',
           full_name: session.user.email || 'Användare'
         };
       }
+      
+      return data || {
+        given_name: session.user.email?.split('@')[0] || 'Användare',
+        full_name: session.user.email || 'Användare'
+      };
     }
   });
 
