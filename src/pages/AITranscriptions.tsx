@@ -3,10 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { Clock, Mic, Plus } from "lucide-react";
 import { useState } from "react";
 import { DashboardDictationDialog } from "@/components/dashboard/DashboardDictationDialog";
+import { supabase } from "@/integrations/supabase/client";
 
 const AITranscriptions = () => {
   const [showDictation, setShowDictation] = useState(false);
@@ -84,8 +84,8 @@ const AITranscriptions = () => {
       </div>
 
       <DashboardDictationDialog
-        open={showDictation}
-        onOpenChange={setShowDictation}
+        isOpen={showDictation}
+        onClose={() => setShowDictation(false)}
       />
     </div>
   );
