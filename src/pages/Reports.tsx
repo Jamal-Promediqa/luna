@@ -103,7 +103,7 @@ const Reports = () => {
             <div className="flex items-center gap-3">
               <CheckCircle className="h-5 w-5 text-primary" />
               <div>
-                <p className="text-sm text-muted-foreground">Avslutade uppgifter</p>
+                <p className="text-sm text-muted-foreground">Genomförda kontroller</p>
                 <p className="text-2xl font-bold">{completedTasks}</p>
               </div>
             </div>
@@ -115,7 +115,7 @@ const Reports = () => {
             <div className="flex items-center gap-3">
               <TrendingUp className="h-5 w-5 text-primary" />
               <div>
-                <p className="text-sm text-muted-foreground">Framgångsfrekvens</p>
+                <p className="text-sm text-muted-foreground">Godkännandegrad</p>
                 <p className="text-2xl font-bold">{successRate}%</p>
               </div>
             </div>
@@ -127,8 +127,8 @@ const Reports = () => {
             <div className="flex items-center gap-3">
               <Clock className="h-5 w-5 text-primary" />
               <div>
-                <p className="text-sm text-muted-foreground">Genomsnittlig tid</p>
-                <p className="text-2xl font-bold">2.4h</p>
+                <p className="text-sm text-muted-foreground">Genomsnittlig handläggningstid</p>
+                <p className="text-2xl font-bold">2.4d</p>
               </div>
             </div>
           </CardContent>
@@ -139,7 +139,7 @@ const Reports = () => {
             <div className="flex items-center gap-3">
               <AlertCircle className="h-5 w-5 text-primary" />
               <div>
-                <p className="text-sm text-muted-foreground">Pågående uppgifter</p>
+                <p className="text-sm text-muted-foreground">Väntande kontroller</p>
                 <p className="text-2xl font-bold">{pendingTasks}</p>
               </div>
             </div>
@@ -157,24 +157,24 @@ const Reports = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <h3 className="font-semibold mb-2">Prestationstrender</h3>
+              <h3 className="font-semibold mb-2">Kontrollmönster</h3>
               <p className="text-muted-foreground">
-                Uppgiftsfrekvensen har förbättrats med 15% jämfört med förra veckan.
-                Högst produktivitet observerad under morgontimmarna.
+                Bakgrundskontroller har ökat med 15% jämfört med förra veckan.
+                Högst effektivitet observerad under morgontimmarna.
               </p>
             </div>
             <div>
               <h3 className="font-semibold mb-2">Effektivitetsanalys</h3>
               <p className="text-muted-foreground">
-                Genomsnittlig uppgiftstid minskade med 30 minuter.
-                Utvecklingsuppgifter visar högsta effektivitetsvinster.
+                Genomsnittlig handläggningstid minskade med 1 dag.
+                IVO-kontroller visar snabbast handläggning.
               </p>
             </div>
             <div>
               <h3 className="font-semibold mb-2">Rekommendationer</h3>
               <p className="text-muted-foreground">
-                Överväg att omfördela högprioriterade uppgifter till morgonpass.
-                Implementera uppgiftsbatchning för liknande kategorier.
+                Prioritera morgontider för kritiska kontroller.
+                Implementera gruppering av liknande kontrolltyper.
               </p>
             </div>
           </div>
@@ -184,12 +184,12 @@ const Reports = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="bg-background">
           <CardHeader>
-            <CardTitle className="text-lg">Kategorifördelning</CardTitle>
+            <CardTitle className="text-lg">Kontrolltyper</CardTitle>
           </CardHeader>
           <CardContent>
             <Pie
               data={{
-                labels: ["Utveckling", "Design", "Forskning", "Planering"],
+                labels: ["IVO", "Belastningsregister", "Referenser", "Övrigt"],
                 datasets: [
                   {
                     data: [40, 25, 20, 15],
@@ -216,7 +216,7 @@ const Reports = () => {
 
         <Card className="bg-background">
           <CardHeader>
-            <CardTitle className="text-lg">Daglig slutförandegrad</CardTitle>
+            <CardTitle className="text-lg">Daglig genomförandegrad</CardTitle>
           </CardHeader>
           <CardContent>
             <Line
@@ -224,7 +224,7 @@ const Reports = () => {
                 labels: ["Mån", "Tis", "Ons", "Tor", "Fre"],
                 datasets: [
                   {
-                    label: "Avslutade uppgifter",
+                    label: "Genomförda kontroller",
                     data: [8, 12, 9, 11, 7],
                     borderColor: "hsl(var(--primary))",
                     backgroundColor: "hsl(var(--primary) / 0.1)",
@@ -254,7 +254,7 @@ const Reports = () => {
                 labels: ["Hög", "Medium", "Låg"],
                 datasets: [
                   {
-                    label: "Uppgifter",
+                    label: "Kontroller",
                     data: [15, 25, 7],
                     backgroundColor: "hsl(var(--primary) / 0.8)",
                   },
