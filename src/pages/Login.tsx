@@ -14,24 +14,14 @@ const Login = () => {
     const checkUser = async () => {
       try {
         console.log("Checking session...");
-        const { data, error } = await supabase.auth.getSession();
+        const { data: sessionData } = await supabase.auth.getSession();
         
         if (!mounted) {
           console.log("Component unmounted, skipping session check");
           return;
         }
 
-        if (error) {
-          console.error("Session check error:", error);
-          toast({
-            title: "Error",
-            description: "Error checking session. Please try again.",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        if (data.session) {
+        if (sessionData?.session) {
           console.log("Session found, navigating to dashboard");
           navigate("/dashboard");
         } else {
