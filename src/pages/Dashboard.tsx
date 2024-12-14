@@ -67,6 +67,7 @@ const Dashboard = () => {
           .from('tasks')
           .select('*')
           .eq('user_id', user.id)
+          .neq('status', 'klar') // Filter out completed tasks
           .order('created_at', { ascending: false })
           .limit(5);
         
