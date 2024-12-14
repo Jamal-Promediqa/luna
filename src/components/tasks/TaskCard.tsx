@@ -35,14 +35,18 @@ export const TaskCard = ({ task, onViewDetails }: TaskCardProps) => {
               <Badge variant={getVariantForStatus(task.status)}>{task.status}</Badge>
             </div>
             <div className="flex items-center text-sm text-muted-foreground space-x-4">
-              <div className="flex items-center">
-                <Clock className="mr-1 h-4 w-4" />
-                <span>Förfaller: {new Date(task.due_date).toLocaleDateString("sv-SE")}</span>
-              </div>
-              <div className="flex items-center">
-                <CheckCircle className="mr-1 h-4 w-4" />
-                <span>Tilldelad: {task.assigned_to}</span>
-              </div>
+              {task.due_date && (
+                <div className="flex items-center">
+                  <Clock className="mr-1 h-4 w-4" />
+                  <span>Förfaller: {new Date(task.due_date).toLocaleDateString("sv-SE")}</span>
+                </div>
+              )}
+              {task.assigned_to && (
+                <div className="flex items-center">
+                  <CheckCircle className="mr-1 h-4 w-4" />
+                  <span>Tilldelad: {task.assigned_to}</span>
+                </div>
+              )}
             </div>
           </div>
           <Button variant="ghost" size="sm" onClick={() => onViewDetails(task)}>

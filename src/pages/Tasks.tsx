@@ -35,7 +35,12 @@ const Tasks = () => {
     mutationFn: async (newTask: TaskFormValues) => {
       const { data, error } = await supabase
         .from("tasks")
-        .insert([newTask])
+        .insert([{
+          title: newTask.title,
+          status: newTask.status,
+          due_date: newTask.due_date,
+          assigned_to: newTask.assigned_to
+        }])
         .select()
         .single();
 
