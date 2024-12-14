@@ -30,30 +30,46 @@ const Dashboard = () => {
     checkUser();
   }, [navigate]);
 
-  const { data: assignments } = useQuery({
+  const { data: assignments, error: assignmentsError } = useQuery({
     queryKey: ['assignments'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('assignments')
-        .select('*')
-        .limit(5);
-      
-      if (error) throw error;
-      return data;
+      try {
+        const { data, error } = await supabase
+          .from('assignments')
+          .select('*')
+          .limit(5);
+        
+        if (error) {
+          console.error('Error fetching assignments:', error);
+          return [];
+        }
+        return data;
+      } catch (error) {
+        console.error('Error fetching assignments:', error);
+        return [];
+      }
     }
   });
 
-  const { data: tasks, isLoading: tasksLoading } = useQuery({
+  const { data: tasks, isLoading: tasksLoading, error: tasksError } = useQuery({
     queryKey: ['tasks'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('tasks')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(5);
-      
-      if (error) throw error;
-      return data as Task[];
+      try {
+        const { data, error } = await supabase
+          .from('tasks')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(5);
+        
+        if (error) {
+          console.error('Error fetching tasks:', error);
+          return [];
+        }
+        return data as Task[];
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+        return [];
+      }
     }
   });
 
@@ -70,7 +86,13 @@ const Dashboard = () => {
           .eq('personal_number', session.user.id)
           .maybeSingle();
         
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching profile:', error);
+          return {
+            given_name: session.user.email?.split('@')[0] || 'Användare',
+            full_name: session.user.email || 'Användare'
+          };
+        }
         
         return data || {
           given_name: session.user.email?.split('@')[0] || 'Användare',
@@ -104,7 +126,7 @@ const Dashboard = () => {
       <TaskNotifications />
       <DashboardHeader profile={profile} onSignOut={handleSignOut} />
       <DashboardNavigation navigate={navigate} />
-      <DashboardMetrics assignments={assignments} />
+      <DashboardMetrics assignments={assignments || []} />
 
       {/* Main Content Area */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -125,6 +147,8 @@ const Dashboard = () => {
             <div className="space-y-3">
               {tasksLoading ? (
                 <div className="text-center text-muted-foreground">Laddar uppgifter...</div>
+              ) : tasksError ? (
+                <div className="text-center text-muted-foreground">Kunde inte ladda uppgifter</div>
               ) : tasks && tasks.length > 0 ? (
                 tasks.map((task) => (
                   <TaskCard
