@@ -73,7 +73,10 @@ export const ConsultantDrawer = ({
             </div>
           </div>
         </div>
-        <DrawerFooter>
+        <DrawerFooter className="flex-row gap-3 sm:justify-end">
+          <Button variant="default">
+            Gå till kontakt kort
+          </Button>
           <DrawerClose asChild>
             <Button variant="outline">Stäng</Button>
           </DrawerClose>
