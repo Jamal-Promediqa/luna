@@ -118,58 +118,60 @@ export const CallRecordingDialog = ({ isOpen, onClose, contact }: CallRecordingD
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
-        <DialogHeader>
-          <DialogTitle>Spela in samtal med {contact.name}</DialogTitle>
+      <DialogContent className="sm:max-w-[800px] p-8">
+        <DialogHeader className="mb-8">
+          <DialogTitle className="text-2xl">Spela in samtal med {contact.name}</DialogTitle>
         </DialogHeader>
-        <div className="space-y-6">
-          <div className="flex justify-center p-6">
+        
+        <div className="space-y-8">
+          <div className="flex flex-col items-center justify-center gap-4 py-8">
             {isProcessing ? (
-              <Loader2 className="h-12 w-12 animate-spin text-primary" />
+              <div className="flex flex-col items-center gap-4">
+                <Loader2 className="h-16 w-16 animate-spin text-primary" />
+                <p className="text-muted-foreground">Bearbetar inspelningen...</p>
+              </div>
             ) : (
-              <Button
-                size="lg"
-                variant={isRecording ? "destructive" : "default"}
-                onClick={isRecording ? stopRecording : startRecording}
-                className="rounded-full p-8"
-              >
-                {isRecording ? (
-                  <MicOff className="h-8 w-8" />
-                ) : (
-                  <Mic className="h-8 w-8" />
-                )}
-              </Button>
+              <>
+                <Button
+                  size="lg"
+                  variant={isRecording ? "destructive" : "default"}
+                  onClick={isRecording ? stopRecording : startRecording}
+                  className="rounded-full w-24 h-24 p-0 transition-all hover:scale-105"
+                >
+                  {isRecording ? (
+                    <MicOff className="h-12 w-12" />
+                  ) : (
+                    <Mic className="h-12 w-12" />
+                  )}
+                </Button>
+                <p className="text-base text-muted-foreground">
+                  {isRecording ? "Klicka för att avsluta inspelningen" : "Klicka för att börja spela in"}
+                </p>
+              </>
             )}
-          </div>
-          <div className="text-center text-sm text-muted-foreground">
-            {isProcessing 
-              ? "Bearbetar inspelningen..." 
-              : isRecording 
-                ? "Klicka för att avsluta inspelningen" 
-                : "Klicka för att börja spela in"}
           </div>
 
           {(transcription || actionPlan) && (
-            <div className="space-y-4 mt-6 border-t pt-6">
+            <div className="space-y-6 border-t pt-8">
               {transcription && (
-                <div className="space-y-2">
-                  <h3 className="font-semibold flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-green-500" />
                     Transkription
                   </h3>
-                  <div className="text-sm text-muted-foreground bg-muted p-4 rounded-lg">
+                  <div className="text-base leading-relaxed text-muted-foreground bg-accent/50 p-6 rounded-lg">
                     {transcription}
                   </div>
                 </div>
               )}
               
               {actionPlan && (
-                <div className="space-y-2">
-                  <h3 className="font-semibold flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-500" />
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-green-500" />
                     Sammanfattning & Åtgärder
                   </h3>
-                  <div className="text-sm text-muted-foreground bg-muted p-4 rounded-lg whitespace-pre-line">
+                  <div className="text-base leading-relaxed text-muted-foreground bg-accent/50 p-6 rounded-lg whitespace-pre-line">
                     {actionPlan}
                   </div>
                 </div>
