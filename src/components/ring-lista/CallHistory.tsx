@@ -1,7 +1,7 @@
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Clock } from "lucide-react";
+import { Clock, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -78,16 +78,21 @@ export const CallHistory = ({ callRecords }: CallHistoryProps) => {
                 </div>
                 {record.action_plan && (
                   <div className="bg-accent/50 p-4 rounded-lg">
-                    <h4 className="font-medium mb-2 text-sm">Föreslagna åtgärder:</h4>
+                    <h4 className="font-medium mb-2 text-sm flex items-center gap-2">
+                      <Plus className="h-4 w-4" />
+                      Föreslagna åtgärder:
+                    </h4>
                     <ul className="space-y-2">
                       {record.action_plan.split('\n').filter(Boolean).map((action: string, index: number) => (
-                        <li key={index} className="flex items-center justify-between text-sm">
+                        <li key={index} className="flex items-center justify-between text-sm p-2 bg-background/80 rounded-md">
                           <span>{action}</span>
                           <Button 
                             variant="outline" 
                             size="sm"
                             onClick={() => handleCreateTask(action)}
+                            className="ml-2 hover:bg-primary hover:text-primary-foreground"
                           >
+                            <Plus className="h-4 w-4 mr-1" />
                             Skapa uppgift
                           </Button>
                         </li>
