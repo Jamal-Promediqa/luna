@@ -57,7 +57,7 @@ const Dashboard = () => {
   });
 
   const { data: tasks, isLoading: tasksLoading, isError: tasksError } = useQuery({
-    queryKey: ['tasks'],
+    queryKey: ['dashboard_tasks'],
     queryFn: async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
