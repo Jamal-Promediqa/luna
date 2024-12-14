@@ -10,19 +10,29 @@ export const EmailLinkAccount = () => {
   const handleMicrosoftLink = async () => {
     setIsLinking(true);
     try {
-      console.log("Starting Microsoft authentication...");
+      console.log("1. Starting Microsoft authentication...");
+      console.log("Current URL:", window.location.href);
+      
+      const redirectUrl = `${window.location.protocol}//${window.location.host}/dashboard`;
+      console.log("2. Redirect URL:", redirectUrl);
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'azure',
         options: {
           scopes: 'email Mail.Read Mail.Send Mail.ReadWrite offline_access profile User.Read',
-          redirectTo: `${window.location.protocol}//${window.location.host}/dashboard`,
+          redirectTo: redirectUrl,
         }
       });
 
-      console.log("Authentication response:", { data, error });
+      console.log("3. Authentication response:", { data, error });
 
       if (error) {
-        console.error('Azure OAuth error:', error);
+        console.error('4. Azure OAuth error:', {
+          message: error.message,
+          status: error.status,
+          stack: error.stack
+        });
+        
         if (error.message.includes("provider is not enabled")) {
           toast.error('Microsoft authentication is not properly configured. Please ensure the Azure provider is enabled in Supabase.');
         } else {
@@ -32,15 +42,20 @@ export const EmailLinkAccount = () => {
       }
 
       if (!data) {
-        console.error('No response data received');
+        console.error('5. No response data received');
         toast.error('No response received from Microsoft. Please try again.');
         throw new Error('No OAuth response data');
       }
 
+      console.log("6. Authentication successful, redirecting...");
       toast.success('Redirecting to Microsoft login...');
       
     } catch (error) {
-      console.error('Error linking Microsoft account:', error);
+      console.error('7. Error linking Microsoft account:', {
+        error,
+        message: error.message,
+        stack: error.stack
+      });
       toast.error(`Connection error: ${error.message}`);
     } finally {
       setIsLinking(false);
