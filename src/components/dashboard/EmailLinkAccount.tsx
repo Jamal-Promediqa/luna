@@ -3,12 +3,15 @@ import { Mail } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export const EmailLinkAccount = () => {
   const [isLinking, setIsLinking] = useState(false);
+  const [showError, setShowError] = useState(false);
 
   const handleMicrosoftLink = async () => {
     setIsLinking(true);
+    setShowError(false);
     try {
       console.log("1. Starting Microsoft authentication...");
       
@@ -33,12 +36,14 @@ export const EmailLinkAccount = () => {
           stack: error.stack
         });
         
-        toast.error(`Failed to connect: ${error.message}`);
+        setShowError(true);
+        toast.error("Failed to connect to Microsoft. Please try again.");
         throw error;
       }
 
       if (!data) {
         console.error('5. No response data received');
+        setShowError(true);
         toast.error('No response received from Microsoft. Please try again.');
         throw new Error('No OAuth response data');
       }
@@ -52,6 +57,7 @@ export const EmailLinkAccount = () => {
         message: error.message,
         stack: error.stack
       });
+      setShowError(true);
       toast.error(`Connection error: ${error.message}`);
     } finally {
       setIsLinking(false);
@@ -65,6 +71,14 @@ export const EmailLinkAccount = () => {
       <p className="text-sm text-muted-foreground text-center">
         Link your Microsoft account to view and send emails in Co-Pilot
       </p>
+      {showError && (
+        <Alert variant="destructive" className="mt-4">
+          <AlertDescription>
+            Unable to connect to Microsoft. Please make sure you have a valid Microsoft account and try again.
+            If the problem persists, contact support.
+          </AlertDescription>
+        </Alert>
+      )}
       <Button 
         onClick={handleMicrosoftLink} 
         disabled={isLinking}
