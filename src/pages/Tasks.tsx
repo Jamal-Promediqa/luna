@@ -16,7 +16,6 @@ const Tasks = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch tasks
   const { data: tasks, isLoading } = useQuery({
     queryKey: ["tasks"],
     queryFn: async () => {
@@ -30,13 +29,13 @@ const Tasks = () => {
     },
   });
 
-  // Add task mutation
   const addTaskMutation = useMutation({
     mutationFn: async (newTask: TaskFormValues) => {
       const { data, error } = await supabase
         .from("tasks")
         .insert([{
           title: newTask.title,
+          description: newTask.description,
           status: newTask.status,
           due_date: newTask.due_date,
           assigned_to: newTask.assigned_to

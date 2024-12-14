@@ -4,6 +4,7 @@ export type Task = {
   status: string;
   due_date: string | null;
   assigned_to: string | null;
+  description: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -13,4 +14,5 @@ export type TaskFormValues = {
   status: string;
   due_date: string;
   assigned_to: string;
+  description: string;
 };

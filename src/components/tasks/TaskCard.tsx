@@ -34,11 +34,16 @@ export const TaskCard = ({ task, onViewDetails }: TaskCardProps) => {
               <h3 className="font-semibold">{task.title}</h3>
               <Badge variant={getVariantForStatus(task.status)}>{task.status}</Badge>
             </div>
+            {task.description && (
+              <p className="text-sm text-muted-foreground">{task.description}</p>
+            )}
             <div className="flex items-center text-sm text-muted-foreground space-x-4">
               {task.due_date && (
                 <div className="flex items-center">
                   <Clock className="mr-1 h-4 w-4" />
-                  <span>Förfaller: {new Date(task.due_date).toLocaleDateString("sv-SE")}</span>
+                  <span>
+                    Förfaller: {new Date(task.due_date).toLocaleString("sv-SE")}
+                  </span>
                 </div>
               )}
               {task.assigned_to && (
