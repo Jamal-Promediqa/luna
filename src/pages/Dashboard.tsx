@@ -10,6 +10,7 @@ import { useQuery } from "@tanstack/react-query";
 import { QuickActions } from "@/components/dashboard/QuickActions";
 import { Notifications } from "@/components/dashboard/Notifications";
 import { Task } from "@/types/task";
+import { TaskCard } from "@/components/tasks/TaskCard";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -54,7 +55,6 @@ const Dashboard = () => {
     }
   });
 
-  // Fetch user profile with error handling
   const { data: profile } = useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
@@ -121,6 +121,10 @@ const Dashboard = () => {
       default:
         return "default";
     }
+  };
+
+  const handleViewDetails = (task: Task) => {
+    navigate(`/tasks/${task.id}`);
   };
 
   return (
@@ -201,26 +205,11 @@ const Dashboard = () => {
                 <div className="text-center text-muted-foreground">Laddar uppgifter...</div>
               ) : tasks && tasks.length > 0 ? (
                 tasks.map((task) => (
-                  <div
+                  <TaskCard
                     key={task.id}
-                    className="flex items-center justify-between p-3 bg-muted/50 rounded-lg hover:bg-muted/80 transition-colors"
-                  >
-                    <div className="space-y-1">
-                      <span className="font-medium">{task.title}</span>
-                      {task.description && (
-                        <p className="text-sm text-muted-foreground">{task.description}</p>
-                      )}
-                      {task.due_date && (
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <Clock className="mr-1 h-4 w-4" />
-                          <span>
-                            {new Date(task.due_date).toLocaleString("sv-SE")}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    <Badge variant={getVariantForStatus(task.status)}>{task.status}</Badge>
-                  </div>
+                    task={task}
+                    onViewDetails={handleViewDetails}
+                  />
                 ))
               ) : (
                 <div className="text-center text-muted-foreground">Inga uppgifter att visa</div>
