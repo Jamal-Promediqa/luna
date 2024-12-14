@@ -1,8 +1,5 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -126,13 +123,6 @@ export default function BackgroundChecks() {
           <Checkbox id="license" />
           <label htmlFor="license">Licensvalidering</label>
         </div>
-      </div>
-
-      {/* Form */}
-      <div className="bg-muted/50 p-6 rounded-lg space-y-4">
-        <Input placeholder="Referensnummer" />
-        <Input type="date" />
-        <Textarea placeholder="Anteckningar" className="min-h-[100px]" />
       </div>
 
       <ChecksTable checksHistory={checksHistory} />
