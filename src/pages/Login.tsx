@@ -10,9 +10,19 @@ const Login = () => {
 
   useEffect(() => {
     const checkUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        navigate("/dashboard");
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error("Session check error:", error);
+          toast.error("Error checking session");
+          return;
+        }
+        if (session) {
+          navigate("/dashboard");
+        }
+      } catch (error) {
+        console.error("Session check error:", error);
+        toast.error("Error checking session");
       }
     };
 
@@ -20,9 +30,14 @@ const Login = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log("Auth state changed:", event, session);
         if (event === 'SIGNED_IN') {
           toast.success('Successfully signed in!');
           navigate("/dashboard");
+        } else if (event === 'SIGNED_OUT') {
+          toast.info('Signed out');
+        } else if (event === 'USER_UPDATED') {
+          console.log("User updated");
         }
       }
     );
@@ -72,7 +87,7 @@ const Login = () => {
             }}
             theme="light"
             providers={[]}
-            redirectTo={window.location.origin}
+            redirectTo={`${window.location.origin}/dashboard`}
             onlyThirdPartyProviders={false}
           />
         </div>
