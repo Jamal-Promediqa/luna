@@ -18,6 +18,7 @@ import { MetricsCards } from "@/components/reports/MetricsCards";
 import { AIInsights } from "@/components/reports/AIInsights";
 import { TaskBreakdownCharts } from "@/components/reports/TaskBreakdownCharts";
 import { TaskBreakdownTable } from "@/components/reports/TaskBreakdownTable";
+import { ReportsNavigation } from "@/components/reports/ReportsNavigation";
 import { startOfWeek, endOfWeek } from "date-fns";
 
 ChartJS.register(
@@ -86,6 +87,8 @@ const Reports = () => {
 
   return (
     <div className="container mx-auto p-4 space-y-6">
+      <ReportsNavigation navigate={navigate} />
+      
       <div className="flex flex-col gap-2">
         <h1 className="text-2xl font-bold">Veckorapport</h1>
         <p className="text-muted-foreground">
