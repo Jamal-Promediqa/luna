@@ -43,12 +43,16 @@ export default function BackgroundChecks() {
   const { data: consultants = [], isLoading: isLoadingConsultants } = useQuery({
     queryKey: ["consultants"],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("No user found");
+
       const { data, error } = await supabase
         .from("consultants")
-        .select("id, name, specialty, personal_id, location");
+        .select("*")
+        .eq('user_id', user.id);
       
       if (error) throw error;
-      return data;
+      return data as Consultant[];
     },
   });
 

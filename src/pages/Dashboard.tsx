@@ -34,9 +34,13 @@ const Dashboard = () => {
     queryKey: ['assignments'],
     queryFn: async () => {
       try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('No user found');
+
         const { data, error } = await supabase
           .from('assignments')
           .select('*')
+          .eq('user_id', user.id)
           .limit(5);
         
         if (error) {
@@ -56,9 +60,13 @@ const Dashboard = () => {
     queryKey: ['tasks'],
     queryFn: async () => {
       try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('No user found');
+
         const { data, error } = await supabase
           .from('tasks')
           .select('*')
+          .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .limit(5);
         
@@ -66,7 +74,7 @@ const Dashboard = () => {
           console.error('Error fetching tasks:', error);
           throw error;
         }
-        return data as Task[] || [];
+        return data || [];
       } catch (error) {
         console.error('Error in tasks query:', error);
         return [];
@@ -79,26 +87,26 @@ const Dashboard = () => {
     queryKey: ['profile'],
     queryFn: async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return null;
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return null;
 
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
-          .eq('personal_number', session.user.id)
+          .eq('user_id', user.id)
           .maybeSingle();
         
         if (error) {
           console.error('Error fetching profile:', error);
           return {
-            given_name: session.user.email?.split('@')[0] || 'Användare',
-            full_name: session.user.email || 'Användare'
+            given_name: user.email?.split('@')[0] || 'Användare',
+            full_name: user.email || 'Användare'
           };
         }
         
         return data || {
-          given_name: session.user.email?.split('@')[0] || 'Användare',
-          full_name: session.user.email || 'Användare'
+          given_name: user.email?.split('@')[0] || 'Användare',
+          full_name: user.email || 'Användare'
         };
       } catch (error) {
         console.error('Error in profile query:', error);
