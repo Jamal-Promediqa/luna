@@ -71,16 +71,6 @@ const Login = () => {
             console.log("User updated");
             break;
           
-          case 'USER_DELETED':
-            if (mounted) {
-              toast({
-                title: "Info",
-                description: "Account deleted",
-              });
-              navigate("/login");
-            }
-            break;
-          
           case 'PASSWORD_RECOVERY':
             if (mounted) {
               toast({
@@ -90,12 +80,13 @@ const Login = () => {
             }
             break;
           
-          case 'ERROR':
-            if (mounted) {
+          default:
+            if (mounted && event === 'TOKEN_REFRESHED') {
+              console.log("Token refreshed");
+            } else if (mounted) {
               toast({
-                title: "Error",
-                description: "Authentication error occurred",
-                variant: "destructive",
+                title: "Info",
+                description: `Auth state: ${event}`,
               });
             }
             break;
