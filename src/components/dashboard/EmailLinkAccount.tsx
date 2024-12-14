@@ -19,18 +19,29 @@ export const EmailLinkAccount = () => {
       const redirectUrl = `${window.location.origin}/dashboard`;
       console.log("2. Redirect URL:", redirectUrl);
 
+      // Check if we're in development or production
+      const isDevelopment = window.location.hostname === 'localhost' || 
+                           window.location.hostname === '127.0.0.1';
+
+      // Use the appropriate redirect URL based on environment
+      const finalRedirectUrl = isDevelopment 
+        ? 'http://localhost:5173/dashboard'
+        : redirectUrl;
+
+      console.log("3. Using redirect URL:", finalRedirectUrl);
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'azure',
         options: {
           scopes: 'email Mail.Read Mail.Send Mail.ReadWrite offline_access profile User.Read',
-          redirectTo: redirectUrl,
+          redirectTo: finalRedirectUrl,
         }
       });
 
-      console.log("3. Authentication response:", { data, error });
+      console.log("4. Authentication response:", { data, error });
 
       if (error) {
-        console.error('4. Azure OAuth error:', {
+        console.error('5. Azure OAuth error:', {
           message: error.message,
           status: error.status,
           stack: error.stack
@@ -42,17 +53,17 @@ export const EmailLinkAccount = () => {
       }
 
       if (!data) {
-        console.error('5. No response data received');
+        console.error('6. No response data received');
         setShowError(true);
         toast.error('No response received from Microsoft. Please try again.');
         throw new Error('No OAuth response data');
       }
 
-      console.log("6. Authentication successful, redirecting...");
+      console.log("7. Authentication successful, redirecting...");
       toast.success('Redirecting to Microsoft login...');
       
     } catch (error) {
-      console.error('7. Error linking Microsoft account:', {
+      console.error('8. Error linking Microsoft account:', {
         error,
         message: error.message,
         stack: error.stack
