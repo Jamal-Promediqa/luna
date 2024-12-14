@@ -10,11 +10,14 @@ export const EmailLinkAccount = () => {
   const handleMicrosoftLink = async () => {
     setIsLinking(true);
     try {
+      const redirectTo = `${window.location.origin}/dashboard`;
+      console.log('Redirecting to:', redirectTo); // Debug log
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'azure',
         options: {
           scopes: 'email Mail.Read Mail.Send Mail.ReadWrite offline_access profile User.Read',
-          redirectTo: window.location.origin + '/dashboard'
+          redirectTo,
         }
       });
 
