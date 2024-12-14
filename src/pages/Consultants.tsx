@@ -9,46 +9,18 @@ import { Consultant } from "@/types/consultant";
 import { useNavigate } from "react-router-dom";
 import { Bell, Home, Settings, Users, Briefcase, FileCheck } from "lucide-react";
 import { Button as NavButton } from "@/components/ui/button";
+import { useConsultants } from "@/hooks/useConsultants";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function Consultants() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [selectedConsultant, setSelectedConsultant] = useState<Consultant | null>(null);
   const [sortField, setSortField] = useState("name");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  const consultants = [
-    {
-      id: 1,
-      name: "Anna Andersson",
-      specialty: "Frontend Utvecklare",
-      location: "Stockholm",
-      status: "Tillgänglig",
-      email: "anna.andersson@example.com",
-      phone: "+46 70 123 4567",
-      image: "https://randomuser.me/api/portraits/women/1.jpg",
-    },
-    {
-      id: 2,
-      name: "Erik Eriksson",
-      specialty: "Backend Utvecklare",
-      location: "Göteborg",
-      status: "Upptagen",
-      email: "erik.eriksson@example.com",
-      phone: "+46 70 234 5678",
-      image: "https://randomuser.me/api/portraits/men/1.jpg",
-    },
-    {
-      id: 3,
-      name: "Maria Nilsson",
-      specialty: "UX Designer",
-      location: "Malmö",
-      status: "Tillgänglig",
-      email: "maria.nilsson@example.com",
-      phone: "+46 70 345 6789",
-      image: "https://randomuser.me/api/portraits/women/2.jpg",
-    },
-  ];
+  const { data: consultants, isLoading, error } = useConsultants();
 
   const navigationItems = [
     { icon: <Home className="h-4 w-4" />, text: "Dashboard", path: "/dashboard" },
@@ -71,6 +43,14 @@ export default function Consultants() {
     setSelectedConsultant(consultant);
     setIsDrawerOpen(true);
   };
+
+  if (error) {
+    toast({
+      title: "Ett fel uppstod",
+      description: "Kunde inte hämta konsultdata. Försök igen senare.",
+      variant: "destructive",
+    });
+  }
 
   return (
     <div className="container mx-auto p-4 space-y-6">
@@ -116,17 +96,23 @@ export default function Consultants() {
         <CardContent>
           <ConsultantHeader />
           <ConsultantFilters />
-          <ConsultantTable
-            consultants={consultants}
-            sortField={sortField}
-            sortDirection={sortDirection}
-            onSort={handleSort}
-            onConsultantClick={handleConsultantClick}
-          />
+          {isLoading ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            </div>
+          ) : consultants ? (
+            <ConsultantTable
+              consultants={consultants}
+              sortField={sortField}
+              sortDirection={sortDirection}
+              onSort={handleSort}
+              onConsultantClick={handleConsultantClick}
+            />
+          ) : null}
 
           <div className="flex justify-between items-center mt-4">
             <span className="text-sm text-muted-foreground">
-              Visar 1-3 av 3 konsulter
+              Visar {consultants?.length ?? 0} konsulter
             </span>
             <div className="flex gap-2">
               <Button variant="outline" disabled>
