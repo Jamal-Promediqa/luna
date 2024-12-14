@@ -13,9 +13,13 @@ const Login = () => {
 
     const checkUser = async () => {
       try {
+        console.log("Checking session...");
         const { data, error } = await supabase.auth.getSession();
         
-        if (!mounted) return;
+        if (!mounted) {
+          console.log("Component unmounted, skipping session check");
+          return;
+        }
 
         if (error) {
           console.error("Session check error:", error);
@@ -28,7 +32,10 @@ const Login = () => {
         }
 
         if (data.session) {
+          console.log("Session found, navigating to dashboard");
           navigate("/dashboard");
+        } else {
+          console.log("No session found");
         }
       } catch (error) {
         if (!mounted) return;
@@ -45,11 +52,15 @@ const Login = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        if (!mounted) return;
+        if (!mounted) {
+          console.log("Component unmounted, skipping auth state change");
+          return;
+        }
         console.log("Auth state changed:", event, session);
         
         switch (event) {
           case 'SIGNED_IN':
+            console.log("User signed in, navigating to dashboard");
             toast({
               title: "Success",
               description: "Successfully signed in!",
@@ -58,6 +69,7 @@ const Login = () => {
             break;
           
           case 'SIGNED_OUT':
+            console.log("User signed out");
             toast({
               title: "Info",
               description: "Signed out",
@@ -69,6 +81,7 @@ const Login = () => {
             break;
           
           case 'PASSWORD_RECOVERY':
+            console.log("Password recovery initiated");
             toast({
               title: "Info",
               description: "Password recovery email sent",
@@ -87,6 +100,7 @@ const Login = () => {
     );
 
     return () => {
+      console.log("Login component unmounting, cleaning up");
       mounted = false;
       subscription.unsubscribe();
     };
