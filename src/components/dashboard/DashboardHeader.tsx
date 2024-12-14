@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 
@@ -18,9 +18,10 @@ interface DashboardHeaderProps {
 
 export const DashboardHeader = ({ profile, onSignOut }: DashboardHeaderProps) => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const { data: tasks } = useQuery({
-    queryKey: ['tasks-notifications'],
+    queryKey: ['tasks'],  // Changed from 'tasks-notifications' to match the Tasks page
     queryFn: async () => {
       const { data, error } = await supabase
         .from('tasks')
