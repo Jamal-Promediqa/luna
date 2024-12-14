@@ -20,6 +20,7 @@ serve(async (req) => {
     // Download the audio file
     const response = await fetch(audioUrl)
     if (!response.ok) {
+      console.error(`Failed to download audio: ${response.status} ${response.statusText}`)
       throw new Error(`Failed to download audio file: ${response.statusText}`)
     }
     const audioBlob = await response.blob()
@@ -42,6 +43,7 @@ serve(async (req) => {
 
     if (!transcriptionResponse.ok) {
       const error = await transcriptionResponse.text()
+      console.error('Whisper API error:', error)
       throw new Error(`Whisper API error: ${error}`)
     }
 
@@ -83,6 +85,7 @@ serve(async (req) => {
 
     if (!completion.ok) {
       const error = await completion.text()
+      console.error('GPT API error:', error)
       throw new Error(`GPT API error: ${error}`)
     }
 
