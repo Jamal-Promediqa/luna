@@ -28,22 +28,14 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col animate-fade-in">
-      <header className="container mx-auto py-8 text-center">
-        <div className="flex justify-center items-center mb-4">
-          <img
-            src="/lovable-uploads/039fe6f2-1823-467e-9222-1273291f5d48.png"
-            alt="Luna Logo"
-            className="h-16 w-auto"
-          />
-        </div>
-      </header>
-
       <main className="flex-1 container mx-auto flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8 space-y-8">
           <div className="text-center space-y-4">
-            <h1 className="text-3xl font-bold text-copilot-blue">
-              Välkommen till Luna
-            </h1>
+            <img
+              src="/lovable-uploads/039fe6f2-1823-467e-9222-1273291f5d48.png"
+              alt="Luna Logo"
+              className="h-24 w-auto mx-auto"
+            />
             <p className="text-copilot-gray text-lg">
               Effektivisera din konsultadministration med vår smarta plattform
             </p>
