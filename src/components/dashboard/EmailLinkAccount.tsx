@@ -13,7 +13,7 @@ export const EmailLinkAccount = () => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'azure',
         options: {
-          scopes: 'email Mail.Read offline_access profile User.Read',
+          scopes: 'email Mail.Read Mail.Send Mail.ReadWrite offline_access profile User.Read',
           redirectTo: window.location.origin + '/dashboard'
         }
       });
@@ -47,7 +47,7 @@ export const EmailLinkAccount = () => {
       <Mail className="h-12 w-12 text-muted-foreground" />
       <h3 className="text-lg font-semibold">Connect Microsoft Account</h3>
       <p className="text-sm text-muted-foreground text-center">
-        Link your Microsoft account to view your emails in Co-Pilot
+        Link your Microsoft account to view and send emails in Co-Pilot
       </p>
       <Button 
         onClick={handleMicrosoftLink} 
