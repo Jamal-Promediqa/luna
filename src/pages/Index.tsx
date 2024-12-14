@@ -1,13 +1,33 @@
 import { Users, LogIn, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        navigate("/dashboard");
+      }
+    };
+
+    checkUser();
+  }, [navigate]);
+
+  const handleCreateAccount = () => {
+    navigate("/login");
+  };
+
+  const handleLogin = () => {
+    navigate("/login");
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col animate-fade-in">
-      {/* Header */}
       <header className="container mx-auto py-8 text-center">
         <div className="flex justify-center items-center mb-4">
           <img
@@ -18,7 +38,6 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Main Content */}
       <main className="flex-1 container mx-auto flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8 space-y-8">
           <div className="text-center space-y-4">
@@ -33,7 +52,7 @@ const Index = () => {
           <div className="space-y-4">
             <Button
               className="w-full bg-copilot-blue hover:bg-copilot-blue/90 text-white h-12 text-lg"
-              onClick={() => console.log("Create account clicked")}
+              onClick={handleCreateAccount}
             >
               <Users className="mr-2 h-5 w-5" />
               Skapa konto
@@ -42,7 +61,7 @@ const Index = () => {
             <Button
               variant="outline"
               className="w-full h-12 text-lg border-copilot-blue text-copilot-blue hover:bg-copilot-blue/10"
-              onClick={() => navigate("/login")}
+              onClick={handleLogin}
             >
               <LogIn className="mr-2 h-5 w-5" />
               Logga in
@@ -56,7 +75,6 @@ const Index = () => {
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="container mx-auto py-6 text-center text-copilot-gray">
         <p>© 2024 Co-Pilot. Alla rättigheter förbehållna.</p>
       </footer>
