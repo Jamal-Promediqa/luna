@@ -11,3 +11,11 @@ export type Task = {
   created_at: string | null;
   updated_at: string | null;
 };
+
+export type TaskFormValues = {
+  title: string;
+  description: string;
+  status: string;
+  due_date: string;
+  assigned_to: string;
+};

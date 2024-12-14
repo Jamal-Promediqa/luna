@@ -18,4 +18,9 @@ export type Consultant = {
   user_id: string | null;
   created_at: string | null;
   updated_at: string | null;
+  // UI-specific fields that aren't in the database
+  email: string;
+  phone: string;
+  status: string;
+  image: string;
 };

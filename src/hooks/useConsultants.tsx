@@ -12,7 +12,7 @@ export const useConsultants = () => {
       
       if (error) throw error;
       
-      // Add default values for fields not in database but needed by UI
+      // Add UI-specific fields not in database but needed by UI
       return (data || []).map(consultant => ({
         ...consultant,
         email: `${consultant.name.toLowerCase().replace(/\s+/g, '.')}@example.com`,
