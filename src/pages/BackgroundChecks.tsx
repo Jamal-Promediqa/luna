@@ -63,7 +63,7 @@ export default function BackgroundChecks() {
       status: "Godkänd",
       date: "2023-11-01",
       action: "Ingen åtgärd krävs",
-      indicator: "success",
+      indicator: "default",
     },
     {
       consultant: "Erik Eriksson",
@@ -71,7 +71,7 @@ export default function BackgroundChecks() {
       status: "Väntar",
       date: "2023-11-02",
       action: "Väntar på svar",
-      indicator: "warning",
+      indicator: "secondary",
     },
   ];
 
@@ -173,7 +173,7 @@ export default function BackgroundChecks() {
                 <TableCell>{check.date}</TableCell>
                 <TableCell>{check.action}</TableCell>
                 <TableCell>
-                  <Badge variant={check.indicator as "success" | "warning"}>
+                  <Badge variant={check.indicator as "default" | "secondary"}>
                     {check.status}
                   </Badge>
                 </TableCell>
