@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Home, Users, List, FileCheck, Settings } from "lucide-react";
+import { Home, Users, List, FileCheck, Settings, Mic } from "lucide-react";
 import { NavigateFunction } from "react-router-dom";
 
 interface DashboardNavigationProps {
@@ -9,6 +9,7 @@ interface DashboardNavigationProps {
 export const DashboardNavigation = ({ navigate }: DashboardNavigationProps) => {
   const navigationItems = [
     { icon: <Home className="h-4 w-4" />, text: "Dashboard", path: "/dashboard" },
+    { icon: <Mic className="h-4 w-4" />, text: "AI Transcriptions", path: "/ai-transcriptions" },
     { icon: <Users className="h-4 w-4" />, text: "Konsulter", path: "/consultants" },
     { icon: <List className="h-4 w-4" />, text: "Ring Lista", path: "/ring-lista" },
     { icon: <FileCheck className="h-4 w-4" />, text: "Rapporter", path: "/reports" },
