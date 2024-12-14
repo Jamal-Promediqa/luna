@@ -6,6 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Download, Share2, MessageSquare, Clock, Flag, ChevronRight, AlertCircle, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { addDays } from "date-fns";
+import { useNavigate } from "react-router-dom";
 
 interface TranscriptionSummaryProps {
   title: string;
@@ -24,6 +25,8 @@ export const TranscriptionSummary = ({
   actionItems,
   onCreateTask
 }: TranscriptionSummaryProps) => {
+  const navigate = useNavigate();
+
   const handleCreateTask = (item: string) => {
     if (onCreateTask) {
       // Add 7 days to current date for the deadline
@@ -31,6 +34,10 @@ export const TranscriptionSummary = ({
       onCreateTask(item, dueDate);
       toast.success("Uppgift skapad", {
         description: `"${item}" har lagts till med deadline ${dueDate.toLocaleDateString("sv-SE")}`,
+        action: {
+          label: "Visa uppgifter",
+          onClick: () => navigate("/tasks")
+        }
       });
     }
   };
