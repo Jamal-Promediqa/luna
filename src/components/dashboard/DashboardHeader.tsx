@@ -1,4 +1,4 @@
-import { Bell, Settings } from "lucide-react";
+import { Bell, Settings, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -10,6 +10,8 @@ import {
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { DashboardDictationDialog } from "./DashboardDictationDialog";
 
 interface DashboardHeaderProps {
   profile: any;
@@ -19,6 +21,7 @@ interface DashboardHeaderProps {
 export const DashboardHeader = ({ profile, onSignOut }: DashboardHeaderProps) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [showDictationDialog, setShowDictationDialog] = useState(false);
 
   const { data: tasks } = useQuery({
     queryKey: ['tasks'],
@@ -64,6 +67,14 @@ export const DashboardHeader = ({ profile, onSignOut }: DashboardHeaderProps) =>
         </p>
       </div>
       <div className="flex gap-4">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setShowDictationDialog(true)}
+          className="relative"
+        >
+          <Mic className="h-5 w-5" />
+        </Button>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative">
@@ -118,6 +129,11 @@ export const DashboardHeader = ({ profile, onSignOut }: DashboardHeaderProps) =>
           <Settings className="h-5 w-5" />
         </Button>
       </div>
+
+      <DashboardDictationDialog
+        isOpen={showDictationDialog}
+        onClose={() => setShowDictationDialog(false)}
+      />
     </div>
   );
 };
