@@ -33,11 +33,11 @@ export const ConsultantTable = ({
   onConsultantClick,
 }: ConsultantTableProps) => {
   return (
-    <div className="rounded-md border">
+    <div className="rounded-md border mt-6">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead onClick={() => onSort("name")} className="cursor-pointer">
+          <TableRow className="hover:bg-muted/0">
+            <TableHead onClick={() => onSort("name")} className="cursor-pointer py-4">
               <div className="flex items-center gap-2">
                 Namn
                 {sortField === "name" && (
@@ -63,7 +63,7 @@ export const ConsultantTable = ({
             </TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Tillgänglighet</TableHead>
-            <TableHead>Åtgärder</TableHead>
+            <TableHead className="text-right pr-6">Åtgärder</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -73,9 +73,9 @@ export const ConsultantTable = ({
               onClick={() => onConsultantClick(consultant)}
               className="cursor-pointer"
             >
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <div className="h-10 w-10 rounded-full overflow-hidden">
+              <TableCell className="py-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-full overflow-hidden flex-shrink-0">
                     <img
                       src={consultant.image}
                       alt={consultant.name}
@@ -91,9 +91,9 @@ export const ConsultantTable = ({
                 </div>
               </TableCell>
               <TableCell>
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-2">
                   <span>{consultant.specialty}</span>
-                  <div className="flex gap-1">
+                  <div className="flex gap-2">
                     <Badge variant="outline" className="text-xs">TakeCare</Badge>
                     <Badge variant="outline" className="text-xs">Cosmic</Badge>
                   </div>
@@ -101,16 +101,16 @@ export const ConsultantTable = ({
               </TableCell>
               <TableCell>{consultant.location}</TableCell>
               <TableCell>
-                <Badge variant={consultant.status === "Tillgänglig" ? "default" : "destructive"}>
+                <Badge variant={consultant.status === "Tillgänglig" ? "default" : "destructive"} className="px-3 py-1">
                   {consultant.status}
                 </Badge>
               </TableCell>
               <TableCell>
-                <div className="flex gap-1">
+                <div className="flex gap-1.5">
                   {Array.from({ length: 12 }).map((_, i) => (
                     <div
                       key={i}
-                      className={`h-6 w-2 rounded-sm ${
+                      className={`h-8 w-2 rounded-sm ${
                         Math.random() > 0.5 ? "bg-green-500" : "bg-gray-200"
                       }`}
                     />
@@ -118,22 +118,22 @@ export const ConsultantTable = ({
                 </div>
               </TableCell>
               <TableCell>
-                <div className="flex items-center gap-2">
-                  <Button variant="ghost" size="icon">
+                <div className="flex items-center justify-end gap-2 pr-4">
+                  <Button variant="ghost" size="icon" className="h-9 w-9">
                     <Tag className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon">
+                  <Button variant="ghost" size="icon" className="h-9 w-9">
                     <Bell className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon">
+                  <Button variant="ghost" size="icon" className="h-9 w-9">
                     <Mail className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon">
+                  <Button variant="ghost" size="icon" className="h-9 w-9">
                     <Phone className="h-4 w-4" />
                   </Button>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon">
+                      <Button variant="ghost" size="icon" className="h-9 w-9">
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>

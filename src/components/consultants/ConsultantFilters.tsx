@@ -52,41 +52,41 @@ export const ConsultantFilters = ({ onFilterChange }: ConsultantFiltersProps) =>
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <Tabs defaultValue="all" className="w-full" onValueChange={handleCategoryChange}>
-        <TabsList className="w-full justify-start h-auto flex-wrap gap-2 bg-transparent">
-          <TabsTrigger value="all" className="data-[state=active]:bg-primary">
+        <TabsList className="w-full justify-start h-auto flex-wrap gap-3 bg-transparent p-1">
+          <TabsTrigger value="all" className="data-[state=active]:bg-primary px-6">
             Alla
             <Badge variant="secondary" className="ml-2">123</Badge>
           </TabsTrigger>
-          <TabsTrigger value="doctor" className="data-[state=active]:bg-primary">
+          <TabsTrigger value="doctor" className="data-[state=active]:bg-primary px-6">
             Läkare
             <Badge variant="secondary" className="ml-2">45</Badge>
           </TabsTrigger>
-          <TabsTrigger value="nurse" className="data-[state=active]:bg-primary">
+          <TabsTrigger value="nurse" className="data-[state=active]:bg-primary px-6">
             Sjuksköterska
             <Badge variant="secondary" className="ml-2">38</Badge>
           </TabsTrigger>
-          <TabsTrigger value="social" className="data-[state=active]:bg-primary">
+          <TabsTrigger value="social" className="data-[state=active]:bg-primary px-6">
             Socionom
             <Badge variant="secondary" className="ml-2">40</Badge>
           </TabsTrigger>
         </TabsList>
       </Tabs>
 
-      <div className="flex flex-col md:flex-row gap-4">
+      <div className="flex flex-col md:flex-row gap-6">
         <div className="relative flex-1">
-          <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Sök konsult..."
-            className="pl-8"
+            className="pl-10 h-12"
             value={search}
             onChange={(e) => handleSearchChange(e.target.value)}
           />
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap gap-3">
           <Select value={status} onValueChange={handleStatusChange}>
-            <SelectTrigger className="w-[130px]">
+            <SelectTrigger className="w-[140px] h-12">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -96,7 +96,7 @@ export const ConsultantFilters = ({ onFilterChange }: ConsultantFiltersProps) =>
             </SelectContent>
           </Select>
           <Select value={location} onValueChange={handleLocationChange}>
-            <SelectTrigger className="w-[130px]">
+            <SelectTrigger className="w-[140px] h-12">
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
                 <SelectValue placeholder="Plats" />
@@ -110,7 +110,7 @@ export const ConsultantFilters = ({ onFilterChange }: ConsultantFiltersProps) =>
             </SelectContent>
           </Select>
           <Select>
-            <SelectTrigger className="w-[130px]">
+            <SelectTrigger className="w-[140px] h-12">
               <div className="flex items-center gap-2">
                 <Tag className="h-4 w-4" />
                 <SelectValue placeholder="Tags" />
@@ -123,7 +123,7 @@ export const ConsultantFilters = ({ onFilterChange }: ConsultantFiltersProps) =>
             </SelectContent>
           </Select>
           <Select>
-            <SelectTrigger className="w-[160px]">
+            <SelectTrigger className="w-[170px] h-12">
               <div className="flex items-center gap-2">
                 <Brain className="h-4 w-4" />
                 <SelectValue placeholder="Systemkunskap" />
@@ -138,6 +138,7 @@ export const ConsultantFilters = ({ onFilterChange }: ConsultantFiltersProps) =>
           <Button
             variant="outline"
             size="icon"
+            className="h-12 w-12"
             onClick={isFiltersActive ? clearFilters : () => setIsFiltersActive(true)}
           >
             {isFiltersActive ? (
