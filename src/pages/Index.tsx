@@ -19,11 +19,11 @@ const Index = () => {
   }, [navigate]);
 
   const handleCreateAccount = () => {
-    navigate("/login");
+    navigate("/login?mode=signup");
   };
 
   const handleLogin = () => {
-    navigate("/login");
+    navigate("/login?mode=signin");
   };
 
   return (
