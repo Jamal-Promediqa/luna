@@ -1,24 +1,8 @@
 import { useState } from "react";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -27,15 +11,14 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import {
-  Search,
-  Calendar,
   FileText,
   Download,
   Check,
-  AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { ConsultantSelector } from "@/components/background-checks/ConsultantSelector";
+import { ChecksTable } from "@/components/background-checks/ChecksTable";
 
 export default function BackgroundChecks() {
   const [selectedConsultant, setSelectedConsultant] = useState<any>(null);
@@ -86,25 +69,18 @@ export default function BackgroundChecks() {
 
     setIsLoading(true);
     try {
-      const response = await fetch('/functions/v1/send-ivo-check', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
-        },
-        body: JSON.stringify({
+      const { data, error } = await supabase.functions.invoke('send-ivo-check', {
+        body: {
           consultantName: selectedConsultant.name,
           personalNumber: selectedConsultant.personalId,
-        }),
+        },
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to send request');
-      }
+      if (error) throw error;
 
       toast.success("Förfrågan har skickats");
       setIsDialogOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
       toast.error("Ett fel uppstod vid sändning av förfrågan");
     } finally {
@@ -118,42 +94,11 @@ export default function BackgroundChecks() {
         <h1 className="text-2xl font-bold">Bakgrundskontroller</h1>
       </header>
 
-      {/* Consultant Selection */}
-      <div className="bg-muted/50 p-6 rounded-lg space-y-4">
-        <div className="relative">
-          <Select onValueChange={(value) => setSelectedConsultant(consultants[Number(value)])}>
-            <SelectTrigger>
-              <SelectValue placeholder="Sök konsult..." />
-            </SelectTrigger>
-            <SelectContent>
-              {consultants.map((consultant, i) => (
-                <SelectItem key={consultant.id} value={i.toString()}>
-                  {consultant.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {selectedConsultant && (
-          <div className="p-4 bg-background rounded-md shadow-sm">
-            <div className="flex justify-between">
-              <div className="space-y-1">
-                <p className="font-bold">{selectedConsultant.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {selectedConsultant.specialty}
-                </p>
-              </div>
-              <div className="text-right space-y-1">
-                <p className="text-sm">{selectedConsultant.personalId}</p>
-                <p className="text-sm text-muted-foreground">
-                  {selectedConsultant.location}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+      <ConsultantSelector
+        consultants={consultants}
+        selectedConsultant={selectedConsultant}
+        onSelect={setSelectedConsultant}
+      />
 
       {/* Checklist */}
       <div className="bg-muted/50 p-6 rounded-lg space-y-3">
@@ -174,51 +119,11 @@ export default function BackgroundChecks() {
       {/* Form */}
       <div className="bg-muted/50 p-6 rounded-lg space-y-4">
         <Input placeholder="Referensnummer" />
-        <Select>
-          <SelectTrigger>
-            <SelectValue placeholder="IVO status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="approved">Godkänd</SelectItem>
-            <SelectItem value="reviewing">Under granskning</SelectItem>
-            <SelectItem value="rejected">Avslag</SelectItem>
-          </SelectContent>
-        </Select>
         <Input type="date" />
         <Textarea placeholder="Anteckningar" className="min-h-[100px]" />
       </div>
 
-      {/* Status Table */}
-      <div className="rounded-lg border bg-background">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Konsult</TableHead>
-              <TableHead>Kontrolltyp</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Datum</TableHead>
-              <TableHead>Åtgärd</TableHead>
-              <TableHead>Indikator</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {checksHistory.map((check, i) => (
-              <TableRow key={i}>
-                <TableCell>{check.consultant}</TableCell>
-                <TableCell>{check.checkType}</TableCell>
-                <TableCell>{check.status}</TableCell>
-                <TableCell>{check.date}</TableCell>
-                <TableCell>{check.action}</TableCell>
-                <TableCell>
-                  <Badge variant={check.indicator as "default" | "secondary"}>
-                    {check.status}
-                  </Badge>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+      <ChecksTable checksHistory={checksHistory} />
 
       {/* Action Buttons */}
       <div className="flex justify-between">
