@@ -1,6 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
-import { Client } from "https://deno.land/x/microsoft_graph@1.0.1/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -52,15 +51,8 @@ serve(async (req) => {
       throw new Error('No Microsoft access token found');
     }
 
-    // Initialize Microsoft Graph client
-    const graphClient = Client.init({
-      authProvider: (done) => {
-        done(null, provider_token);
-      },
-    });
-
-    // Prepare the email
-    const email = {
+    // Prepare the email payload
+    const emailPayload = {
       message: {
         subject,
         body: {
@@ -83,12 +75,24 @@ serve(async (req) => {
       },
     };
 
-    if (isDraft) {
-      // Save as draft
-      await graphClient.api('/me/messages').post(email);
-    } else {
-      // Send email
-      await graphClient.api('/me/sendMail').post(email);
+    // Send the request to Microsoft Graph API
+    const graphEndpoint = isDraft 
+      ? 'https://graph.microsoft.com/v1.0/me/messages'
+      : 'https://graph.microsoft.com/v1.0/me/sendMail';
+
+    const graphResponse = await fetch(graphEndpoint, {
+      method: isDraft ? 'POST' : 'POST',
+      headers: {
+        'Authorization': `Bearer ${provider_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(isDraft ? emailPayload.message : emailPayload),
+    });
+
+    if (!graphResponse.ok) {
+      const errorData = await graphResponse.text();
+      console.error('Microsoft Graph API error:', errorData);
+      throw new Error(`Failed to ${isDraft ? 'save draft' : 'send email'}: ${graphResponse.statusText}`);
     }
 
     // Store in our database
