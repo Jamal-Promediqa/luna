@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Mic, MicOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { AudioWaveform } from "./AudioWaveform";
 import { TranscriptionSummary } from "./TranscriptionSummary";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { RecordingInterface } from "./RecordingInterface";
+import { useDictationMutations } from "@/hooks/useDictationMutations";
 
 interface DashboardDictationDialogProps {
   isOpen: boolean;
@@ -21,57 +19,8 @@ export const DashboardDictationDialog = ({ isOpen, onClose }: DashboardDictation
   const [transcription, setTranscription] = useState<string | null>(null);
   const [actionPlan, setActionPlan] = useState<string | null>(null);
   const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
-  const queryClient = useQueryClient();
 
-  const createTaskMutation = useMutation({
-    mutationFn: async (title: string) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No user found");
-
-      const { data, error } = await supabase
-        .from('tasks')
-        .insert([{
-          title,
-          status: 'väntar',
-          user_id: user.id
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] });
-      toast.success("Uppgift skapad från diktering");
-    },
-  });
-
-  const saveCallRecordMutation = useMutation({
-    mutationFn: async ({ transcription, actionPlan, audioUrl }: { transcription: string, actionPlan: string, audioUrl: string }) => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No user found");
-
-      const { data, error } = await supabase
-        .from('call_records')
-        .insert([{
-          contact_name: "Dashboard Dictation",
-          contact_phone: "",
-          audio_url: audioUrl,
-          summary: transcription,
-          action_plan: actionPlan,
-          user_id: user.id
-        }])
-        .select()
-        .single();
-
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['call-records'] });
-    },
-  });
+  const { createTaskMutation, saveCallRecordMutation } = useDictationMutations();
 
   const startRecording = async () => {
     try {
@@ -121,9 +70,6 @@ export const DashboardDictationDialog = ({ isOpen, onClose }: DashboardDictation
     setIsProcessing(true);
     try {
       console.log('Processing recording...');
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("No user found");
-
       const fileName = `dictation/${Date.now()}.webm`;
       console.log('Uploading file:', fileName);
       
@@ -160,7 +106,6 @@ export const DashboardDictationDialog = ({ isOpen, onClose }: DashboardDictation
       setTranscription(newTranscription);
       setActionPlan(newActionPlan);
 
-      // Save the transcription to the database
       await saveCallRecordMutation.mutateAsync({
         transcription: newTranscription,
         actionPlan: newActionPlan,
@@ -200,35 +145,13 @@ export const DashboardDictationDialog = ({ isOpen, onClose }: DashboardDictation
             </DialogHeader>
             
             <div className="flex flex-col items-center justify-center gap-4 py-8">
-              {isProcessing ? (
-                <div className="flex flex-col items-center gap-4">
-                  <Loader2 className="h-16 w-16 animate-spin text-primary" />
-                  <p className="text-muted-foreground">Bearbetar inspelningen...</p>
-                </div>
-              ) : (
-                <>
-                  <Button
-                    size="lg"
-                    variant={isRecording ? "destructive" : "default"}
-                    onClick={isRecording ? stopRecording : startRecording}
-                    className="rounded-full w-24 h-24 p-0 transition-all hover:scale-105"
-                  >
-                    {isRecording ? (
-                      <MicOff className="h-12 w-12" />
-                    ) : (
-                      <Mic className="h-12 w-12" />
-                    )}
-                  </Button>
-                  <p className="text-base text-muted-foreground">
-                    {isRecording ? "Klicka för att avsluta inspelningen" : "Klicka för att börja spela in"}
-                  </p>
-                  {isRecording && mediaStream && (
-                    <div className="w-full max-w-md mt-4">
-                      <AudioWaveform mediaStream={mediaStream} />
-                    </div>
-                  )}
-                </>
-              )}
+              <RecordingInterface
+                isRecording={isRecording}
+                isProcessing={isProcessing}
+                mediaStream={mediaStream}
+                onStartRecording={startRecording}
+                onStopRecording={stopRecording}
+              />
             </div>
           </div>
         ) : (
