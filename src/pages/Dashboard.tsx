@@ -117,15 +117,6 @@ const Dashboard = () => {
     retry: false
   });
 
-  const handleSignOut = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast.error("Error signing out");
-    } else {
-      navigate("/");
-    }
-  };
-
   const handleViewDetails = (task: Task) => {
     console.log("Task details viewed:", task.id);
   };
@@ -137,7 +128,7 @@ const Dashboard = () => {
   return (
     <div className="container mx-auto p-4 space-y-6">
       <TaskNotifications />
-      <DashboardHeader profile={profile} onSignOut={handleSignOut} />
+      <DashboardHeader profile={profile} />
       <DashboardNavigation navigate={navigate} />
       <DashboardMetrics assignments={assignments || []} />
 
