@@ -21,10 +21,16 @@ export function ConsultantTable({
 }: ConsultantTableProps) {
   const navigate = useNavigate();
 
+  const handleAddConsultant = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate("/consultants/add");
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-end">
-        <Button onClick={() => navigate("/consultants/add")}>
+        <Button onClick={handleAddConsultant}>
           <Plus className="mr-2 h-4 w-4" />
           Lägg till ny konsult
         </Button>
@@ -48,7 +54,15 @@ export function ConsultantTable({
               <TableCell>{consultant.location}</TableCell>
               <TableCell>{consultant.email}</TableCell>
               <TableCell>
-                <Button variant="outline" onClick={() => onConsultantClick(consultant)}>Visa</Button>
+                <Button 
+                  variant="outline" 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onConsultantClick(consultant);
+                  }}
+                >
+                  Visa
+                </Button>
               </TableCell>
             </TableRow>
           ))}
