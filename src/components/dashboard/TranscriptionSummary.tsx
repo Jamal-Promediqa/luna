@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Download, Share2, MessageSquare, Clock, Flag, ChevronRight, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 
 interface TranscriptionSummaryProps {
   title: string;
@@ -22,6 +23,13 @@ export const TranscriptionSummary = ({
   actionItems,
   onCreateTask
 }: TranscriptionSummaryProps) => {
+  const handleCreateTask = (item: string) => {
+    if (onCreateTask) {
+      onCreateTask(item);
+      toast.success("Uppgift skapad");
+    }
+  };
+
   return (
     <ScrollArea className="h-full">
       <div className="p-6 space-y-6">
@@ -56,8 +64,8 @@ export const TranscriptionSummary = ({
                   <Button
                     size="icon"
                     variant="default"
-                    className="h-8 w-8 rounded-full"
-                    onClick={() => onCreateTask?.(item)}
+                    className="h-8 w-8 rounded-full shrink-0"
+                    onClick={() => handleCreateTask(item)}
                   >
                     <ChevronRight className="h-4 w-4" />
                   </Button>
