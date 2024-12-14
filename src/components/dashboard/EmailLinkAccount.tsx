@@ -13,7 +13,7 @@ export const EmailLinkAccount = () => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'azure',
         options: {
-          scopes: 'email Mail.Read Mail.ReadWrite',
+          scopes: 'email Mail.Read Mail.ReadWrite offline_access',
           redirectTo: `${window.location.origin}/dashboard`
         }
       });
