@@ -1,5 +1,5 @@
 import { Card, CardContent } from "@/components/ui/card";
-import { Users, Clock, CheckCircle, Briefcase } from "lucide-react";
+import { Users, Clock, CheckCircle, Briefcase, Calendar, PhoneCall } from "lucide-react";
 
 interface DashboardMetricsProps {
   assignments: any[];
@@ -10,7 +10,10 @@ export const DashboardMetrics = ({ assignments }: DashboardMetricsProps) => {
     { title: "Antal konsulter kontaktade idag", value: assignments?.length || "0", icon: <Users className="h-6 w-6" />, color: "text-blue-500" },
     { title: "Pågående referenstagningar", value: "5", icon: <Clock className="h-6 w-6" />, color: "text-orange-500" },
     { title: "Antal bakgrundskontroller klara", value: "8", icon: <CheckCircle className="h-6 w-6" />, color: "text-green-500" },
-    { title: "Aktiva leads", value: "24", icon: <Briefcase className="h-6 w-6" />, color: "text-purple-500" }
+    { title: "Aktiva leads", value: "24", icon: <Briefcase className="h-6 w-6" />, color: "text-purple-500" },
+    { title: "Presenterade konsulter", value: "12", icon: <Users className="h-6 w-6" />, color: "text-indigo-500" },
+    { title: "Bokade veckor", value: "156", icon: <Calendar className="h-6 w-6" />, color: "text-pink-500" },
+    { title: "Antal samtal", value: "47", icon: <PhoneCall className="h-6 w-6" />, color: "text-cyan-500" }
   ];
 
   return (
