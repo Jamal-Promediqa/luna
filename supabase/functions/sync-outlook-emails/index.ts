@@ -25,30 +25,40 @@ Deno.serve(async (req) => {
     const { userId } = await req.json();
     console.log('Syncing emails for user:', userId);
 
-    // Get the user's Microsoft access token from their session
-    const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(userId);
+    // Get the user's session data
+    const { data: userResponse, error: userError } = await supabase.auth.admin.getUserById(userId);
     if (userError) throw userError;
 
-    const accessToken = user?.app_metadata?.azure_access_token;
-    if (!accessToken) {
-      throw new Error('No Microsoft access token found');
+    const user = userResponse.user;
+    if (!user) throw new Error('User not found');
+
+    // Get the Microsoft access token from the provider token
+    const provider_token = user.app_metadata?.provider_token;
+    if (!provider_token) {
+      console.error('No provider token found in app_metadata:', user.app_metadata);
+      throw new Error('No Microsoft access token found. Please reconnect your Microsoft account.');
     }
+
+    console.log('Successfully retrieved access token');
 
     // Fetch emails using Microsoft Graph REST API
     const response = await fetch('https://graph.microsoft.com/v1.0/me/messages?$top=50&$orderby=receivedDateTime desc&$select=id,subject,bodyPreview,body,from,toRecipients,receivedDateTime,isRead', {
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
+        'Authorization': `Bearer ${provider_token}`,
         'Content-Type': 'application/json'
       }
     });
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Microsoft Graph API error:', errorText);
       throw new Error(`Failed to fetch emails: ${response.statusText}`);
     }
 
     const { value: emails } = await response.json();
     console.log('Fetched emails from Outlook:', emails.length);
 
+    // Store emails in Supabase
     for (const email of emails) {
       const { data, error } = await supabase
         .from('outlook_emails')
@@ -72,7 +82,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    return new Response(JSON.stringify({ success: true }), {
+    return new Response(JSON.stringify({ success: true, emailCount: emails.length }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
