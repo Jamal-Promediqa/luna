@@ -17,6 +17,8 @@ import {
 import { MetricsCards } from "@/components/reports/MetricsCards";
 import { AIInsights } from "@/components/reports/AIInsights";
 import { TaskBreakdownCharts } from "@/components/reports/TaskBreakdownCharts";
+import { TaskBreakdownTable } from "@/components/reports/TaskBreakdownTable";
+import { startOfWeek, endOfWeek } from "date-fns";
 
 ChartJS.register(
   CategoryScale,
@@ -51,10 +53,17 @@ const Reports = () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) throw new Error('No user found');
 
+        const startDate = startOfWeek(new Date(), { weekStartsOn: 1 });
+        const endDate = endOfWeek(new Date(), { weekStartsOn: 1 });
+
         const { data, error } = await supabase
           .from('tasks')
           .select('*')
-          .eq('user_id', user.id);
+          .eq('user_id', user.id)
+          .eq('status', 'klar')
+          .gte('updated_at', startDate.toISOString())
+          .lte('updated_at', endDate.toISOString())
+          .order('updated_at', { ascending: false });
         
         if (error) throw error;
         return data || [];
@@ -101,6 +110,8 @@ const Reports = () => {
         tasksByPriority={tasksByPriority}
         dailyCompletionData={dailyCompletionData}
       />
+
+      <TaskBreakdownTable tasks={tasks || []} />
     </div>
   );
 };
