@@ -33,11 +33,7 @@ export const EmailLinkAccount = () => {
           stack: error.stack
         });
         
-        if (error.message.includes("provider is not enabled")) {
-          toast.error('Microsoft authentication is not properly configured. Please ensure the Azure provider is enabled in Supabase.');
-        } else {
-          toast.error(`Failed to connect: ${error.message}`);
-        }
+        toast.error(`Failed to connect: ${error.message}`);
         throw error;
       }
 
