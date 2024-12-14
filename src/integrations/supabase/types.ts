@@ -105,6 +105,36 @@ export type Database = {
         }
         Relationships: []
       }
+      kpis: {
+        Row: {
+          booked_weeks: number | null
+          call_count: number | null
+          created_at: string | null
+          id: string
+          presented_consultants: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          booked_weeks?: number | null
+          call_count?: number | null
+          created_at?: string | null
+          id?: string
+          presented_consultants?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          booked_weeks?: number | null
+          call_count?: number | null
+          created_at?: string | null
+          id?: string
+          presented_consultants?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       outlook_emails: {
         Row: {
           body_preview: string | null
