@@ -1,9 +1,9 @@
 import { TranscriptionSummary } from "@/components/dashboard/TranscriptionSummary";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuery } from "@tanstack/react-query";
-import { Clock, Mic, Plus } from "lucide-react";
+import { Clock, Mic } from "lucide-react";
 import { useState } from "react";
 import { DashboardDictationDialog } from "@/components/dashboard/DashboardDictationDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -27,6 +27,16 @@ const AITranscriptions = () => {
       return data;
     }
   });
+
+  const getActionItemsFromPlan = (plan: string): string[] => {
+    if (!plan) return [];
+    const actionSection = plan.split('ÅTGÄRDER:')[1]?.split('UPPFÖLJNING:')[0];
+    if (!actionSection) return [];
+    return actionSection
+      .split('\n')
+      .filter(line => line.trim().startsWith('-'))
+      .map(line => line.trim().substring(2));
+  };
 
   return (
     <div className="container mx-auto p-4 space-y-6">
@@ -54,7 +64,6 @@ const AITranscriptions = () => {
                 <Clock className="h-12 w-12 opacity-20" />
                 <p>No transcriptions yet</p>
                 <Button onClick={() => setShowDictation(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
                   Start Recording
                 </Button>
               </div>
@@ -64,18 +73,13 @@ const AITranscriptions = () => {
           <ScrollArea className="h-[calc(100vh-200px)]">
             <div className="space-y-6">
               {callRecords.map((record) => (
-                <Card key={record.id}>
-                  <CardHeader>
-                    <CardTitle>{record.contact_name}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <TranscriptionSummary
-                      title={`Call with ${record.contact_name}`}
-                      date={new Date(record.created_at).toLocaleDateString("sv-SE")}
-                      summary={record.summary || ""}
-                      actionItems={(record.action_plan || "").split('\n').filter(Boolean)}
-                    />
-                  </CardContent>
+                <Card key={record.id} className="p-6">
+                  <TranscriptionSummary
+                    title={`Recording: ${record.contact_name}`}
+                    date={new Date(record.created_at).toLocaleDateString("sv-SE")}
+                    summary={record.summary || ""}
+                    actionItems={getActionItemsFromPlan(record.action_plan || "")}
+                  />
                 </Card>
               ))}
             </div>
