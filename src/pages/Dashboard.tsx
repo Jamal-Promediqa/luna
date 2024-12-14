@@ -36,21 +36,35 @@ const Dashboard = () => {
     }
   });
 
-  // Fetch user profile
+  // Fetch user profile with error handling
   const { data: profile } = useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error('No session');
 
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('personal_number', session.user.id)
-        .single();
-      
-      if (error) throw error;
-      return data;
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('personal_number', session.user.id)
+          .maybeSingle(); // Use maybeSingle() instead of single()
+        
+        if (error) throw error;
+        
+        // If no profile exists, return a default profile
+        return data || {
+          given_name: session.user.email?.split('@')[0] || 'Användare',
+          full_name: session.user.email || 'Användare'
+        };
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+        // Return a default profile on error
+        return {
+          given_name: session.user.email?.split('@')[0] || 'Användare',
+          full_name: session.user.email || 'Användare'
+        };
+      }
     }
   });
 
