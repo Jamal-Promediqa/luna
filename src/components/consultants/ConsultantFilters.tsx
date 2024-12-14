@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Filter, FilterX, Search, Tag, Brain, MapPin } from "lucide-react";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
+import { Filter, FilterX } from "lucide-react";
+import { FilterTabs } from "./filters/FilterTabs";
+import { SearchBar } from "./filters/SearchBar";
+import { FilterSelects } from "./filters/FilterSelects";
 
 interface ConsultantFiltersProps {
   onFilterChange: (filters: {
@@ -53,100 +52,17 @@ export const ConsultantFilters = ({ onFilterChange }: ConsultantFiltersProps) =>
 
   return (
     <div className="space-y-6">
-      <Tabs defaultValue="all" className="w-full" onValueChange={handleCategoryChange}>
-        <TabsList className="w-full justify-start h-auto flex-wrap gap-3 bg-transparent p-1">
-          <TabsTrigger 
-            value="all" 
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-6 rounded-full transition-all duration-200"
-          >
-            Alla
-            <Badge variant="secondary" className="ml-2">123</Badge>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="doctor" 
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-6 rounded-full transition-all duration-200"
-          >
-            Läkare
-            <Badge variant="secondary" className="ml-2">45</Badge>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="nurse" 
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-6 rounded-full transition-all duration-200"
-          >
-            Sjuksköterska
-            <Badge variant="secondary" className="ml-2">38</Badge>
-          </TabsTrigger>
-          <TabsTrigger 
-            value="social" 
-            className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground px-6 rounded-full transition-all duration-200"
-          >
-            Socionom
-            <Badge variant="secondary" className="ml-2">40</Badge>
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
+      <FilterTabs onCategoryChange={handleCategoryChange} />
 
       <div className="flex flex-col md:flex-row gap-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Sök konsult..."
-            className="pl-10 h-12"
-            value={search}
-            onChange={(e) => handleSearchChange(e.target.value)}
-          />
-        </div>
+        <SearchBar value={search} onChange={handleSearchChange} />
         <div className="flex flex-wrap gap-3">
-          <Select value={status} onValueChange={handleStatusChange}>
-            <SelectTrigger className="w-[140px] h-12">
-              <SelectValue placeholder="Status" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Alla</SelectItem>
-              <SelectItem value="Tillgänglig">Tillgänglig</SelectItem>
-              <SelectItem value="Upptagen">Upptagen</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={location} onValueChange={handleLocationChange}>
-            <SelectTrigger className="w-[140px] h-12">
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4" />
-                <SelectValue placeholder="Plats" />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Alla</SelectItem>
-              <SelectItem value="Stockholm">Stockholm</SelectItem>
-              <SelectItem value="Göteborg">Göteborg</SelectItem>
-              <SelectItem value="Malmö">Malmö</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select>
-            <SelectTrigger className="w-[140px] h-12">
-              <div className="flex items-center gap-2">
-                <Tag className="h-4 w-4" />
-                <SelectValue placeholder="Tags" />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Alla Tags</SelectItem>
-              <SelectItem value="vip">VIP</SelectItem>
-              <SelectItem value="new">Ny Konsult</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select>
-            <SelectTrigger className="w-[170px] h-12">
-              <div className="flex items-center gap-2">
-                <Brain className="h-4 w-4" />
-                <SelectValue placeholder="Systemkunskap" />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Systemkunskap</SelectItem>
-              <SelectItem value="take-care">TakeCare</SelectItem>
-              <SelectItem value="cosmic">Cosmic</SelectItem>
-            </SelectContent>
-          </Select>
+          <FilterSelects
+            status={status}
+            location={location}
+            onStatusChange={handleStatusChange}
+            onLocationChange={handleLocationChange}
+          />
           <Button
             variant="outline"
             size="icon"
