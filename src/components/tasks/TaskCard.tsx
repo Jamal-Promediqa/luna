@@ -40,6 +40,7 @@ const getVariantForStatus = (status: string) => {
 export const TaskCard = ({ task, onViewDetails }: TaskCardProps) => {
   const [showDetails, setShowDetails] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isCompleting, setIsCompleting] = useState(false);
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -63,6 +64,7 @@ export const TaskCard = ({ task, onViewDetails }: TaskCardProps) => {
       });
       setShowDetails(false);
       setIsEditing(false);
+      setIsCompleting(false);
     },
     onError: (error) => {
       toast({
@@ -75,6 +77,7 @@ export const TaskCard = ({ task, onViewDetails }: TaskCardProps) => {
   });
 
   const handleMarkAsCompleted = () => {
+    setIsCompleting(true);
     updateTaskMutation.mutate({ status: "klar" });
   };
 
@@ -84,13 +87,22 @@ export const TaskCard = ({ task, onViewDetails }: TaskCardProps) => {
 
   return (
     <>
-      <Card className="hover:bg-muted/50 transition-colors">
+      <Card 
+        className={`hover:bg-muted/50 transition-all duration-300 ${
+          isCompleting ? 'scale-95 opacity-50' : ''
+        }`}
+      >
         <CardContent className="pt-6">
           <div className="flex justify-between items-start">
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
                 <h3 className="font-semibold">{task.title}</h3>
-                <Badge variant={getVariantForStatus(task.status)}>{task.status}</Badge>
+                <Badge 
+                  variant={getVariantForStatus(task.status)}
+                  className={task.status === "klar" ? "animate-fade-in" : ""}
+                >
+                  {task.status}
+                </Badge>
               </div>
               {task.description && (
                 <p className="text-sm text-muted-foreground line-clamp-2">{task.description}</p>
@@ -137,7 +149,12 @@ export const TaskCard = ({ task, onViewDetails }: TaskCardProps) => {
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
                   {task.title}
-                  <Badge variant={getVariantForStatus(task.status)}>{task.status}</Badge>
+                  <Badge 
+                    variant={getVariantForStatus(task.status)}
+                    className={task.status === "klar" ? "animate-fade-in" : ""}
+                  >
+                    {task.status}
+                  </Badge>
                 </DialogTitle>
                 {task.description && (
                   <DialogDescription className="text-foreground">
@@ -165,8 +182,20 @@ export const TaskCard = ({ task, onViewDetails }: TaskCardProps) => {
                     Redigera
                   </Button>
                   {task.status !== "klar" && (
-                    <Button onClick={handleMarkAsCompleted}>
-                      Markera som klar
+                    <Button 
+                      onClick={handleMarkAsCompleted}
+                      className="relative overflow-hidden group"
+                    >
+                      <span className={`inline-block transition-transform duration-300 ${
+                        isCompleting ? 'translate-y-full' : ''
+                      }`}>
+                        Markera som klar
+                      </span>
+                      <CheckCircle 
+                        className={`absolute inset-0 m-auto transition-all duration-300 ${
+                          isCompleting ? 'scale-150 opacity-100' : 'scale-50 opacity-0'
+                        }`}
+                      />
                     </Button>
                   )}
                 </div>
