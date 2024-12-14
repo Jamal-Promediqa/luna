@@ -9,11 +9,12 @@ const Notifications = () => {
   const navigate = useNavigate();
 
   const { data: tasks } = useQuery({
-    queryKey: ['tasks-notifications'],
+    queryKey: ['notifications_page_tasks'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('tasks')
         .select('*')
+        .neq('status', 'klar')
         .order('created_at', { ascending: false })
         .limit(20);
       

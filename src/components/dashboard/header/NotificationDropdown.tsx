@@ -15,11 +15,12 @@ export const NotificationDropdown = () => {
   const navigate = useNavigate();
 
   const { data: tasks } = useQuery({
-    queryKey: ['tasks'],
+    queryKey: ['notification_tasks'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('tasks')
         .select('*')
+        .neq('status', 'klar')
         .order('created_at', { ascending: false })
         .limit(5);
       
