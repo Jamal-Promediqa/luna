@@ -58,7 +58,7 @@ export const ConsultantFilters = ({ onFilterChange }: ConsultantFiltersProps) =>
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Alla</SelectItem>
+            <SelectItem value="all">Alla</SelectItem>
             <SelectItem value="Tillgänglig">Tillgänglig</SelectItem>
             <SelectItem value="Upptagen">Upptagen</SelectItem>
           </SelectContent>
@@ -68,7 +68,7 @@ export const ConsultantFilters = ({ onFilterChange }: ConsultantFiltersProps) =>
             <SelectValue placeholder="Plats" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Alla</SelectItem>
+            <SelectItem value="all">Alla</SelectItem>
             <SelectItem value="Stockholm">Stockholm</SelectItem>
             <SelectItem value="Göteborg">Göteborg</SelectItem>
             <SelectItem value="Malmö">Malmö</SelectItem>
