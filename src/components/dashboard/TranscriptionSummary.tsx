@@ -29,7 +29,9 @@ export const TranscriptionSummary = ({
       // Add 7 days to current date for the deadline
       const dueDate = addDays(new Date(), 7);
       onCreateTask(item, dueDate);
-      toast.success("Uppgift skapad");
+      toast.success("Uppgift skapad", {
+        description: `"${item}" har lagts till med deadline ${dueDate.toLocaleDateString("sv-SE")}`,
+      });
     }
   };
 
