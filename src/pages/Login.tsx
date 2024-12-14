@@ -21,7 +21,7 @@ const Login = () => {
           console.error("Session check error:", error);
           toast({
             title: "Error",
-            description: "Error checking session",
+            description: "Error checking session. Please try again.",
             variant: "destructive",
           });
           return;
@@ -35,7 +35,7 @@ const Login = () => {
         console.error("Session check error:", error);
         toast({
           title: "Error",
-          description: "Error checking session",
+          description: "Error checking session. Please try again.",
           variant: "destructive",
         });
       }
@@ -46,19 +46,59 @@ const Login = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log("Auth state changed:", event, session);
-        if (event === 'SIGNED_IN') {
-          toast({
-            title: "Success",
-            description: "Successfully signed in!",
-          });
-          navigate("/dashboard");
-        } else if (event === 'SIGNED_OUT') {
-          toast({
-            title: "Info",
-            description: "Signed out",
-          });
-        } else if (event === 'USER_UPDATED') {
-          console.log("User updated");
+        
+        switch (event) {
+          case 'SIGNED_IN':
+            if (mounted) {
+              toast({
+                title: "Success",
+                description: "Successfully signed in!",
+              });
+              navigate("/dashboard");
+            }
+            break;
+          
+          case 'SIGNED_OUT':
+            if (mounted) {
+              toast({
+                title: "Info",
+                description: "Signed out",
+              });
+            }
+            break;
+          
+          case 'USER_UPDATED':
+            console.log("User updated");
+            break;
+          
+          case 'USER_DELETED':
+            if (mounted) {
+              toast({
+                title: "Info",
+                description: "Account deleted",
+              });
+              navigate("/login");
+            }
+            break;
+          
+          case 'PASSWORD_RECOVERY':
+            if (mounted) {
+              toast({
+                title: "Info",
+                description: "Password recovery email sent",
+              });
+            }
+            break;
+          
+          case 'ERROR':
+            if (mounted) {
+              toast({
+                title: "Error",
+                description: "Authentication error occurred",
+                variant: "destructive",
+              });
+            }
+            break;
         }
       }
     );
@@ -102,11 +142,19 @@ const Login = () => {
                 input: {
                   borderRadius: '0.75rem',
                 },
+                message: {
+                  borderRadius: '0.75rem',
+                  backgroundColor: '#f8d7da',
+                  borderColor: '#f5c6cb',
+                  color: '#721c24',
+                  padding: '1rem',
+                },
               },
               className: {
                 container: 'auth-container',
                 button: 'auth-button',
                 input: 'auth-input',
+                message: 'auth-message',
               },
             }}
             theme="light"
