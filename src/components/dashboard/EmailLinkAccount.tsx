@@ -11,10 +11,9 @@ export const EmailLinkAccount = () => {
     setIsLinking(true);
     try {
       console.log("1. Starting Microsoft authentication...");
-      console.log("Current URL:", window.location.href);
       
-      // Use the correct Supabase project URL
-      const redirectUrl = `${window.location.protocol}//${window.location.host}/dashboard`;
+      // Get the current URL for the redirect
+      const redirectUrl = `${window.location.origin}/dashboard`;
       console.log("2. Redirect URL:", redirectUrl);
 
       const { data, error } = await supabase.auth.signInWithOAuth({
