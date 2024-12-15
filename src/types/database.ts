@@ -102,6 +102,7 @@ export interface Database {
           received_at: string | null;
           created_at: string | null;
           updated_at: string | null;
+          status: string | null;
         };
         Insert: {
           id?: string;
@@ -113,6 +114,7 @@ export interface Database {
           received_at?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
+          status?: string | null;
         };
         Update: {
           id?: string;
@@ -124,6 +126,7 @@ export interface Database {
           received_at?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
+          status?: string | null;
         };
       };
       call_records: {
