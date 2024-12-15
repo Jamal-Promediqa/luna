@@ -38,7 +38,6 @@ export const EmailLinkAccount = () => {
         const { data: { session } } = await supabase.auth.getSession();
         console.log("Current session:", session);
         
-        // Check if user has Microsoft (Azure) identity
         const hasMicrosoftIdentity = session?.user?.identities?.some(
           identity => identity.provider === 'azure'
         );
@@ -72,14 +71,12 @@ export const EmailLinkAccount = () => {
     try {
       console.log("Starting Microsoft authentication...");
       
-      // Generate PKCE values
       const codeVerifier = generateCodeVerifier();
       console.log("Generated code verifier:", codeVerifier);
       
       const codeChallenge = await generateCodeChallenge(codeVerifier);
       console.log("Generated code challenge:", codeChallenge);
       
-      // Store code verifier in session storage
       sessionStorage.setItem('pkce_code_verifier', codeVerifier);
 
       const { data, error } = await supabase.auth.signInWithOAuth({
@@ -114,7 +111,6 @@ export const EmailLinkAccount = () => {
         throw new Error('No OAuth response URL');
       }
 
-      // Redirect to Microsoft login
       console.log("Redirecting to:", data.url);
       window.location.href = data.url;
       
@@ -125,6 +121,27 @@ export const EmailLinkAccount = () => {
       toast.error(`Connection error: ${error.message}`);
     } finally {
       setIsLinking(false);
+    }
+  };
+
+  const handleMicrosoftUnlink = async () => {
+    try {
+      const { error } = await supabase.auth.unlinkIdentity('azure');
+      
+      if (error) {
+        console.error('Error unlinking Microsoft account:', error);
+        toast.error('Failed to unlink Microsoft account');
+        return;
+      }
+
+      setIsLinked(false);
+      toast.success('Microsoft account unlinked successfully');
+      
+      // Refresh the page to update the UI state
+      window.location.reload();
+    } catch (error) {
+      console.error('Error during Microsoft account unlink:', error);
+      toast.error('Failed to unlink Microsoft account');
     }
   };
 
@@ -145,18 +162,23 @@ export const EmailLinkAccount = () => {
           </AlertDescription>
         </Alert>
       )}
-      <Button 
-        onClick={handleMicrosoftLink} 
-        disabled={isLinking || isLinked}
-        className="w-full bg-[#107C10] hover:bg-[#0B5C0B] text-white"
-      >
-        {isLinked 
-          ? 'Microsoft Account Connected' 
-          : isLinking 
-            ? 'Connecting...' 
-            : 'Connect Microsoft Account'
-        }
-      </Button>
+      {isLinked ? (
+        <Button 
+          onClick={handleMicrosoftUnlink}
+          variant="destructive"
+          className="w-full"
+        >
+          Disconnect Microsoft Account
+        </Button>
+      ) : (
+        <Button 
+          onClick={handleMicrosoftLink} 
+          disabled={isLinking}
+          className="w-full bg-[#107C10] hover:bg-[#0B5C0B] text-white"
+        >
+          {isLinking ? 'Connecting...' : 'Connect Microsoft Account'}
+        </Button>
+      )}
     </div>
   );
 };
