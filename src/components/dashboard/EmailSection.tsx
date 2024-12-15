@@ -8,6 +8,7 @@ import { ComposeEmail } from "./ComposeEmail";
 import { EmailHeader } from "./email/EmailHeader";
 import { EmailList } from "./email/EmailList";
 import { EmailLinkAccount } from "./EmailLinkAccount";
+import { toast } from "sonner";
 
 export const EmailSection = () => {
   const [isMicrosoftLinked, setIsMicrosoftLinked] = useState(false);
@@ -60,6 +61,16 @@ export const EmailSection = () => {
     enabled: !!session && isMicrosoftLinked
   });
 
+  const handleArchive = async (id: string) => {
+    // In a real implementation, you would update the email status in the database
+    toast.success("Email archived");
+  };
+
+  const handleDelete = async (id: string) => {
+    // In a real implementation, you would delete the email from the database
+    toast.success("Email deleted");
+  };
+
   if (sessionLoading) {
     return (
       <Card>
@@ -104,7 +115,12 @@ export const EmailSection = () => {
           />
         </CardHeader>
         <CardContent>
-          <EmailList emails={emails} isLoading={isLoading} />
+          <EmailList 
+            emails={emails} 
+            isLoading={isLoading}
+            onArchive={handleArchive}
+            onDelete={handleDelete}
+          />
         </CardContent>
       </Card>
       <ComposeEmail
