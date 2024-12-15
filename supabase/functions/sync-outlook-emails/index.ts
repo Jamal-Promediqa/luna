@@ -27,21 +27,31 @@ Deno.serve(async (req) => {
 
     // Get the user's data
     const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(userId);
-    if (userError) throw userError;
+    if (userError) {
+      console.error('Error getting user:', userError);
+      throw userError;
+    }
     
-    if (!user) throw new Error('User not found');
+    if (!user) {
+      console.error('User not found');
+      throw new Error('User not found');
+    }
 
     // Find the Azure identity
     const azureIdentity = user.identities?.find(identity => identity.provider === 'azure');
     if (!azureIdentity) {
+      console.error('No Microsoft account linked');
       throw new Error('No Microsoft account linked');
     }
 
     // Get the refresh token from the identity data
     const refreshToken = azureIdentity.identity_data?.refresh_token;
     if (!refreshToken) {
+      console.error('No refresh token found');
       throw new Error('No refresh token found. Please reconnect your Microsoft account.');
     }
+
+    console.log('Getting new access token using refresh token');
 
     // Get a new access token using Azure AD OAuth endpoints
     const tokenResponse = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
@@ -64,33 +74,39 @@ Deno.serve(async (req) => {
       throw new Error('Failed to refresh Microsoft access token');
     }
 
-    const { access_token: accessToken } = await tokenResponse.json();
+    const tokenData = await tokenResponse.json();
+    const accessToken = tokenData.access_token;
+    
     if (!accessToken) {
+      console.error('No access token received');
       throw new Error('No access token received from Microsoft');
     }
 
     console.log('Successfully retrieved access token');
 
     // Fetch emails using Microsoft Graph REST API
-    const response = await fetch('https://graph.microsoft.com/v1.0/me/messages?$top=50&$orderby=receivedDateTime desc&$select=id,subject,bodyPreview,from,receivedDateTime,isRead', {
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
+    const emailsResponse = await fetch(
+      'https://graph.microsoft.com/v1.0/me/messages?$top=50&$orderby=receivedDateTime desc&$select=id,subject,bodyPreview,from,receivedDateTime,isRead',
+      {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
       }
-    });
+    );
 
-    if (!response.ok) {
-      const errorText = await response.text();
+    if (!emailsResponse.ok) {
+      const errorText = await emailsResponse.text();
       console.error('Microsoft Graph API error:', errorText);
-      throw new Error(`Failed to fetch emails: ${response.statusText}`);
+      throw new Error(`Failed to fetch emails: ${emailsResponse.statusText}`);
     }
 
-    const { value: emails } = await response.json();
+    const { value: emails } = await emailsResponse.json();
     console.log('Fetched emails from Outlook:', emails.length);
 
     // Store emails in Supabase
     for (const email of emails) {
-      const { error } = await supabase
+      const { error: upsertError } = await supabase
         .from('outlook_emails')
         .upsert({
           id: email.id,
@@ -105,19 +121,24 @@ Deno.serve(async (req) => {
           onConflict: 'id'
         });
 
-      if (error) {
-        console.error('Error upserting email:', error);
+      if (upsertError) {
+        console.error('Error upserting email:', upsertError);
       }
     }
 
-    return new Response(JSON.stringify({ success: true, emailCount: emails.length }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ success: true, emailCount: emails.length }), 
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
   } catch (error) {
     console.error('Error syncing emails:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    return new Response(
+      JSON.stringify({ error: error.message }), 
+      { 
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    );
   }
 });
