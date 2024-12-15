@@ -1,30 +1,24 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import { AccountSecuritySettings } from "@/components/settings/AccountSecuritySettings";
+import { NotificationSettings } from "@/components/settings/NotificationSettings";
+import { ThemeSettings } from "@/components/settings/ThemeSettings";
+import { RegionalSettings } from "@/components/settings/RegionalSettings";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Bell, Globe, Lock, Moon, Shield, Trash2, UserRound } from "lucide-react";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { useEmailAuth } from "@/components/email/hooks/useEmailAuth";
+import { UserRound, Trash2 } from "lucide-react";
 
 const Settings = () => {
   const navigate = useNavigate();
-  const { isConnected, isInitialized } = useEmailAuth();
+  const [loading, setLoading] = useState(false);
   const [givenName, setGivenName] = useState("");
   const [fullName, setFullName] = useState("");
-  const [loading, setLoading] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
-  
-  // New state variables for additional settings
-  const [darkMode, setDarkMode] = useState(false);
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [language, setLanguage] = useState("en");
-  const [timezone, setTimezone] = useState("UTC");
 
   useEffect(() => {
     const checkSession = async () => {
@@ -99,13 +93,7 @@ const Settings = () => {
     }
   };
 
-  const handlePasswordChange = () => {
-    // Implement password change logic
-    toast.info("Password change functionality coming soon");
-  };
-
   const handleDeleteAccount = () => {
-    // Implement account deletion logic
     toast.info("Account deletion functionality coming soon");
   };
 
@@ -149,127 +137,19 @@ const Settings = () => {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Lock className="h-5 w-5" />
-            Security Settings
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Button
-            onClick={handlePasswordChange}
-            variant="outline"
-            className="w-full"
-          >
-            Change Password
-          </Button>
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Two-factor Authentication</Label>
-              <p className="text-sm text-muted-foreground">
-                Add an extra layer of security
-              </p>
-            </div>
-            <Switch />
-          </div>
-        </CardContent>
-      </Card>
+      <AccountSecuritySettings />
+      <NotificationSettings />
+      <ThemeSettings />
+      <RegionalSettings />
 
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Bell className="h-5 w-5" />
-            Notification Preferences
+          <CardTitle className="text-destructive flex items-center gap-2">
+            <Trash2 className="h-5 w-5" />
+            Danger Zone
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Email Notifications</Label>
-              <p className="text-sm text-muted-foreground">
-                Receive email updates
-              </p>
-            </div>
-            <Switch
-              checked={emailNotifications}
-              onCheckedChange={setEmailNotifications}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe className="h-5 w-5" />
-            Regional Settings
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label>Language</Label>
-            <Select value={language} onValueChange={setLanguage}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select language" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="en">English</SelectItem>
-                <SelectItem value="sv">Svenska</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Time Zone</Label>
-            <Select value={timezone} onValueChange={setTimezone}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select timezone" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="UTC">UTC</SelectItem>
-                <SelectItem value="Europe/Stockholm">Europe/Stockholm</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Moon className="h-5 w-5" />
-            Appearance
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="space-y-0.5">
-              <Label>Dark Mode</Label>
-              <p className="text-sm text-muted-foreground">
-                Toggle dark mode theme
-              </p>
-            </div>
-            <Switch
-              checked={darkMode}
-              onCheckedChange={setDarkMode}
-            />
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Shield className="h-5 w-5" />
-            Account Settings
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">
-              Email: {userEmail}
-            </p>
-          </div>
           <Separator className="my-4" />
           <div className="space-y-4">
             <Button
