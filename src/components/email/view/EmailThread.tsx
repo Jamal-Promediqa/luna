@@ -22,6 +22,13 @@ export const EmailThread = ({
   const displayName = sender.match(/^([^<]+)/)?.[1]?.trim() || sender;
   const emailAddress = sender.match(/<([^>]+)>/)?.[1] || sender;
 
+  // Format the preview text to add proper line breaks
+  const formattedPreview = preview.split('\n').map((line, index) => (
+    <p key={index} className={line.trim() === '' ? 'h-4' : ''}>
+      {line}
+    </p>
+  ));
+
   return (
     <div className="border-l-2 border-gray-200 pl-4 mt-6 space-y-3 text-muted-foreground text-sm">
       <div className="space-y-2">
@@ -38,8 +45,8 @@ export const EmailThread = ({
           <span className="font-semibold">Ämne:</span> {subject}
         </div>
       </div>
-      <div className="mt-4 whitespace-pre-wrap leading-relaxed border-t pt-4 text-base">
-        {preview}
+      <div className="mt-4 whitespace-pre-line border-t pt-4 text-base">
+        {formattedPreview}
       </div>
     </div>
   );

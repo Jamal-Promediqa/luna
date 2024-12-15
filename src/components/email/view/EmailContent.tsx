@@ -21,6 +21,13 @@ export const EmailContent = ({
   const senderInitial = sender.match(/^([^<]+)/)?.[1]?.trim()?.[0] || 
                        sender.split('@')[0][0].toUpperCase();
 
+  // Format the preview text to add proper line breaks
+  const formattedPreview = preview.split('\n').map((line, index) => (
+    <p key={index} className={line.trim() === '' ? 'h-4' : ''}>
+      {line}
+    </p>
+  ));
+
   return (
     <div className="space-y-6">
       <div className="flex items-start gap-4">
@@ -42,7 +49,9 @@ export const EmailContent = ({
       <Separator />
 
       <div className="space-y-4">
-        <div className="text-base leading-relaxed whitespace-pre-wrap">{preview}</div>
+        <div className="text-base leading-relaxed">
+          {formattedPreview}
+        </div>
       </div>
 
       <Separator />
