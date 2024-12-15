@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { EmailThread } from "./EmailThread";
 
 interface EmailReplyDialogProps {
   open: boolean;
@@ -13,6 +14,12 @@ interface EmailReplyDialogProps {
   subject: string;
   isLoading: boolean;
   onSend: () => void;
+  originalEmail?: {
+    sender: string;
+    timestamp: string;
+    subject: string;
+    preview: string;
+  };
 }
 
 export const EmailReplyDialog = ({
@@ -25,10 +32,11 @@ export const EmailReplyDialog = ({
   subject,
   isLoading,
   onSend,
+  originalEmail,
 }: EmailReplyDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Svara på mail</DialogTitle>
         </DialogHeader>
@@ -48,6 +56,14 @@ export const EmailReplyDialog = ({
             className="min-h-[200px]"
             disabled={isLoading}
           />
+          {originalEmail && (
+            <EmailThread
+              sender={originalEmail.sender}
+              timestamp={originalEmail.timestamp}
+              subject={originalEmail.subject}
+              preview={originalEmail.preview}
+            />
+          )}
           <div className="flex justify-end">
             <Button onClick={onSend} disabled={isLoading}>
               {isLoading ? "Skickar..." : "Skicka"}

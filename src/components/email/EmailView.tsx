@@ -51,14 +51,7 @@ export const EmailView = ({
       return;
     }
     setToAddress(email.sender);
-    setEmailContent(`
-
-Ursprungligt meddelande från ${email.sender}
-Skickat: ${formatDate(email.timestamp)}
-Ämne: ${email.subject}
-
-${email.preview}
-`);
+    setEmailContent("");
     setShowReplyDialog(true);
   };
 
@@ -127,13 +120,7 @@ ${email.preview}
       // If we're not already in reply mode, start a new reply
       if (!showReplyDialog && !showForwardDialog) {
         handleReply();
-        return `${content}
-
-Ursprungligt meddelande från ${email.sender}
-Skickat: ${formatDate(email.timestamp)}
-Ämne: ${email.subject}
-
-${email.preview}`;
+        return content;
       }
       // If we're already in reply mode, just append the AI response
       return prev + "\n\n" + content;
@@ -226,6 +213,7 @@ ${email.preview}`;
         subject={email.subject}
         isLoading={isLoading}
         onSend={() => handleSendEmail(true)}
+        originalEmail={email}
       />
 
       <EmailForwardDialog
