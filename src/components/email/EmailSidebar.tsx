@@ -20,11 +20,25 @@ export const EmailSidebar = ({ onGenerateAIResponse, onRefreshInbox }: EmailSide
 
   const checkMicrosoftConnection = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log("Checking Microsoft connection, provider token:", !!session?.provider_token);
+      console.log("Starting Microsoft connection check...");
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error("Session error:", sessionError);
+        throw sessionError;
+      }
+
+      console.log("Session data:", {
+        hasSession: !!session,
+        hasProviderToken: !!session?.provider_token,
+        provider: session?.provider,
+        user: session?.user?.email
+      });
+
       setIsConnected(!!session?.provider_token);
     } catch (error) {
       console.error('Error checking Microsoft connection:', error);
+      toast.error("Could not check Microsoft connection status");
     } finally {
       setIsLoading(false);
     }
@@ -32,26 +46,39 @@ export const EmailSidebar = ({ onGenerateAIResponse, onRefreshInbox }: EmailSide
 
   const handleMicrosoftConnect = async () => {
     try {
-      console.log("Initiating Microsoft connection");
-      const { error } = await supabase.auth.signInWithOAuth({
+      console.log("Starting Microsoft OAuth flow...");
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'azure',
         options: {
           scopes: 'email Mail.Read Mail.Send Mail.ReadWrite offline_access profile User.Read',
-          redirectTo: window.location.origin
+          redirectTo: window.location.origin,
         }
+      });
+
+      console.log("OAuth response:", {
+        success: !error,
+        hasData: !!data,
+        error: error?.message
       });
 
       if (error) throw error;
     } catch (error) {
       console.error('Error connecting to Microsoft:', error);
-      toast.error('Could not connect to Microsoft account');
+      toast.error('Could not connect to Microsoft account. Please try again.');
     }
   };
 
   const handleMicrosoftDisconnect = async () => {
     try {
-      console.log("Disconnecting Microsoft account");
-      await supabase.auth.signOut();
+      console.log("Starting Microsoft disconnect...");
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        console.error("Sign out error:", error);
+        throw error;
+      }
+
+      console.log("Successfully signed out");
       setIsConnected(false);
       toast.success('Microsoft account disconnected');
     } catch (error) {
