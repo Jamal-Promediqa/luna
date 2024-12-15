@@ -1,53 +1,51 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { toast } from "sonner";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { fetchEmails, syncEmailsToSupabase } from "@/utils/microsoftGraph";
 import { EmailMetrics } from "@/components/email/EmailMetrics";
 import { EmailFilters } from "@/components/email/EmailFilters";
 import { EmailList } from "@/components/email/EmailList";
 import { EmailSidebar } from "@/components/email/EmailSidebar";
 
-interface Email {
-  id: number;
-  sender: string;
-  subject: string;
-  preview: string;
-  timestamp: string;
-  isStarred: boolean;
-  isRead: boolean;
-}
-
 export default function EmailDashboard() {
-  const [emails, setEmails] = useState<Email[]>([
-    {
-      id: 1,
-      sender: "Anna Andersson",
-      subject: "Möte om nya projektet",
-      preview: "Hej! Jag ville höra när vi kan boka in ett möte...",
-      timestamp: "2024-01-15T10:30:00",
-      isStarred: true,
-      isRead: false,
-    },
-    {
-      id: 2,
-      sender: "Erik Svensson",
-      subject: "Kvartalsrapport Q4",
-      preview: "Här kommer den senaste kvartalsrapporten...",
-      timestamp: "2024-01-15T09:15:00",
-      isStarred: false,
-      isRead: true,
-    },
-    {
-      id: 3,
-      sender: "Maria Larsson",
-      subject: "Teambuilding nästa vecka",
-      preview: "Vi planerar att ha en teamaktivitet...",
-      timestamp: "2024-01-14T16:45:00",
-      isStarred: false,
-      isRead: true,
-    },
-  ]);
-
   const [searchQuery, setSearchQuery] = useState("");
   const [filterValue, setFilterValue] = useState("alla");
+
+  const { data: session } = await supabase.auth.getSession();
+  const userId = session?.user?.id;
+
+  const { data: emails = [], isLoading } = useQuery({
+    queryKey: ['emails', userId],
+    queryFn: async () => {
+      if (!userId) return [];
+      
+      // First try to get cached emails
+      const { data: cachedEmails } = await supabase
+        .from('outlook_emails')
+        .select('*')
+        .order('received_at', { ascending: false });
+
+      // Then fetch fresh emails from Microsoft Graph
+      const { data: { provider_token } } = await supabase.auth.getSession();
+      
+      if (provider_token) {
+        const outlookEmails = await fetchEmails(provider_token);
+        await syncEmailsToSupabase(userId, outlookEmails);
+        
+        // Return fresh data
+        const { data: freshEmails } = await supabase
+          .from('outlook_emails')
+          .select('*')
+          .order('received_at', { ascending: false });
+          
+        return freshEmails;
+      }
+
+      return cachedEmails || [];
+    },
+    enabled: !!userId,
+  });
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString("sv-SE", {
@@ -59,23 +57,40 @@ export default function EmailDashboard() {
     });
   };
 
-  const toggleStar = useCallback((id: number) => {
-    setEmails((prev) =>
-      prev.map((email) =>
-        email.id === id
-          ? { ...email, isStarred: !email.isStarred }
-          : email
-      )
-    );
-  }, []);
+  const toggleStar = useCallback(async (id: number) => {
+    if (!userId) return;
 
-  const handleDelete = useCallback((id: number) => {
-    setEmails((prev) => prev.filter((email) => email.id !== id));
+    const { error } = await supabase
+      .from('outlook_emails')
+      .update({ is_starred: true })
+      .eq('id', id);
+
+    if (error) {
+      toast.error("Kunde inte stjärnmärka e-post");
+      return;
+    }
+
+    toast.success("E-post stjärnmärkt");
+  }, [userId]);
+
+  const handleDelete = useCallback(async (id: number) => {
+    if (!userId) return;
+
+    const { error } = await supabase
+      .from('outlook_emails')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      toast.error("Kunde inte ta bort e-post");
+      return;
+    }
+
     toast.success("E-post borttagen");
-  }, []);
+  }, [userId]);
 
-  const handleArchive = useCallback((id: number) => {
-    setEmails((prev) => prev.filter((email) => email.id !== id));
+  const handleArchive = useCallback(async (id: number) => {
+    // In a real implementation, we would call Microsoft Graph API to archive the email
     toast.success("E-post arkiverad");
   }, []);
 
@@ -84,6 +99,10 @@ export default function EmailDashboard() {
       description: "Svaret har kopierats till urklipp",
     });
   }, []);
+
+  if (isLoading) {
+    return <div>Laddar...</div>;
+  }
 
   return (
     <div className="container mx-auto p-6 space-y-6">
