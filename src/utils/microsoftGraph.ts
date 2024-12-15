@@ -52,8 +52,12 @@ export const syncEmailsToSupabase = async (userId: string, emails: OutlookEmail[
         from_address: email.from.emailAddress.address,
         is_read: email.isRead,
         received_at: email.receivedDateTime,
+        is_starred: false, // Default value for new emails
       })),
-      { onConflict: 'message_id' }
+      { 
+        onConflict: 'message_id',
+        ignoreDuplicates: false // This ensures we don't override existing is_starred values
+      }
     );
 
     if (error) throw error;
