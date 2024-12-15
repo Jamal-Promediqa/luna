@@ -1,92 +1,112 @@
-import { useCallback, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
-import { ComposeEmail } from "./ComposeEmail";
+import { useState } from "react";
+import { EmailSection } from "./EmailSection";
 import { EmailStats } from "./email/EmailStats";
 import { EmailFilters } from "./email/EmailFilters";
-import { EmailList } from "./email/EmailList";
 import { EmailQuickActions } from "./email/EmailQuickActions";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const EmailDashboard = () => {
-  const [showComposeDialog, setShowComposeDialog] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterValue, setFilterValue] = useState("alla");
 
-  const { data: emails = [], refetch } = useQuery({
-    queryKey: ['outlook-emails'],
+  const { data: session } = useQuery({
+    queryKey: ['session'],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return [];
-
-      const { data, error } = await supabase
-        .from('outlook_emails')
-        .select('*')
-        .order('received_at', { ascending: false });
-
-      if (error) throw error;
-      return data || [];
+      return session;
     }
   });
 
-  const stats = {
-    total: emails.length,
-    unread: emails.filter(email => !email.is_read).length,
-    sentToday: 0, // This would need to be implemented with sent emails tracking
-    archived: 0, // This would need to be implemented with archived status tracking
+  const { data: emailStats } = useQuery({
+    queryKey: ['email-stats'],
+    queryFn: async () => {
+      if (!session?.user) return null;
+
+      const { count: total } = await supabase
+        .from('outlook_emails')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', session.user.id);
+
+      const { count: unread } = await supabase
+        .from('outlook_emails')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', session.user.id)
+        .eq('is_read', false);
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const { count: sentToday } = await supabase
+        .from('outlook_emails')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', session.user.id)
+        .gte('created_at', today.toISOString());
+
+      const { count: archived } = await supabase
+        .from('outlook_emails')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', session.user.id)
+        .eq('status', 'archived');
+
+      return {
+        total: total || 0,
+        unread: unread || 0,
+        sentToday: sentToday || 0,
+        archived: archived || 0
+      };
+    },
+    enabled: !!session?.user
+  });
+
+  const handleSync = async () => {
+    if (!session?.user) {
+      toast.error("Please sign in to sync emails");
+      return;
+    }
+
+    try {
+      toast.loading("Syncing emails...");
+      
+      const { data, error } = await supabase.functions.invoke('sync-outlook-emails', {
+        body: { userId: session.user.id }
+      });
+
+      if (error) throw error;
+
+      toast.dismiss();
+      toast.success(`Successfully synced ${data.emailCount} emails`);
+    } catch (error) {
+      console.error('Error syncing emails:', error);
+      toast.dismiss();
+      toast.error("Failed to sync emails. Please try again.");
+    }
   };
 
-  const handleSearch = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchQuery(e.target.value);
-  }, []);
-
-  const handleFilter = useCallback((value: string) => {
-    setFilterValue(value);
-  }, []);
-
-  const handleArchive = useCallback((id: string) => {
-    toast.success("Email archived");
-  }, []);
-
-  const handleDelete = useCallback((id: string) => {
-    toast.success("Email deleted");
-  }, []);
-
-  const generateAIResponse = useCallback(() => {
-    toast.success("AI response generated and copied to clipboard");
-  }, []);
+  const handleGenerateAIResponse = () => {
+    toast.info("AI response generation coming soon!");
+  };
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        <div className="lg:col-span-3">
-          <EmailStats stats={stats} />
-          <EmailFilters
-            searchQuery={searchQuery}
-            filterValue={filterValue}
-            onSearchChange={handleSearch}
-            onFilterChange={handleFilter}
-          />
-          <EmailList
-            emails={emails}
-            onArchive={handleArchive}
-            onDelete={handleDelete}
-          />
-        </div>
-
-        <div>
-          <EmailQuickActions
-            onCompose={() => setShowComposeDialog(true)}
-            onRefresh={refetch}
-            onGenerateAIResponse={generateAIResponse}
-          />
-        </div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="md:col-span-2 space-y-6">
+        <EmailStats stats={emailStats || { total: 0, unread: 0, sentToday: 0, archived: 0 }} />
+        <EmailFilters
+          searchQuery={searchQuery}
+          filterValue={filterValue}
+          onSearchChange={(e) => setSearchQuery(e.target.value)}
+          onFilterChange={setFilterValue}
+        />
+        <EmailSection />
       </div>
-
-      <ComposeEmail
-        open={showComposeDialog}
-        onOpenChange={setShowComposeDialog}
-      />
+      <div>
+        <EmailQuickActions
+          onCompose={() => {}} // This will be handled by the EmailSection
+          onRefresh={handleSync}
+          onGenerateAIResponse={handleGenerateAIResponse}
+        />
+      </div>
     </div>
   );
 };

@@ -47,7 +47,7 @@ export const EmailSection = () => {
         .from('outlook_emails')
         .select('*')
         .order('received_at', { ascending: false })
-        .limit(5);
+        .limit(50);
 
       if (error) {
         console.error("Error fetching emails:", error);
@@ -58,17 +58,40 @@ export const EmailSection = () => {
       console.log("Fetched emails:", data);
       return data;
     },
-    enabled: !!session && isMicrosoftLinked
+    enabled: !!session && isMicrosoftLinked,
+    refetchInterval: 30000 // Refresh every 30 seconds
   });
 
   const handleArchive = async (id: string) => {
-    // In a real implementation, you would update the email status in the database
-    toast.success("Email archived");
+    try {
+      const { error } = await supabase
+        .from('outlook_emails')
+        .update({ status: 'archived' })
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success("Email archived");
+      refetch();
+    } catch (error) {
+      console.error('Error archiving email:', error);
+      toast.error("Failed to archive email");
+    }
   };
 
   const handleDelete = async (id: string) => {
-    // In a real implementation, you would delete the email from the database
-    toast.success("Email deleted");
+    try {
+      const { error } = await supabase
+        .from('outlook_emails')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+      toast.success("Email deleted");
+      refetch();
+    } catch (error) {
+      console.error('Error deleting email:', error);
+      toast.error("Failed to delete email");
+    }
   };
 
   if (sessionLoading) {
