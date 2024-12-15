@@ -35,10 +35,20 @@ export const EmailLinkAccount = () => {
         const { data: { session } } = await supabase.auth.getSession();
         console.log("Current session:", session);
         
-        if (session?.provider_token) {
-          console.log("Provider token found:", session.provider_token);
+        // Check both provider_token and that the provider is azure
+        if (session?.provider_token && session?.user?.app_metadata?.provider === 'azure') {
+          console.log("Microsoft account is connected:", {
+            provider: session.user.app_metadata.provider,
+            token: session.provider_token
+          });
           setIsLinked(true);
           toast.success("Microsoft account already connected!");
+        } else {
+          console.log("Microsoft account is not connected:", {
+            provider: session?.user?.app_metadata?.provider,
+            hasToken: !!session?.provider_token
+          });
+          setIsLinked(false);
         }
       } catch (error) {
         console.error("Error checking Microsoft status:", error);
