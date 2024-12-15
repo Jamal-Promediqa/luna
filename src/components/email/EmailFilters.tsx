@@ -21,9 +21,15 @@ export const EmailFilters = ({
   filterValue,
   onFilterChange,
 }: EmailFiltersProps) => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // The search is already live, so we don't need additional logic here
+    // This just prevents the form from refreshing the page
+  };
+
   return (
     <div className="flex gap-4">
-      <div className="relative flex-1">
+      <form onSubmit={handleSubmit} className="relative flex-1">
         <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
         <Input
           placeholder="Sök e-post..."
@@ -31,7 +37,7 @@ export const EmailFilters = ({
           onChange={(e) => onSearchChange(e.target.value)}
           className="pl-9"
         />
-      </div>
+      </form>
       <Select value={filterValue} onValueChange={onFilterChange}>
         <SelectTrigger className="w-[200px]">
           <SelectValue placeholder="Alla e-post" />
