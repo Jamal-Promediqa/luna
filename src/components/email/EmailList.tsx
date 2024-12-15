@@ -2,6 +2,8 @@ import { Star, Archive, Trash2, MoreVertical } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { EmailView } from "./EmailView";
+import { useState } from "react";
 
 interface Email {
   id: string;
@@ -28,17 +30,38 @@ export const EmailList = ({
   onDelete,
   formatDate,
 }: EmailListProps) => {
+  const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
+
+  if (selectedEmail) {
+    return (
+      <EmailView
+        email={selectedEmail}
+        onBack={() => setSelectedEmail(null)}
+        onToggleStar={onToggleStar}
+        onArchive={onArchive}
+        onDelete={onDelete}
+        formatDate={formatDate}
+      />
+    );
+  }
+
   return (
     <div className="space-y-4">
       {emails.map((email) => (
-        <Card key={email.id}>
-          <CardContent className="p-4">
+        <Card key={email.id} className="cursor-pointer hover:bg-accent/50 transition-colors">
+          <CardContent 
+            className="p-4"
+            onClick={() => setSelectedEmail(email)}
+          >
             <div className="flex justify-between items-start">
               <div className="flex gap-4">
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => onToggleStar(email.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onToggleStar(email.id);
+                  }}
                 >
                   <Star
                     className={email.isStarred ? "fill-yellow-400" : ""}
@@ -64,18 +87,28 @@ export const EmailList = ({
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => onArchive(email.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onArchive(email.id);
+                  }}
                 >
                   <Archive className="h-4 w-4" />
                 </Button>
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => onDelete(email.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(email.id);
+                  }}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="icon">
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </div>
