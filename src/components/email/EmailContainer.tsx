@@ -5,12 +5,14 @@ import { EmailList } from "./EmailList";
 import { EmailSidebar } from "./EmailSidebar";
 import { EmailHeader } from "./EmailHeader";
 import { EmailFilters } from "./EmailFilters";
+import { EmailFolders } from "./EmailFolders";
 import { useEmailAuth } from "./hooks/useEmailAuth";
 import { useEmailSync } from "./hooks/useEmailSync";
 
 export const EmailContainer = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterValue, setFilterValue] = useState("alla");
+  const [selectedFolder, setSelectedFolder] = useState("inbox");
   
   const { userId, isConnected, accessToken } = useEmailAuth();
   const { data: emails = [], isLoading, error, refetch } = useEmailSync(userId, accessToken);
@@ -103,11 +105,16 @@ export const EmailContainer = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="container mx-auto space-y-6">
       <EmailHeader />
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-[auto,1fr,auto] gap-6">
+        <EmailFolders 
+          selectedFolder={selectedFolder}
+          onFolderChange={setSelectedFolder}
+        />
+        
+        <div className="space-y-6">
           <EmailFilters
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
