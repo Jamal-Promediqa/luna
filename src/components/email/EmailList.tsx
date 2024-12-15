@@ -62,7 +62,7 @@ export const EmailList = ({
   }
 
   return (
-    <div className="space-y-2 max-w-full">
+    <div className="space-y-2">
       {emails.map((email) => (
         <Card 
           key={email.id} 
@@ -74,76 +74,74 @@ export const EmailList = ({
             className="p-4"
             onClick={() => setSelectedEmail(email)}
           >
-            <div className="flex justify-between items-start gap-4 w-full">
-              <div className="flex gap-4 min-w-0 flex-1">
+            <div className="flex items-start gap-4 min-w-0">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="flex-shrink-0 h-8 w-8"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleStar(email.id);
+                }}
+              >
+                <Star
+                  className={`h-4 w-4 ${email.isStarred ? "fill-yellow-400 text-yellow-400" : ""}`}
+                />
+              </Button>
+
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-semibold truncate max-w-[180px]">
+                    {extractDisplayName(email.sender)}
+                  </span>
+                  {!email.isRead && (
+                    <Badge variant="secondary" className="flex-shrink-0">
+                      Ny
+                    </Badge>
+                  )}
+                  <span className="text-sm text-muted-foreground ml-auto flex-shrink-0">
+                    {formatDate(email.timestamp)}
+                  </span>
+                </div>
+                <div className="text-base font-medium truncate mb-1">
+                  {email.subject}
+                </div>
+                <div className="text-sm text-muted-foreground truncate">
+                  {email.preview}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1 flex-shrink-0">
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="flex-shrink-0 h-8 w-8"
+                  className="h-8 w-8"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onToggleStar(email.id);
+                    onArchive(email.id);
                   }}
                 >
-                  <Star
-                    className={`h-4 w-4 ${email.isStarred ? "fill-yellow-400 text-yellow-400" : ""}`}
-                  />
+                  <Archive className="h-4 w-4" />
                 </Button>
-                <div className="min-w-0 flex-1 overflow-hidden">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="font-semibold truncate max-w-[200px]">
-                      {extractDisplayName(email.sender)}
-                    </span>
-                    {!email.isRead && (
-                      <Badge variant="secondary" className="flex-shrink-0">
-                        Ny
-                      </Badge>
-                    )}
-                  </div>
-                  <div className="text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap mb-1 max-w-[600px]">
-                    {email.subject}
-                  </div>
-                  <div className="text-sm text-muted-foreground text-ellipsis overflow-hidden whitespace-nowrap max-w-[600px]">
-                    {email.preview}
-                  </div>
-                </div>
-              </div>
-              <div className="flex items-start gap-2 flex-shrink-0 ml-4">
-                <span className="text-sm text-muted-foreground whitespace-nowrap">
-                  {formatDate(email.timestamp)}
-                </span>
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onArchive(email.id);
-                    }}
-                  >
-                    <Archive className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onDelete(email.id);
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <MoreVertical className="h-4 w-4" />
-                  </Button>
-                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(email.id);
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           </CardContent>

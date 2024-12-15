@@ -108,13 +108,13 @@ export const EmailContainer = () => {
     <div className="container mx-auto space-y-6">
       <EmailHeader />
       
-      <div className="grid grid-cols-[auto,1fr,auto] gap-6">
+      <div className="grid grid-cols-[240px,1fr,280px] gap-6">
         <EmailFolders 
           selectedFolder={selectedFolder}
           onFolderChange={setSelectedFolder}
         />
         
-        <div className="space-y-6">
+        <div className="space-y-6 min-w-0">
           <EmailFilters
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
@@ -141,12 +141,10 @@ export const EmailContainer = () => {
           )}
         </div>
 
-        <div>
-          <EmailSidebar 
-            onGenerateAIResponse={generateAIResponse}
-            onRefreshInbox={handleRefreshInbox}
-          />
-        </div>
+        <EmailSidebar 
+          onGenerateAIResponse={generateAIResponse}
+          onRefreshInbox={handleRefreshInbox}
+        />
       </div>
     </div>
   );
