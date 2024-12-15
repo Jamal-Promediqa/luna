@@ -186,6 +186,9 @@ export type Database = {
           full_name: string | null
           given_name: string | null
           id: string
+          notification_preferences: Json | null
+          regional_preferences: Json | null
+          theme_preferences: Json | null
           updated_at: string | null
           user_id: string | null
         }
@@ -194,6 +197,9 @@ export type Database = {
           full_name?: string | null
           given_name?: string | null
           id?: string
+          notification_preferences?: Json | null
+          regional_preferences?: Json | null
+          theme_preferences?: Json | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -202,6 +208,9 @@ export type Database = {
           full_name?: string | null
           given_name?: string | null
           id?: string
+          notification_preferences?: Json | null
+          regional_preferences?: Json | null
+          theme_preferences?: Json | null
           updated_at?: string | null
           user_id?: string | null
         }
