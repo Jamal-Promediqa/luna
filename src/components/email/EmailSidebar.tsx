@@ -1,4 +1,4 @@
-import { Mail, Archive, RefreshCw, MessageSquare, Send, Microsoft } from "lucide-react";
+import { Mail, Archive, RefreshCw, MessageSquare, Send, Mail as MailIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,9 +47,7 @@ export const EmailSidebar = ({ onGenerateAIResponse }: EmailSidebarProps) => {
 
   const handleMicrosoftDisconnect = async () => {
     try {
-      const { error } = await supabase.auth.unlinkIdentity('azure');
-      if (error) throw error;
-      
+      await supabase.auth.signOut();
       setIsConnected(false);
       toast.success('Microsoft account disconnected');
     } catch (error) {
@@ -70,7 +68,7 @@ export const EmailSidebar = ({ onGenerateAIResponse }: EmailSidebarProps) => {
                 variant={isConnected ? "destructive" : "default"}
                 onClick={isConnected ? handleMicrosoftDisconnect : handleMicrosoftConnect}
               >
-                <Microsoft className="mr-2 h-4 w-4" />
+                <MailIcon className="mr-2 h-4 w-4" />
                 {isConnected ? 'Disconnect Microsoft Account' : 'Connect Microsoft Account'}
               </Button>
             )}
