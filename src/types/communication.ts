@@ -1,17 +1,6 @@
 import { Database } from './database';
 
-export type OutlookEmail = {
-  id: string;
-  user_id: string | null;
-  subject: string | null;
-  body_preview: string | null;
-  from_address: string | null;
-  is_read: boolean | null;
-  received_at: string | null;
-  created_at: string | null;
-  updated_at: string | null;
-  status: string | null;
-};
+export type OutlookEmail = Database['public']['Tables']['outlook_emails']['Row'];
 
 export type CallRecord = {
   id: string;
