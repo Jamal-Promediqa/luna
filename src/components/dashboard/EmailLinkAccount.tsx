@@ -138,10 +138,18 @@ export const EmailLinkAccount = () => {
         return;
       }
 
-      const { error } = await supabase.auth.unlinkIdentity({
+      // Create a complete UserIdentity object
+      const userIdentity = {
         id: azureIdentity.id,
-        provider: azureIdentity.provider
-      });
+        user_id: session.user.id,
+        identity_data: azureIdentity.identity_data,
+        provider: azureIdentity.provider,
+        created_at: azureIdentity.created_at,
+        updated_at: azureIdentity.updated_at,
+        last_sign_in_at: azureIdentity.last_sign_in_at
+      };
+
+      const { error } = await supabase.auth.unlinkIdentity(userIdentity);
       
       if (error) {
         console.error('Error unlinking Microsoft account:', error);
