@@ -31,7 +31,7 @@ export const fetchEmails = async (accessToken: string) => {
       .api('/me/messages')
       .select('id,subject,bodyPreview,from,isRead,receivedDateTime')
       .top(50)
-      .orderBy('receivedDateTime DESC')
+      .orderby('receivedDateTime desc')
       .get();
 
     return response.value as OutlookEmail[];

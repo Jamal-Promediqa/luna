@@ -11,9 +11,15 @@ import { EmailSidebar } from "@/components/email/EmailSidebar";
 export default function EmailDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterValue, setFilterValue] = useState("alla");
+  const [userId, setUserId] = useState<string | null>(null);
 
-  const { data: session } = await supabase.auth.getSession();
-  const userId = session?.user?.id;
+  useEffect(() => {
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setUserId(session?.user?.id ?? null);
+    };
+    getSession();
+  }, []);
 
   const { data: emails = [], isLoading } = useQuery({
     queryKey: ['emails', userId],
@@ -27,10 +33,11 @@ export default function EmailDashboard() {
         .order('received_at', { ascending: false });
 
       // Then fetch fresh emails from Microsoft Graph
-      const { data: { provider_token } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabase.auth.getSession();
+      const accessToken = session?.provider_token;
       
-      if (provider_token) {
-        const outlookEmails = await fetchEmails(provider_token);
+      if (accessToken) {
+        const outlookEmails = await fetchEmails(accessToken);
         await syncEmailsToSupabase(userId, outlookEmails);
         
         // Return fresh data
@@ -39,10 +46,26 @@ export default function EmailDashboard() {
           .select('*')
           .order('received_at', { ascending: false });
           
-        return freshEmails;
+        return freshEmails?.map(email => ({
+          id: email.id,
+          sender: email.from_address || '',
+          subject: email.subject || '',
+          preview: email.body_preview || '',
+          timestamp: email.received_at || '',
+          isStarred: email.is_starred || false,
+          isRead: email.is_read || false
+        })) || [];
       }
 
-      return cachedEmails || [];
+      return (cachedEmails || []).map(email => ({
+        id: email.id,
+        sender: email.from_address || '',
+        subject: email.subject || '',
+        preview: email.body_preview || '',
+        timestamp: email.received_at || '',
+        isStarred: email.is_starred || false,
+        isRead: email.is_read || false
+      }));
     },
     enabled: !!userId,
   });
