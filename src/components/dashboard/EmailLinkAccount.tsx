@@ -38,7 +38,12 @@ export const EmailLinkAccount = () => {
         const { data: { session } } = await supabase.auth.getSession();
         console.log("Current session:", session);
         
-        if (session?.provider_token && session?.user?.app_metadata?.provider === 'azure') {
+        // Check if user has Microsoft (Azure) identity
+        const hasMicrosoftIdentity = session?.user?.identities?.some(
+          identity => identity.provider === 'azure'
+        );
+        
+        if (hasMicrosoftIdentity) {
           console.log("Microsoft account is connected");
           setIsLinked(true);
           toast.success("Microsoft account connected!");
