@@ -126,28 +126,37 @@ export const MicrosoftAuth = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
-      // Update the user's metadata to remove Microsoft connection
-      const { error: updateError } = await supabase.auth.updateUser({
+      if (!session?.user) {
+        toast.error('No active session found');
+        return;
+      }
+
+      // First, update the user's app metadata
+      const { error: metadataError } = await supabase.auth.updateUser({
         data: {
           microsoft_connected: false,
-          providers: session?.user?.app_metadata?.providers?.filter(p => p !== 'azure') || []
+          providers: ['email']
         }
       });
 
-      if (updateError) {
-        console.error('Error updating user metadata:', updateError);
+      if (metadataError) {
+        console.error('Error updating user metadata:', metadataError);
         toast.error('Failed to disconnect Microsoft account');
         return;
       }
 
-      // Force refresh the session to update the providers list
-      await supabase.auth.refreshSession();
+      // Force refresh the session
+      const { error: refreshError } = await supabase.auth.refreshSession();
       
+      if (refreshError) {
+        console.error('Error refreshing session:', refreshError);
+        toast.error('Failed to refresh session');
+        return;
+      }
+
       setIsLinked(false);
       toast.success('Microsoft account disconnected successfully');
       
-      // Refresh the emails page to update the UI
-      window.location.href = '/emails';
     } catch (error) {
       console.error('Error during Microsoft account disconnect:', error);
       toast.error('Failed to disconnect Microsoft account');
