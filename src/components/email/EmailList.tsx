@@ -62,11 +62,13 @@ export const EmailList = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {emails.map((email) => (
         <Card 
           key={email.id} 
-          className="cursor-pointer hover:bg-accent/50 transition-colors"
+          className={`cursor-pointer transition-colors ${
+            email.isRead ? 'hover:bg-accent/50' : 'bg-accent/20 hover:bg-accent/30'
+          }`}
         >
           <CardContent 
             className="p-4"
@@ -77,14 +79,14 @@ export const EmailList = ({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="flex-shrink-0"
+                  className="flex-shrink-0 h-8 w-8"
                   onClick={(e) => {
                     e.stopPropagation();
                     onToggleStar(email.id);
                   }}
                 >
                   <Star
-                    className={email.isStarred ? "fill-yellow-400" : ""}
+                    className={`h-4 w-4 ${email.isStarred ? "fill-yellow-400 text-yellow-400" : ""}`}
                   />
                 </Button>
                 <div className="min-w-0 flex-1">
@@ -98,15 +100,15 @@ export const EmailList = ({
                       </Badge>
                     )}
                   </div>
-                  <div className="text-base font-medium truncate mb-1">
+                  <div className="text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap mb-1">
                     {email.subject}
                   </div>
-                  <div className="text-sm text-muted-foreground truncate">
+                  <div className="text-sm text-muted-foreground text-ellipsis overflow-hidden whitespace-nowrap">
                     {email.preview}
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 flex-shrink-0">
+              <div className="flex items-start gap-2 flex-shrink-0">
                 <span className="text-sm text-muted-foreground whitespace-nowrap">
                   {formatDate(email.timestamp)}
                 </span>
@@ -114,6 +116,7 @@ export const EmailList = ({
                   <Button
                     variant="ghost"
                     size="icon"
+                    className="h-8 w-8"
                     onClick={(e) => {
                       e.stopPropagation();
                       onArchive(email.id);
@@ -124,6 +127,7 @@ export const EmailList = ({
                   <Button
                     variant="ghost"
                     size="icon"
+                    className="h-8 w-8"
                     onClick={(e) => {
                       e.stopPropagation();
                       onDelete(email.id);
@@ -134,6 +138,7 @@ export const EmailList = ({
                   <Button 
                     variant="ghost" 
                     size="icon"
+                    className="h-8 w-8"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <MoreVertical className="h-4 w-4" />
@@ -144,6 +149,11 @@ export const EmailList = ({
           </CardContent>
         </Card>
       ))}
+      {emails.length === 0 && (
+        <div className="text-center py-8 text-muted-foreground">
+          Inga e-postmeddelanden att visa
+        </div>
+      )}
     </div>
   );
 };
