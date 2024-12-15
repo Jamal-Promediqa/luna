@@ -1,4 +1,3 @@
-import { Json } from "@/integrations/supabase/types";
 import { EmailTemplatesTable, OutlookEmailsTable } from "./email";
 import { ProfilesTable } from "./auth";
 import { TasksTable } from "./tasks";

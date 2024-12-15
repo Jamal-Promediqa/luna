@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Sparkles, Plus, Edit, Trash } from "lucide-react";
+import { Plus, Edit } from "lucide-react";
 import { EmailTemplate } from "@/types/email";
 
 interface EmailTemplatesProps {
@@ -43,14 +43,16 @@ export const EmailTemplates = ({ isConnected, onSelectTemplate }: EmailTemplates
   const handleSaveTemplate = async () => {
     try {
       setIsLoading(true);
-      const { error } = await supabase.from("email_templates").insert([
-        {
-          name: currentTemplate.name,
-          subject: currentTemplate.subject,
-          content: currentTemplate.content,
-          category: currentTemplate.category,
-        },
-      ]);
+      const { error } = await supabase
+        .from("email_templates")
+        .insert([
+          {
+            name: currentTemplate.name,
+            subject: currentTemplate.subject,
+            content: currentTemplate.content,
+            category: currentTemplate.category,
+          },
+        ]);
 
       if (error) throw error;
 
