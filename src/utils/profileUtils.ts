@@ -3,6 +3,14 @@ import { toast } from "sonner";
 
 export const ensureUserProfile = async (userId: string) => {
   try {
+    // Get user email first
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    
+    if (userError) {
+      console.error("Error getting user:", userError);
+      return false;
+    }
+
     // First check if profile exists
     const { data: existingProfile, error: checkError } = await supabase
       .from("profiles")
@@ -22,12 +30,13 @@ export const ensureUserProfile = async (userId: string) => {
     }
 
     // Profile doesn't exist, try to create it with default preferences
+    const defaultName = user?.email?.split('@')[0] || 'User';
     const { error: insertError } = await supabase
       .from("profiles")
       .upsert({
         user_id: userId,
-        given_name: "",
-        full_name: "",
+        given_name: defaultName,
+        full_name: defaultName,
         notification_preferences: {
           email: true,
           inApp: true,

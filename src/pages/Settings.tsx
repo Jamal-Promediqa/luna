@@ -36,7 +36,10 @@ const Settings = () => {
       try {
         // Ensure profile exists before loading data
         const profileExists = await ensureUserProfile(session.user.id);
-        if (!profileExists) return;
+        if (!profileExists) {
+          toast.error("Could not load profile");
+          return;
+        }
 
         // Load profile data
         const { data: profile, error: profileError } = await supabase
@@ -45,7 +48,11 @@ const Settings = () => {
           .eq("user_id", session.user.id)
           .single();
 
-        if (profileError) throw profileError;
+        if (profileError) {
+          console.error("Error loading profile:", profileError);
+          toast.error("Could not load profile information");
+          return;
+        }
 
         if (profile) {
           setGivenName(profile.given_name || "");
@@ -73,9 +80,11 @@ const Settings = () => {
         .from("profiles")
         .upsert({
           user_id: session.user.id,
-          given_name: givenName,
-          full_name: fullName,
+          given_name: givenName || session.user.email?.split('@')[0],
+          full_name: fullName || session.user.email?.split('@')[0],
           updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'user_id'
         });
 
       if (error) throw error;
