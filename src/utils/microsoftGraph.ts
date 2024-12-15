@@ -18,9 +18,11 @@ export interface OutlookEmail {
 
 export const initializeGraphClient = (accessToken: string) => {
   if (!accessToken) {
+    console.error("No access token provided to initialize Graph client");
     throw new Error("No access token provided");
   }
   
+  console.log("Initializing Microsoft Graph client with token");
   return Client.init({
     authProvider: (done) => {
       done(null, accessToken);
@@ -30,7 +32,7 @@ export const initializeGraphClient = (accessToken: string) => {
 
 export const fetchEmails = async (accessToken: string) => {
   try {
-    console.log("Fetching emails with access token:", accessToken ? "Present" : "Missing");
+    console.log("Fetching emails from Microsoft Graph API");
     const client = initializeGraphClient(accessToken);
     
     const response = await client
@@ -40,17 +42,17 @@ export const fetchEmails = async (accessToken: string) => {
       .orderby('receivedDateTime desc')
       .get();
 
-    console.log("Fetched emails count:", response.value?.length || 0);
+    console.log("Successfully fetched emails from Microsoft Graph API:", response.value?.length || 0);
     return response.value as OutlookEmail[];
   } catch (error) {
-    console.error('Error fetching emails:', error);
+    console.error('Error fetching emails from Microsoft Graph:', error);
     throw error;
   }
 };
 
 export const syncEmailsToSupabase = async (userId: string, emails: OutlookEmail[]) => {
   try {
-    console.log("Syncing emails to Supabase for user:", userId);
+    console.log("Starting email sync to Supabase for user:", userId);
     console.log("Emails to sync:", emails.length);
 
     const { error } = await supabase.from('outlook_emails').upsert(
@@ -71,11 +73,11 @@ export const syncEmailsToSupabase = async (userId: string, emails: OutlookEmail[
     );
 
     if (error) {
-      console.error('Error syncing emails:', error);
+      console.error('Error syncing emails to Supabase:', error);
       throw error;
     }
 
-    console.log("Emails synced successfully");
+    console.log("Successfully synced emails to Supabase");
   } catch (error) {
     console.error('Error in syncEmailsToSupabase:', error);
     throw error;
