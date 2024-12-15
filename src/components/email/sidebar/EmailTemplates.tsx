@@ -7,9 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, Plus, Edit, Trash } from "lucide-react";
-import { Tables } from "@/integrations/supabase/types";
-
-type Template = Tables<"email_templates">;
+import { EmailTemplate } from "@/types/email";
 
 interface EmailTemplatesProps {
   isConnected: boolean;
@@ -17,7 +15,7 @@ interface EmailTemplatesProps {
 }
 
 export const EmailTemplates = ({ isConnected, onSelectTemplate }: EmailTemplatesProps) => {
-  const [templates, setTemplates] = useState<Template[]>([]);
+  const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [showTemplateDialog, setShowTemplateDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [currentTemplate, setCurrentTemplate] = useState({
@@ -68,9 +66,8 @@ export const EmailTemplates = ({ isConnected, onSelectTemplate }: EmailTemplates
     }
   };
 
-  const handleSelectTemplate = async (template: Template) => {
+  const handleSelectTemplate = async (template: EmailTemplate) => {
     try {
-      // Update usage count
       await supabase
         .from("email_templates")
         .update({ 
