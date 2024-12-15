@@ -31,11 +31,14 @@ export const EmailLinkAccount = () => {
       console.log("4. Auth configuration:", authConfig);
 
       const { data, error } = await supabase.auth.signInWithOAuth({
-        ...authConfig,
+        provider: 'azure',
         options: {
-          ...authConfig.options,
+          scopes: 'email Mail.Read Mail.Send Mail.ReadWrite offline_access profile User.Read',
           redirectTo: redirectUrl,
-          skipBrowserRedirect: false
+          skipBrowserRedirect: false,
+          queryParams: {
+            prompt: 'consent'
+          }
         }
       });
 
