@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Mail } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -9,6 +9,24 @@ export const EmailLinkAccount = () => {
   const [isLinking, setIsLinking] = useState(false);
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+
+  useEffect(() => {
+    const checkMicrosoftStatus = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log("Current session:", session);
+        
+        if (session?.provider_token) {
+          console.log("Provider token found:", session.provider_token);
+          toast.success("Microsoft account connected successfully!");
+        }
+      } catch (error) {
+        console.error("Error checking Microsoft status:", error);
+      }
+    };
+
+    checkMicrosoftStatus();
+  }, []);
 
   const handleMicrosoftLink = async () => {
     setIsLinking(true);
@@ -24,8 +42,7 @@ export const EmailLinkAccount = () => {
           scopes: 'email Mail.Read Mail.Send Mail.ReadWrite offline_access profile User.Read',
           queryParams: {
             prompt: 'consent',
-            access_type: 'offline',
-            response_mode: 'query'
+            access_type: 'offline'
           }
         }
       });
@@ -106,7 +123,7 @@ export const EmailLinkAccount = () => {
       <Button 
         onClick={handleMicrosoftLink} 
         disabled={isLinking}
-        className="w-full"
+        className="w-full bg-[#107C10] hover:bg-[#0B5C0B] text-white"
       >
         {isLinking ? 'Connecting...' : 'Connect Microsoft Account'}
       </Button>
