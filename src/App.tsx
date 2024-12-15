@@ -14,6 +14,7 @@ import Settings from "@/pages/Settings";
 import Tasks from "@/pages/Tasks";
 import Notifications from "@/pages/Notifications";
 import BackgroundChecks from "@/pages/BackgroundChecks";
+import Emails from "@/pages/Emails";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,7 @@ function App() {
             <Route path="/tasks" element={<Tasks />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/background-checks" element={<BackgroundChecks />} />
+            <Route path="/emails" element={<Emails />} />
           </Routes>
         </BrowserRouter>
       </ThemeProvider>
