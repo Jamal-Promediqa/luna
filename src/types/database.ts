@@ -1,6 +1,77 @@
 export interface Database {
   public: {
     Tables: {
+      profiles: {
+        Row: {
+          id: string;
+          user_id: string | null;
+          given_name: string | null;
+          full_name: string | null;
+          notification_preferences: {
+            email: boolean;
+            inApp: boolean;
+            schedule: string;
+          } | null;
+          theme_preferences: {
+            darkMode: boolean;
+            uiDensity: string;
+            colorScheme: string;
+          } | null;
+          regional_preferences: {
+            language: string;
+            timezone: string;
+            dateFormat: string;
+          } | null;
+          created_at: string | null;
+          updated_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string | null;
+          given_name?: string | null;
+          full_name?: string | null;
+          notification_preferences?: {
+            email: boolean;
+            inApp: boolean;
+            schedule: string;
+          } | null;
+          theme_preferences?: {
+            darkMode: boolean;
+            uiDensity: string;
+            colorScheme: string;
+          } | null;
+          regional_preferences?: {
+            language: string;
+            timezone: string;
+            dateFormat: string;
+          } | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          user_id?: string | null;
+          given_name?: string | null;
+          full_name?: string | null;
+          notification_preferences?: {
+            email: boolean;
+            inApp: boolean;
+            schedule: string;
+          } | null;
+          theme_preferences?: {
+            darkMode: boolean;
+            uiDensity: string;
+            colorScheme: string;
+          } | null;
+          regional_preferences?: {
+            language: string;
+            timezone: string;
+            dateFormat: string;
+          } | null;
+          created_at?: string | null;
+          updated_at?: string | null;
+        };
+      };
       tasks: {
         Row: {
           id: string;
@@ -61,32 +132,6 @@ export interface Database {
           presented_consultants?: number | null;
           booked_weeks?: number | null;
           call_count?: number | null;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-      };
-      profiles: {
-        Row: {
-          id: string;
-          user_id: string | null;
-          given_name: string | null;
-          full_name: string | null;
-          created_at: string | null;
-          updated_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          user_id?: string | null;
-          given_name?: string | null;
-          full_name?: string | null;
-          created_at?: string | null;
-          updated_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          user_id?: string | null;
-          given_name?: string | null;
-          full_name?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
         };
@@ -235,3 +280,13 @@ export interface Database {
     CompositeTypes: {};
   };
 }
+
+// Export specific types for better reusability
+export type Profile = Database['public']['Tables']['profiles']['Row'];
+export type ProfileInsert = Database['public']['Tables']['profiles']['Insert'];
+export type ProfileUpdate = Database['public']['Tables']['profiles']['Update'];
+
+// Export preference-specific types
+export type NotificationPreferences = NonNullable<Profile['notification_preferences']>;
+export type ThemePreferences = NonNullable<Profile['theme_preferences']>;
+export type RegionalPreferences = NonNullable<Profile['regional_preferences']>;
