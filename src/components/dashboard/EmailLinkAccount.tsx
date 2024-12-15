@@ -19,9 +19,11 @@ export const EmailLinkAccount = () => {
     try {
       console.log("1. Starting Microsoft authentication...");
       
-      // Get the current URL for the redirect
-      const baseUrl = window.location.origin;
+      // Use the production URL in production, fallback to localhost in development
+      const isProd = import.meta.env.PROD;
+      const baseUrl = isProd ? "https://luna-umber.vercel.app" : window.location.origin;
       const redirectUrl = `${baseUrl}/dashboard`;
+      
       console.log("2. Base URL:", baseUrl);
       console.log("3. Redirect URL:", redirectUrl);
 
