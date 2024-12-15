@@ -33,20 +33,45 @@ const Settings = () => {
       setUserEmail(session.user.email);
 
       try {
+        // First, try to get the profile
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("given_name, full_name")
           .eq("user_id", session.user.id)
           .single();
 
-        if (profileError) throw profileError;
+        if (profileError) {
+          // If profile doesn't exist, create it with default preferences
+          const { error: insertError } = await supabase
+            .from("profiles")
+            .insert([{
+              user_id: session.user.id,
+              given_name: "",
+              full_name: "",
+              notification_preferences: {
+                email: true,
+                inApp: true,
+                schedule: "always"
+              },
+              theme_preferences: {
+                darkMode: false,
+                uiDensity: "comfortable",
+                colorScheme: "default"
+              },
+              regional_preferences: {
+                language: "en",
+                timezone: "UTC",
+                dateFormat: "YYYY-MM-DD"
+              }
+            }]);
 
-        if (profile) {
+          if (insertError) throw insertError;
+        } else if (profile) {
           setGivenName(profile.given_name || "");
           setFullName(profile.full_name || "");
         }
       } catch (error) {
-        console.error("Error fetching profile:", error);
+        console.error("Error fetching/creating profile:", error);
         toast.error("Could not load profile information");
       }
     };

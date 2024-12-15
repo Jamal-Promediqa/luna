@@ -1,4 +1,4 @@
-import { Database } from '../types/database';
+import { Database } from '@/types/database';
 
 export type Tables<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Row'];
 export type Insertable<T extends keyof Database['public']['Tables']> = Database['public']['Tables'][T]['Insert'];
@@ -12,4 +12,4 @@ export type {
   NotificationPreferences,
   ThemePreferences,
   RegionalPreferences
-} from '../types/database';
+} from '@/types/database';
