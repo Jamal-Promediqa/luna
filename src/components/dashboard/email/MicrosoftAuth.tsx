@@ -126,10 +126,15 @@ export const MicrosoftAuth = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
-      // Update the user's metadata to remove Microsoft connection
+      // First update the user's app_metadata to remove azure from providers
       const { error: updateError } = await supabase.auth.updateUser({
         data: { 
-          microsoft_connected: false 
+          microsoft_connected: false
+        },
+        options: {
+          data: {
+            providers: session?.user?.app_metadata?.providers?.filter(p => p !== 'azure') || []
+          }
         }
       });
 
@@ -139,10 +144,13 @@ export const MicrosoftAuth = () => {
         return;
       }
 
+      // Force refresh the session to update the providers list
+      await supabase.auth.refreshSession();
+      
       setIsLinked(false);
       toast.success('Microsoft account disconnected successfully');
       
-      // Refresh the component state without full page reload
+      // Refresh the emails page to update the UI
       window.location.href = '/emails';
     } catch (error) {
       console.error('Error during Microsoft account disconnect:', error);
