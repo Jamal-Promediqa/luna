@@ -7,20 +7,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, Plus, Edit, Trash } from "lucide-react";
+import { Tables } from "@/integrations/supabase/types";
+
+type Template = Tables<"email_templates">;
 
 interface EmailTemplatesProps {
   isConnected: boolean;
   onSelectTemplate: (template: string) => void;
-}
-
-interface Template {
-  id: string;
-  name: string;
-  subject: string | null;
-  content: string;
-  variables: string[];
-  category: string | null;
-  usage_count: number;
 }
 
 export const EmailTemplates = ({ isConnected, onSelectTemplate }: EmailTemplatesProps) => {
@@ -81,7 +74,7 @@ export const EmailTemplates = ({ isConnected, onSelectTemplate }: EmailTemplates
       await supabase
         .from("email_templates")
         .update({ 
-          usage_count: template.usage_count + 1,
+          usage_count: (template.usage_count || 0) + 1,
           last_used_at: new Date().toISOString()
         })
         .eq("id", template.id);
