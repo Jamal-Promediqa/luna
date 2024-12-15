@@ -8,7 +8,7 @@ import {
   Send, 
   Trash2, 
   MessageSquare, 
-  Spam, 
+  MailX, 
   Users 
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -40,7 +40,7 @@ export const EmailFolders = ({ selectedFolder, onFolderChange }: EmailFoldersPro
         .from('outlook_emails')
         .select('status, count(*)')
         .eq('user_id', user.id)
-        .group_by('status');
+        .groupBy('status');
 
       if (error) {
         console.error('Error fetching email counts:', error);
@@ -64,7 +64,7 @@ export const EmailFolders = ({ selectedFolder, onFolderChange }: EmailFoldersPro
     { id: 'sent', label: 'Sent', icon: <Send className="h-4 w-4" />, count: emailCounts?.sent },
     { id: 'deleted', label: 'Deleted Items', icon: <Trash2 className="h-4 w-4" />, count: emailCounts?.deleted },
     { id: 'conversation', label: 'Conversation History', icon: <MessageSquare className="h-4 w-4" /> },
-    { id: 'junk', label: 'Junk Email', icon: <Spam className="h-4 w-4" />, count: emailCounts?.junk },
+    { id: 'junk', label: 'Junk Email', icon: <MailX className="h-4 w-4" />, count: emailCounts?.junk },
     { id: 'groups', label: 'Groups', icon: <Users className="h-4 w-4" /> },
   ];
 
