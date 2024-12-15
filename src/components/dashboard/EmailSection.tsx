@@ -18,13 +18,16 @@ export const EmailSection = () => {
     queryKey: ['session'],
     queryFn: async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
+      console.log("Session data:", session);
       
       if (error) {
+        console.error("Session error:", error);
         setConnectionError("Failed to check session status");
         return null;
       }
 
       const hasMicrosoftProvider = session?.user?.app_metadata?.provider === 'azure';
+      console.log("Has Microsoft provider:", hasMicrosoftProvider);
       setIsMicrosoftLinked(!!hasMicrosoftProvider);
       return session;
     }
@@ -33,8 +36,12 @@ export const EmailSection = () => {
   const { data: emails, isLoading, refetch } = useQuery({
     queryKey: ['outlook-emails'],
     queryFn: async () => {
-      if (!session || !isMicrosoftLinked) return null;
+      if (!session || !isMicrosoftLinked) {
+        console.log("Skipping email fetch - no session or Microsoft not linked");
+        return null;
+      }
 
+      console.log("Fetching emails for user:", session.user.id);
       const { data, error } = await supabase
         .from('outlook_emails')
         .select('*')
@@ -42,10 +49,12 @@ export const EmailSection = () => {
         .limit(5);
 
       if (error) {
+        console.error("Error fetching emails:", error);
         setConnectionError("Failed to fetch emails");
         throw error;
       }
       
+      console.log("Fetched emails:", data);
       return data;
     },
     enabled: !!session && isMicrosoftLinked
