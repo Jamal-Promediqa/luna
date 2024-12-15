@@ -52,8 +52,8 @@ export const EmailReplyDialog = ({
       
       const { data, error } = await supabase.functions.invoke('generate-email-assistant', {
         body: {
-          prompt: "Write a professional response",
-          context
+          prompt: "Polish and improve this email response while maintaining its core message",
+          context: `Original draft: ${emailContent}. ${context}`
         },
       });
 
@@ -106,7 +106,8 @@ export const EmailReplyDialog = ({
               size="sm"
               className="absolute top-2 right-2"
               onClick={handleAIAssist}
-              disabled={isGenerating || isLoading}
+              disabled={isGenerating || isLoading || !emailContent.trim()}
+              variant="secondary"
             >
               <Sparkles className="h-4 w-4 mr-2" />
               {isGenerating ? "Genererar..." : "AI Assist"}
