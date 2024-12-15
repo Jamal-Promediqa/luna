@@ -7,6 +7,7 @@ import {
   MessageSquare,
   Send,
 } from "lucide-react";
+import { EmailLinkAccount } from "../EmailLinkAccount";
 
 interface EmailQuickActionsProps {
   onCompose: () => void;
@@ -62,6 +63,8 @@ export const EmailQuickActions = ({
           </div>
         </CardContent>
       </Card>
+
+      <EmailLinkAccount />
     </div>
   );
 };
