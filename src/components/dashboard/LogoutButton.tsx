@@ -18,8 +18,12 @@ export const LogoutButton = () => {
         return;
       }
       
-      // Clear all React Query caches
+      // Clear all React Query caches and local storage
       queryClient.clear();
+      localStorage.clear();
+      
+      // Ensure we're properly signed out from Supabase
+      await supabase.auth.clearSession();
       
       toast.success('Du har loggats ut');
       navigate('/login');
