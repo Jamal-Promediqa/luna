@@ -2,6 +2,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 interface MetricCardProps {
   label: string;
@@ -24,54 +25,82 @@ export const EmailMetrics = () => {
   const { data: metrics, isLoading } = useQuery({
     queryKey: ['email-metrics'],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No user found');
+      try {
+        console.log("Fetching email metrics...");
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          console.error("No user found");
+          toast.error("Please log in to view email metrics");
+          throw new Error('No user found');
+        }
 
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-      // Get total emails
-      const { data: totalEmails, error: totalError } = await supabase
-        .from('outlook_emails')
-        .select('id')
-        .eq('user_id', user.id);
+        // Get total emails
+        const { data: totalEmails, error: totalError } = await supabase
+          .from('outlook_emails')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('status', 'inbox');
 
-      if (totalError) throw totalError;
+        if (totalError) {
+          console.error("Error fetching total emails:", totalError);
+          throw totalError;
+        }
 
-      // Get unread emails
-      const { data: unreadEmails, error: unreadError } = await supabase
-        .from('outlook_emails')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('is_read', false);
+        // Get unread emails
+        const { data: unreadEmails, error: unreadError } = await supabase
+          .from('outlook_emails')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('is_read', false)
+          .eq('status', 'inbox');
 
-      if (unreadError) throw unreadError;
+        if (unreadError) {
+          console.error("Error fetching unread emails:", unreadError);
+          throw unreadError;
+        }
 
-      // Get emails sent today
-      const { data: todayEmails, error: todayError } = await supabase
-        .from('outlook_emails')
-        .select('id')
-        .eq('user_id', user.id)
-        .gte('received_at', format(today, 'yyyy-MM-dd'));
+        // Get emails received today
+        const { data: todayEmails, error: todayError } = await supabase
+          .from('outlook_emails')
+          .select('id')
+          .eq('user_id', user.id)
+          .gte('received_at', format(today, 'yyyy-MM-dd'))
+          .eq('status', 'inbox');
 
-      if (todayError) throw todayError;
+        if (todayError) {
+          console.error("Error fetching today's emails:", todayError);
+          throw todayError;
+        }
 
-      // Get archived emails (we'll need to add this status to the table)
-      const { data: archivedEmails, error: archivedError } = await supabase
-        .from('outlook_emails')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('status', 'archived');
+        // Get archived emails
+        const { data: archivedEmails, error: archivedError } = await supabase
+          .from('outlook_emails')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('status', 'archived');
 
-      if (archivedError) throw archivedError;
+        if (archivedError) {
+          console.error("Error fetching archived emails:", archivedError);
+          throw archivedError;
+        }
 
-      return {
-        total: totalEmails?.length || 0,
-        unread: unreadEmails?.length || 0,
-        today: todayEmails?.length || 0,
-        archived: archivedEmails?.length || 0,
-      };
-    }
+        console.log("Email metrics fetched successfully");
+        return {
+          total: totalEmails?.length || 0,
+          unread: unreadEmails?.length || 0,
+          today: todayEmails?.length || 0,
+          archived: archivedEmails?.length || 0,
+        };
+      } catch (error) {
+        console.error("Error in email metrics query:", error);
+        toast.error("Could not fetch email metrics");
+        throw error;
+      }
+    },
+    retry: 1,
   });
 
   return (

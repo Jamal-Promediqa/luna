@@ -145,6 +145,7 @@ export type Database = {
           is_starred: boolean | null
           message_id: string
           received_at: string | null
+          status: string | null
           subject: string | null
           updated_at: string | null
           user_id: string | null
@@ -158,6 +159,7 @@ export type Database = {
           is_starred?: boolean | null
           message_id: string
           received_at?: string | null
+          status?: string | null
           subject?: string | null
           updated_at?: string | null
           user_id?: string | null
@@ -171,6 +173,7 @@ export type Database = {
           is_starred?: boolean | null
           message_id?: string
           received_at?: string | null
+          status?: string | null
           subject?: string | null
           updated_at?: string | null
           user_id?: string | null
