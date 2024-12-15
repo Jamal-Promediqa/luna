@@ -15,7 +15,7 @@ export const EmailContainer = () => {
   const [selectedFolder, setSelectedFolder] = useState("inbox");
   
   const { userId, isConnected, accessToken } = useEmailAuth();
-  const { data: emails = [], isLoading, error, refetch } = useEmailSync(userId, accessToken);
+  const { data: emails = [], isLoading, error, refetch } = useEmailSync(userId, accessToken, selectedFolder);
 
   const formatDate = useCallback((dateString: string) => {
     return new Date(dateString).toLocaleString("sv-SE", {

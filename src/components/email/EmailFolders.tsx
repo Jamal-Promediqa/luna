@@ -38,18 +38,19 @@ export const EmailFolders = ({ selectedFolder, onFolderChange }: EmailFoldersPro
       // Get counts for each status
       const { data: statusCounts, error } = await supabase
         .from('outlook_emails')
-        .select('status, count(*)')
-        .eq('user_id', user.id)
-        .groupBy('status');
+        .select('status')
+        .eq('user_id', user.id);
 
       if (error) {
         console.error('Error fetching email counts:', error);
         return counts;
       }
 
-      statusCounts.forEach((item: any) => {
-        if (item.status in counts) {
-          counts[item.status as keyof typeof counts] = item.count;
+      // Count emails by status
+      statusCounts.forEach((email: any) => {
+        const status = email.status as keyof typeof counts;
+        if (status in counts) {
+          counts[status]++;
         }
       });
 

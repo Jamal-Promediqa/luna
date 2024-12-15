@@ -3,9 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { fetchEmails, syncEmailsToSupabase } from "@/utils/microsoftGraph";
 import { toast } from "sonner";
 
-export const useEmailSync = (userId: string | null, accessToken: string | null) => {
+export const useEmailSync = (userId: string | null, accessToken: string | null, folder: string = 'inbox') => {
   return useQuery({
-    queryKey: ['emails', userId, accessToken],
+    queryKey: ['emails', userId, accessToken, folder],
     queryFn: async () => {
       if (!userId) {
         console.log("No user ID found");
@@ -14,11 +14,12 @@ export const useEmailSync = (userId: string | null, accessToken: string | null) 
       
       try {
         console.log("Starting email fetch process");
-        // First try to get cached emails
+        // First try to get cached emails for the selected folder
         const { data: cachedEmails, error: cacheError } = await supabase
           .from('outlook_emails')
           .select('*')
           .eq('user_id', userId)
+          .eq('status', folder)
           .order('received_at', { ascending: false });
 
         if (cacheError) {
@@ -27,7 +28,7 @@ export const useEmailSync = (userId: string | null, accessToken: string | null) 
           throw cacheError;
         }
 
-        console.log("Cached emails found:", cachedEmails?.length || 0);
+        console.log(`Cached emails found for folder ${folder}:`, cachedEmails?.length || 0);
 
         // Then fetch fresh emails if we have an access token
         if (accessToken) {
@@ -36,11 +37,12 @@ export const useEmailSync = (userId: string | null, accessToken: string | null) 
             const outlookEmails = await fetchEmails(accessToken);
             await syncEmailsToSupabase(userId, outlookEmails);
             
-            // Return fresh data
+            // Return fresh data for the selected folder
             const { data: freshEmails, error: freshError } = await supabase
               .from('outlook_emails')
               .select('*')
               .eq('user_id', userId)
+              .eq('status', folder)
               .order('received_at', { ascending: false });
               
             if (freshError) {
@@ -49,7 +51,7 @@ export const useEmailSync = (userId: string | null, accessToken: string | null) 
               throw freshError;
             }
 
-            console.log("Fresh emails synced and fetched:", freshEmails?.length || 0);
+            console.log(`Fresh emails synced and fetched for folder ${folder}:`, freshEmails?.length || 0);
             return freshEmails?.map(email => ({
               id: email.id,
               sender: email.from_address || '',
