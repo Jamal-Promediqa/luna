@@ -25,11 +25,10 @@ Deno.serve(async (req) => {
     const { userId } = await req.json();
     console.log('Syncing emails for user:', userId);
 
-    // Get the user's session data
-    const { data: userResponse, error: userError } = await supabase.auth.admin.getUserById(userId);
+    // Get the user's data
+    const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(userId);
     if (userError) throw userError;
-
-    const user = userResponse.user;
+    
     if (!user) throw new Error('User not found');
 
     // Find the Azure identity
@@ -38,16 +37,36 @@ Deno.serve(async (req) => {
       throw new Error('No Microsoft account linked');
     }
 
-    // Get the access token from the identity data
-    const { data: { token }, error: tokenError } = await supabase.auth.admin.generateAccessToken(userId, {
-      properties: {
-        provider: 'azure'
-      }
+    // Get the refresh token from the identity data
+    const refreshToken = azureIdentity.identity_data?.refresh_token;
+    if (!refreshToken) {
+      throw new Error('No refresh token found. Please reconnect your Microsoft account.');
+    }
+
+    // Get a new access token using Azure AD OAuth endpoints
+    const tokenResponse = await fetch('https://login.microsoftonline.com/common/oauth2/v2.0/token', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: new URLSearchParams({
+        client_id: Deno.env.get('AZURE_CLIENT_ID') ?? '',
+        client_secret: Deno.env.get('AZURE_CLIENT_SECRET') ?? '',
+        refresh_token: refreshToken,
+        grant_type: 'refresh_token',
+        scope: 'https://graph.microsoft.com/Mail.Read',
+      }),
     });
 
-    if (tokenError || !token) {
-      console.error('Error getting access token:', tokenError);
-      throw new Error('Failed to get Microsoft access token');
+    if (!tokenResponse.ok) {
+      const errorText = await tokenResponse.text();
+      console.error('Token refresh error:', errorText);
+      throw new Error('Failed to refresh Microsoft access token');
+    }
+
+    const { access_token: accessToken } = await tokenResponse.json();
+    if (!accessToken) {
+      throw new Error('No access token received from Microsoft');
     }
 
     console.log('Successfully retrieved access token');
@@ -55,7 +74,7 @@ Deno.serve(async (req) => {
     // Fetch emails using Microsoft Graph REST API
     const response = await fetch('https://graph.microsoft.com/v1.0/me/messages?$top=50&$orderby=receivedDateTime desc&$select=id,subject,bodyPreview,from,receivedDateTime,isRead', {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json'
       }
     });
