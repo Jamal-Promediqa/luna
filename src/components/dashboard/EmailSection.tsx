@@ -38,8 +38,13 @@ export const EmailSection = () => {
   const { data: emails, isLoading, refetch } = useQuery({
     queryKey: ['outlook-emails'],
     queryFn: async () => {
-      if (!session || !isMicrosoftLinked) {
-        console.log("Skipping email fetch - no session or Microsoft not linked");
+      if (!session?.user?.id) {
+        console.log("No user session, skipping email fetch");
+        return null;
+      }
+
+      if (!isMicrosoftLinked) {
+        console.log("Microsoft not linked, skipping email fetch");
         return null;
       }
 
@@ -47,6 +52,7 @@ export const EmailSection = () => {
       const { data, error } = await supabase
         .from('outlook_emails')
         .select('*')
+        .eq('user_id', session.user.id)
         .order('received_at', { ascending: false })
         .limit(50);
 
@@ -59,7 +65,7 @@ export const EmailSection = () => {
       console.log("Fetched emails:", data);
       return data;
     },
-    enabled: !!session && isMicrosoftLinked,
+    enabled: !!session?.user?.id && isMicrosoftLinked,
     refetchInterval: 30000 // Refresh every 30 seconds
   });
 
