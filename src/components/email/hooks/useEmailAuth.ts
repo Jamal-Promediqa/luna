@@ -9,18 +9,28 @@ export const useEmailAuth = () => {
 
   useEffect(() => {
     const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user?.id) {
-        console.log("User session found:", session.user.id);
-        setUserId(session.user.id);
-        if (session.provider_token) {
-          console.log("Provider token found:", session.provider_token);
-          setAccessToken(session.provider_token);
-          setIsConnected(true);
+      try {
+        console.log("Checking for existing session...");
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user?.id) {
+          console.log("User session found:", session.user.id);
+          setUserId(session.user.id);
+          
+          if (session.provider_token) {
+            console.log("Provider token found");
+            setAccessToken(session.provider_token);
+            setIsConnected(true);
+          } else {
+            console.log("No provider token found - Microsoft account not connected");
+            setIsConnected(false);
+          }
         } else {
-          console.log("No provider token found - user needs to connect Microsoft account");
-          setIsConnected(false);
+          console.log("No session found");
         }
+      } catch (error) {
+        console.error("Error getting session:", error);
+        toast.error("Could not check authentication status");
       }
     };
 
@@ -28,6 +38,8 @@ export const useEmailAuth = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event);
+      console.log("Session provider token:", !!session?.provider_token);
+      
       if (event === 'SIGNED_IN') {
         setUserId(session?.user?.id ?? null);
         if (session?.provider_token) {
@@ -37,6 +49,7 @@ export const useEmailAuth = () => {
           toast.success("Successfully connected to Microsoft account");
         }
       } else if (event === 'SIGNED_OUT') {
+        console.log("User signed out - clearing auth state");
         setUserId(null);
         setAccessToken(null);
         setIsConnected(false);
@@ -44,6 +57,7 @@ export const useEmailAuth = () => {
     });
 
     return () => {
+      console.log("Cleaning up auth subscriptions");
       subscription.unsubscribe();
     };
   }, []);
