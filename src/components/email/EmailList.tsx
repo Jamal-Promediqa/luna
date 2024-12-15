@@ -62,7 +62,7 @@ export const EmailList = ({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 max-w-full">
       {emails.map((email) => (
         <Card 
           key={email.id} 
@@ -74,7 +74,7 @@ export const EmailList = ({
             className="p-4"
             onClick={() => setSelectedEmail(email)}
           >
-            <div className="flex justify-between items-start gap-4">
+            <div className="flex justify-between items-start gap-4 w-full">
               <div className="flex gap-4 min-w-0 flex-1">
                 <Button
                   variant="ghost"
@@ -89,9 +89,9 @@ export const EmailList = ({
                     className={`h-4 w-4 ${email.isStarred ? "fill-yellow-400 text-yellow-400" : ""}`}
                   />
                 </Button>
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1 overflow-hidden">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="font-semibold truncate">
+                    <span className="font-semibold truncate max-w-[200px]">
                       {extractDisplayName(email.sender)}
                     </span>
                     {!email.isRead && (
@@ -100,15 +100,15 @@ export const EmailList = ({
                       </Badge>
                     )}
                   </div>
-                  <div className="text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap mb-1">
+                  <div className="text-base font-medium text-ellipsis overflow-hidden whitespace-nowrap mb-1 max-w-[600px]">
                     {email.subject}
                   </div>
-                  <div className="text-sm text-muted-foreground text-ellipsis overflow-hidden whitespace-nowrap">
+                  <div className="text-sm text-muted-foreground text-ellipsis overflow-hidden whitespace-nowrap max-w-[600px]">
                     {email.preview}
                   </div>
                 </div>
               </div>
-              <div className="flex items-start gap-2 flex-shrink-0">
+              <div className="flex items-start gap-2 flex-shrink-0 ml-4">
                 <span className="text-sm text-muted-foreground whitespace-nowrap">
                   {formatDate(email.timestamp)}
                 </span>
