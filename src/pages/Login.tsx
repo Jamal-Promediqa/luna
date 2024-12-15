@@ -30,11 +30,7 @@ const Login = () => {
       } catch (error) {
         if (!mounted) return;
         console.error("Session check error:", error);
-        toast({
-          title: "Error",
-          description: "Error checking session. Please try again.",
-          variant: "destructive",
-        });
+        toast.error("Error checking session. Please try again.");
       }
     };
 
@@ -51,19 +47,13 @@ const Login = () => {
         switch (event) {
           case 'SIGNED_IN':
             console.log("User signed in, navigating to dashboard");
-            toast({
-              title: "Success",
-              description: "Successfully signed in!",
-            });
+            toast.success("Successfully signed in!");
             navigate("/dashboard");
             break;
           
           case 'SIGNED_OUT':
             console.log("User signed out");
-            toast({
-              title: "Info",
-              description: "Signed out",
-            });
+            toast("Signed out");
             break;
           
           case 'USER_UPDATED':
@@ -72,10 +62,7 @@ const Login = () => {
           
           case 'PASSWORD_RECOVERY':
             console.log("Password recovery initiated");
-            toast({
-              title: "Info",
-              description: "Password recovery email sent",
-            });
+            toast.info("Password recovery email sent");
             break;
           
           default:
