@@ -15,7 +15,7 @@ export interface OutlookEmail {
   receivedDateTime: string;
 }
 
-export const initializeGraphClient = async (accessToken: string) => {
+export const initializeGraphClient = (accessToken: string) => {
   return Client.init({
     authProvider: (done) => {
       done(null, accessToken);
@@ -25,7 +25,7 @@ export const initializeGraphClient = async (accessToken: string) => {
 
 export const fetchEmails = async (accessToken: string) => {
   try {
-    const client = await initializeGraphClient(accessToken);
+    const client = initializeGraphClient(accessToken);
     
     const response = await client
       .api('/me/messages')

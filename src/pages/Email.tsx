@@ -17,64 +17,95 @@ export default function EmailDashboard() {
   useEffect(() => {
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      setUserId(session?.user?.id ?? null);
-      setIsConnected(!!session?.provider_token);
+      if (session?.user?.id) {
+        setUserId(session.user.id);
+        setIsConnected(!!session.provider_token);
+      } else {
+        toast.error("No active session found");
+      }
     };
     getSession();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN') {
+        setUserId(session?.user?.id ?? null);
+        setIsConnected(!!session?.provider_token);
+      } else if (event === 'SIGNED_OUT') {
+        setUserId(null);
+        setIsConnected(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
 
   const { data: emails = [], isLoading, refetch } = useQuery({
     queryKey: ['emails', userId],
     queryFn: async () => {
-      if (!userId) return [];
+      if (!userId) throw new Error("No user found");
       
-      // First try to get cached emails
-      const { data: cachedEmails } = await supabase
-        .from('outlook_emails')
-        .select('*')
-        .order('received_at', { ascending: false });
+      try {
+        // First try to get cached emails
+        const { data: cachedEmails, error: cacheError } = await supabase
+          .from('outlook_emails')
+          .select('*')
+          .eq('user_id', userId)
+          .order('received_at', { ascending: false });
 
-      // Then fetch fresh emails from Microsoft Graph
-      const { data: { session } } = await supabase.auth.getSession();
-      const accessToken = session?.provider_token;
-      
-      if (accessToken) {
-        try {
-          const outlookEmails = await fetchEmails(accessToken);
-          await syncEmailsToSupabase(userId, outlookEmails);
-          
-          // Return fresh data
-          const { data: freshEmails } = await supabase
-            .from('outlook_emails')
-            .select('*')
-            .order('received_at', { ascending: false });
+        if (cacheError) throw cacheError;
+
+        // Then fetch fresh emails from Microsoft Graph
+        const { data: { session } } = await supabase.auth.getSession();
+        const accessToken = session?.provider_token;
+        
+        if (accessToken) {
+          try {
+            const outlookEmails = await fetchEmails(accessToken);
+            await syncEmailsToSupabase(userId, outlookEmails);
             
-          return freshEmails?.map(email => ({
-            id: email.id,
-            sender: email.from_address || '',
-            subject: email.subject || '',
-            preview: email.body_preview || '',
-            timestamp: email.received_at || '',
-            isStarred: email.is_starred || false,
-            isRead: email.is_read || false
-          })) || [];
-        } catch (error) {
-          console.error('Error fetching emails:', error);
-          toast.error('Could not fetch new emails');
+            // Return fresh data
+            const { data: freshEmails, error: freshError } = await supabase
+              .from('outlook_emails')
+              .select('*')
+              .eq('user_id', userId)
+              .order('received_at', { ascending: false });
+              
+            if (freshError) throw freshError;
+            
+            return (freshEmails || []).map(email => ({
+              id: email.id,
+              sender: email.from_address || '',
+              subject: email.subject || '',
+              preview: email.body_preview || '',
+              timestamp: email.received_at || '',
+              isStarred: email.is_starred || false,
+              isRead: email.is_read || false
+            }));
+          } catch (error) {
+            console.error('Error fetching fresh emails:', error);
+            toast.error('Could not fetch new emails');
+          }
         }
-      }
 
-      return (cachedEmails || []).map(email => ({
-        id: email.id,
-        sender: email.from_address || '',
-        subject: email.subject || '',
-        preview: email.body_preview || '',
-        timestamp: email.received_at || '',
-        isStarred: email.is_starred || false,
-        isRead: email.is_read || false
-      }));
+        // Return cached emails if Microsoft sync fails
+        return (cachedEmails || []).map(email => ({
+          id: email.id,
+          sender: email.from_address || '',
+          subject: email.subject || '',
+          preview: email.body_preview || '',
+          timestamp: email.received_at || '',
+          isStarred: email.is_starred || false,
+          isRead: email.is_read || false
+        }));
+      } catch (error) {
+        console.error('Error in email query:', error);
+        throw error;
+      }
     },
-    enabled: !!userId && isConnected,
+    enabled: !!userId,
+    retry: 1,
   });
 
   const formatDate = (dateString: string) => {
@@ -88,45 +119,65 @@ export default function EmailDashboard() {
   };
 
   const handleRefreshInbox = useCallback(async () => {
-    await refetch();
-    toast.success("Inkorgen uppdaterad");
+    try {
+      await refetch();
+      toast.success("Inkorgen uppdaterad");
+    } catch (error) {
+      console.error('Error refreshing inbox:', error);
+      toast.error("Kunde inte uppdatera inkorgen");
+    }
   }, [refetch]);
 
   const toggleStar = useCallback(async (id: string) => {
-    if (!userId) return;
-
-    const email = emails.find(e => e.id === id);
-    if (!email) return;
-
-    const { error } = await supabase
-      .from('outlook_emails')
-      .update({ is_starred: !email.isStarred })
-      .eq('id', id);
-
-    if (error) {
-      toast.error("Kunde inte stjärnmärka e-post");
+    if (!userId) {
+      toast.error("No user found");
       return;
     }
 
-    await refetch();
-    toast.success(email.isStarred ? "Stjärnmärkning borttagen" : "E-post stjärnmärkt");
+    try {
+      const email = emails.find(e => e.id === id);
+      if (!email) {
+        toast.error("Email not found");
+        return;
+      }
+
+      const { error } = await supabase
+        .from('outlook_emails')
+        .update({ is_starred: !email.isStarred })
+        .eq('id', id)
+        .eq('user_id', userId);
+
+      if (error) throw error;
+
+      await refetch();
+      toast.success(email.isStarred ? "Stjärnmärkning borttagen" : "E-post stjärnmärkt");
+    } catch (error) {
+      console.error('Error toggling star:', error);
+      toast.error("Kunde inte stjärnmärka e-post");
+    }
   }, [userId, emails, refetch]);
 
   const handleDelete = useCallback(async (id: string) => {
-    if (!userId) return;
-
-    const { error } = await supabase
-      .from('outlook_emails')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      toast.error("Kunde inte ta bort e-post");
+    if (!userId) {
+      toast.error("No user found");
       return;
     }
 
-    await refetch();
-    toast.success("E-post borttagen");
+    try {
+      const { error } = await supabase
+        .from('outlook_emails')
+        .delete()
+        .eq('id', id)
+        .eq('user_id', userId);
+
+      if (error) throw error;
+
+      await refetch();
+      toast.success("E-post borttagen");
+    } catch (error) {
+      console.error('Error deleting email:', error);
+      toast.error("Kunde inte ta bort e-post");
+    }
   }, [userId, refetch]);
 
   const handleArchive = useCallback(async (id: string) => {
@@ -142,7 +193,7 @@ export default function EmailDashboard() {
   }, []);
 
   if (!userId) {
-    return <div>Loading...</div>;
+    return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
 
   return (
@@ -159,7 +210,9 @@ export default function EmailDashboard() {
           />
           
           {isLoading ? (
-            <div>Laddar e-post...</div>
+            <div className="flex items-center justify-center p-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            </div>
           ) : (
             <EmailList
               emails={emails}
