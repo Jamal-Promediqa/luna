@@ -22,8 +22,7 @@ export const EmailLinkAccount = () => {
         provider: 'azure',
         options: {
           scopes: 'email Mail.Read Mail.Send Mail.ReadWrite offline_access profile User.Read',
-          skipBrowserRedirect: false,
-          flowType: 'pkce'
+          skipBrowserRedirect: false
         }
       });
 
