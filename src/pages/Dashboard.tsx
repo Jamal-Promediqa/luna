@@ -14,7 +14,6 @@ import { TaskNotifications } from "@/components/tasks/TaskNotifications";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation";
 import { DashboardMetrics } from "@/components/dashboard/DashboardMetrics";
-import { EmailSection } from "@/components/dashboard/EmailSection";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -67,7 +66,7 @@ const Dashboard = () => {
           .from('tasks')
           .select('*')
           .eq('user_id', user.id)
-          .neq('status', 'klar') // Filter out completed tasks
+          .neq('status', 'klar')
           .order('created_at', { ascending: false })
           .limit(5);
         
@@ -171,7 +170,6 @@ const Dashboard = () => {
         {/* Side Panel */}
         <div className="space-y-6">
           <QuickActions />
-          <EmailSection />
           <Notifications />
         </div>
       </div>
