@@ -8,6 +8,7 @@ import { useEmailAuth } from "./hooks/useEmailAuth";
 import { EmailContent } from "./view/EmailContent";
 import { EmailReplyDialog } from "./view/EmailReplyDialog";
 import { EmailForwardDialog } from "./view/EmailForwardDialog";
+import { EmailAIResponseDialog } from "./view/EmailAIResponseDialog";
 
 interface Email {
   id: string;
@@ -38,6 +39,7 @@ export const EmailView = ({
 }: EmailViewProps) => {
   const [showReplyDialog, setShowReplyDialog] = useState(false);
   const [showForwardDialog, setShowForwardDialog] = useState(false);
+  const [showAIResponseDialog, setShowAIResponseDialog] = useState(false);
   const [emailContent, setEmailContent] = useState("");
   const [toAddress, setToAddress] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -120,10 +122,17 @@ ${email.preview}
     }
   };
 
-  const handleAIResponse = () => {
-    toast.success("Genererar AI-svar", {
-      description: "Funktionen kommer snart"
-    });
+  const handleInsertAIResponse = (content: string) => {
+    setEmailContent((prev) => prev + "\n\n" + content);
+    if (showReplyDialog || showForwardDialog) {
+      toast.success("AI-svar infogat i meddelandet");
+    } else {
+      handleReply();
+      setTimeout(() => {
+        setEmailContent((prev) => prev + "\n\n" + content);
+        toast.success("AI-svar infogat i nytt svar");
+      }, 100);
+    }
   };
 
   return (
@@ -186,7 +195,7 @@ ${email.preview}
                 <Forward className="mr-2 h-4 w-4" />
                 Vidarebefordra
               </Button>
-              <Button onClick={handleAIResponse}>
+              <Button onClick={() => setShowAIResponseDialog(true)}>
                 <Sparkles className="mr-2 h-4 w-4" />
                 AI Svar
               </Button>
@@ -217,6 +226,12 @@ ${email.preview}
         subject={email.subject}
         isLoading={isLoading}
         onSend={() => handleSendEmail(false)}
+      />
+
+      <EmailAIResponseDialog
+        open={showAIResponseDialog}
+        onOpenChange={setShowAIResponseDialog}
+        onInsert={handleInsertAIResponse}
       />
     </>
   );
