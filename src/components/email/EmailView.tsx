@@ -7,7 +7,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { useEmailAuth } from "./hooks/useEmailAuth";
 
 interface Email {
   id: string;
@@ -39,8 +42,12 @@ export const EmailView = ({
   const [showReplyDialog, setShowReplyDialog] = useState(false);
   const [showForwardDialog, setShowForwardDialog] = useState(false);
   const [emailContent, setEmailContent] = useState("");
+  const [toAddress, setToAddress] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { accessToken } = useEmailAuth();
 
   const handleReply = () => {
+    setToAddress(email.sender);
     setEmailContent(`
 
 Ursprungligt meddelande från ${email.sender}
@@ -53,6 +60,7 @@ ${email.preview}
   };
 
   const handleForward = () => {
+    setToAddress("");
     setEmailContent(`
 ---------- Vidarebefordrat meddelande ----------
 Från: ${email.sender}
@@ -64,12 +72,47 @@ ${email.preview}
     setShowForwardDialog(true);
   };
 
-  const handleSendEmail = () => {
-    // This is where we'll implement the actual email sending later
-    toast.success("Mail skickat");
-    setShowReplyDialog(false);
-    setShowForwardDialog(false);
-    setEmailContent("");
+  const handleSendEmail = async (isReply: boolean) => {
+    if (!accessToken) {
+      toast.error("Du måste vara ansluten till Microsoft för att skicka mail");
+      return;
+    }
+
+    if (!toAddress) {
+      toast.error("Vänligen ange en mottagare");
+      return;
+    }
+
+    if (!emailContent.trim()) {
+      toast.error("Vänligen skriv ett meddelande");
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('send-outlook-email', {
+        body: {
+          to: toAddress,
+          subject: isReply ? `Re: ${email.subject}` : `Fwd: ${email.subject}`,
+          content: emailContent,
+          accessToken
+        },
+      });
+
+      if (error) throw error;
+
+      toast.success("Mail skickat");
+      setShowReplyDialog(false);
+      setShowForwardDialog(false);
+      setEmailContent("");
+      setToAddress("");
+    } catch (error) {
+      console.error('Error sending email:', error);
+      toast.error("Kunde inte skicka mail");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleAIResponse = () => {
@@ -119,7 +162,6 @@ ${email.preview}
                 </Button>
               </div>
             </div>
-
             {/* Email Details */}
             <div className="flex items-start gap-4">
               <Avatar>
@@ -138,16 +180,10 @@ ${email.preview}
                 </div>
               </div>
             </div>
-
-            <Separator />
-
             {/* Email Content */}
             <div className="space-y-4">
               <div className="whitespace-pre-wrap">{email.preview}</div>
             </div>
-
-            <Separator />
-
             {/* Action Buttons */}
             <div className="flex gap-4">
               <Button variant="outline" onClick={handleReply}>
@@ -174,9 +210,12 @@ ${email.preview}
             <DialogTitle>Svara på mail</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="text-sm text-muted-foreground">
-              Till: {email.sender}
-            </div>
+            <Input
+              value={toAddress}
+              onChange={(e) => setToAddress(e.target.value)}
+              placeholder="Till"
+              disabled={isLoading}
+            />
             <div className="text-sm text-muted-foreground">
               Ämne: Re: {email.subject}
             </div>
@@ -184,9 +223,15 @@ ${email.preview}
               value={emailContent}
               onChange={(e) => setEmailContent(e.target.value)}
               className="min-h-[200px]"
+              disabled={isLoading}
             />
             <div className="flex justify-end">
-              <Button onClick={handleSendEmail}>Skicka</Button>
+              <Button 
+                onClick={() => handleSendEmail(true)}
+                disabled={isLoading}
+              >
+                {isLoading ? "Skickar..." : "Skicka"}
+              </Button>
             </div>
           </div>
         </DialogContent>
@@ -199,10 +244,11 @@ ${email.preview}
             <DialogTitle>Vidarebefordra mail</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <input
-              type="email"
+            <Input
+              value={toAddress}
+              onChange={(e) => setToAddress(e.target.value)}
               placeholder="Till"
-              className="w-full p-2 border rounded"
+              disabled={isLoading}
             />
             <div className="text-sm text-muted-foreground">
               Ämne: Fwd: {email.subject}
@@ -211,9 +257,15 @@ ${email.preview}
               value={emailContent}
               onChange={(e) => setEmailContent(e.target.value)}
               className="min-h-[200px]"
+              disabled={isLoading}
             />
             <div className="flex justify-end">
-              <Button onClick={handleSendEmail}>Skicka</Button>
+              <Button 
+                onClick={() => handleSendEmail(false)}
+                disabled={isLoading}
+              >
+                {isLoading ? "Skickar..." : "Skicka"}
+              </Button>
             </div>
           </div>
         </DialogContent>
