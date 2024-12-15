@@ -124,45 +124,24 @@ export const MicrosoftAuth = () => {
 
   const handleMicrosoftUnlink = async () => {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const azureIdentity = session?.user?.identities?.find(
-        identity => identity.provider === 'azure'
-      );
-
-      if (!azureIdentity) {
-        console.error('No Azure identity found');
-        toast.error('Microsoft account not found');
-        return;
-      }
-
-      // Create a complete UserIdentity object
-      const userIdentity = {
-        id: azureIdentity.id,
-        user_id: session.user.id,
-        identity_data: azureIdentity.identity_data,
-        provider: azureIdentity.provider,
-        created_at: azureIdentity.created_at,
-        updated_at: azureIdentity.updated_at,
-        last_sign_in_at: azureIdentity.last_sign_in_at,
-        identity_id: azureIdentity.id  // Add the missing identity_id property
-      };
-
-      const { error } = await supabase.auth.unlinkIdentity(userIdentity);
+      // Instead of trying to unlink the identity, we'll sign out completely
+      // This will remove all sessions and connections
+      const { error } = await supabase.auth.signOut();
       
       if (error) {
-        console.error('Error unlinking Microsoft account:', error);
-        toast.error('Failed to unlink Microsoft account');
+        console.error('Error signing out:', error);
+        toast.error('Failed to disconnect Microsoft account');
         return;
       }
 
       setIsLinked(false);
-      toast.success('Microsoft account unlinked successfully');
+      toast.success('Microsoft account disconnected successfully');
       
       // Refresh the page to update the UI state
       window.location.reload();
     } catch (error) {
-      console.error('Error during Microsoft account unlink:', error);
-      toast.error('Failed to unlink Microsoft account');
+      console.error('Error during Microsoft account disconnect:', error);
+      toast.error('Failed to disconnect Microsoft account');
     }
   };
 
