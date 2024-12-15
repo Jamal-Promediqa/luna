@@ -38,16 +38,19 @@ Deno.serve(async (req) => {
     }
 
     // Find the Azure identity
-    const azureIdentity = user.identities?.find(identity => identity.provider === 'azure');
+    const azureIdentity = user.identities?.find(identity => 
+      identity.provider === 'azure' && identity.identity_data?.refresh_token
+    );
+
     if (!azureIdentity) {
-      console.error('No Microsoft account linked');
-      throw new Error('No Microsoft account linked');
+      console.error('No Microsoft account linked with refresh token');
+      throw new Error('No Microsoft account linked with refresh token. Please reconnect your account.');
     }
 
     // Get the refresh token from the identity data
     const refreshToken = azureIdentity.identity_data?.refresh_token;
     if (!refreshToken) {
-      console.error('No refresh token found');
+      console.error('No refresh token found in identity data');
       throw new Error('No refresh token found. Please reconnect your Microsoft account.');
     }
 

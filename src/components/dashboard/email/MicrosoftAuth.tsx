@@ -3,14 +3,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { MicrosoftAccountCard } from "./MicrosoftAccountCard";
 
-// Function to generate random string for code verifier
 const generateCodeVerifier = () => {
   const array = new Uint32Array(32);
   window.crypto.getRandomValues(array);
   return Array.from(array, dec => ('0' + dec.toString(16)).substr(-2)).join('');
 };
 
-// Function to generate code challenge from verifier
 const generateCodeChallenge = async (verifier: string) => {
   const encoder = new TextEncoder();
   const data = encoder.encode(verifier);
@@ -36,17 +34,19 @@ export const MicrosoftAuth = () => {
         const { data: { session } } = await supabase.auth.getSession();
         console.log("Current session:", session);
         
-        const hasMicrosoftIdentity = session?.user?.identities?.some(
-          identity => identity.provider === 'azure'
-        );
-        
-        if (hasMicrosoftIdentity) {
-          console.log("Microsoft account is connected");
-          setIsLinked(true);
-          toast.success("Microsoft account connected!");
-        } else {
-          console.log("Microsoft account is not connected");
-          setIsLinked(false);
+        if (session?.user?.identities) {
+          const hasMicrosoftIdentity = session.user.identities.some(
+            identity => identity.provider === 'azure'
+          );
+          
+          if (hasMicrosoftIdentity) {
+            console.log("Microsoft account is connected");
+            setIsLinked(true);
+            toast.success("Microsoft account connected!");
+          } else {
+            console.log("Microsoft account is not connected");
+            setIsLinked(false);
+          }
         }
       } catch (error) {
         console.error("Error checking Microsoft status:", error);
@@ -91,8 +91,6 @@ export const MicrosoftAuth = () => {
           }
         }
       });
-
-      console.log("Authentication response:", { data, error });
 
       if (error) {
         console.error('Azure OAuth error:', error);
