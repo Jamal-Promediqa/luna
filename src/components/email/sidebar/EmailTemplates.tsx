@@ -1,13 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Edit } from "lucide-react";
+import { Plus } from "lucide-react";
 import { EmailTemplate } from "@/types/email";
+import { TemplateDialog } from "./templates/TemplateDialog";
+import { TemplateList } from "./templates/TemplateList";
 
 interface EmailTemplatesProps {
   isConnected: boolean;
@@ -18,12 +17,16 @@ export const EmailTemplates = ({ isConnected, onSelectTemplate }: EmailTemplates
   const [templates, setTemplates] = useState<EmailTemplate[]>([]);
   const [showTemplateDialog, setShowTemplateDialog] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentTemplate, setCurrentTemplate] = useState({
+  const [currentTemplate, setCurrentTemplate] = useState<Partial<EmailTemplate>>({
     name: "",
     subject: "",
     content: "",
     category: "",
   });
+
+  useEffect(() => {
+    loadTemplates();
+  }, []);
 
   const loadTemplates = async () => {
     try {
@@ -84,6 +87,10 @@ export const EmailTemplates = ({ isConnected, onSelectTemplate }: EmailTemplates
     }
   };
 
+  const handleTemplateChange = (field: keyof EmailTemplate, value: string) => {
+    setCurrentTemplate(prev => ({ ...prev, [field]: value }));
+  };
+
   return (
     <Card>
       <CardContent className="pt-6">
@@ -100,86 +107,24 @@ export const EmailTemplates = ({ isConnected, onSelectTemplate }: EmailTemplates
           </Button>
         </div>
 
-        <div className="space-y-3">
-          {templates.map((template) => (
-            <div key={template.id} className="flex items-center gap-2">
-              <Button
-                className="flex-1 justify-start"
-                variant="outline"
-                disabled={!isConnected}
-                onClick={() => handleSelectTemplate(template)}
-              >
-                {template.name}
-              </Button>
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={() => {
-                  setCurrentTemplate({
-                    name: template.name,
-                    subject: template.subject || "",
-                    content: template.content,
-                    category: template.category || "",
-                  });
-                  setShowTemplateDialog(true);
-                }}
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
-            </div>
-          ))}
-        </div>
+        <TemplateList
+          templates={templates}
+          isConnected={isConnected}
+          onSelect={handleSelectTemplate}
+          onEdit={(template) => {
+            setCurrentTemplate(template);
+            setShowTemplateDialog(true);
+          }}
+        />
 
-        <Dialog open={showTemplateDialog} onOpenChange={setShowTemplateDialog}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Skapa ny mall</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <Input
-                placeholder="Mallnamn"
-                value={currentTemplate.name}
-                onChange={(e) =>
-                  setCurrentTemplate((prev) => ({ ...prev, name: e.target.value }))
-                }
-              />
-              <Input
-                placeholder="Ämne (valfritt)"
-                value={currentTemplate.subject}
-                onChange={(e) =>
-                  setCurrentTemplate((prev) => ({ ...prev, subject: e.target.value }))
-                }
-              />
-              <Input
-                placeholder="Kategori (valfritt)"
-                value={currentTemplate.category}
-                onChange={(e) =>
-                  setCurrentTemplate((prev) => ({ ...prev, category: e.target.value }))
-                }
-              />
-              <Textarea
-                placeholder="Mallinnehåll"
-                value={currentTemplate.content}
-                onChange={(e) =>
-                  setCurrentTemplate((prev) => ({ ...prev, content: e.target.value }))
-                }
-                className="min-h-[200px]"
-              />
-              <div className="flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowTemplateDialog(false)}
-                  disabled={isLoading}
-                >
-                  Avbryt
-                </Button>
-                <Button onClick={handleSaveTemplate} disabled={isLoading}>
-                  {isLoading ? "Sparar..." : "Spara"}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+        <TemplateDialog
+          isOpen={showTemplateDialog}
+          isLoading={isLoading}
+          template={currentTemplate}
+          onClose={() => setShowTemplateDialog(false)}
+          onSave={handleSaveTemplate}
+          onChange={handleTemplateChange}
+        />
       </CardContent>
     </Card>
   );

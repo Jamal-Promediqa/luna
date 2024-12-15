@@ -1,5 +1,3 @@
-import { Json } from "@supabase/supabase-js";
-
 export interface EmailTemplatesTable {
   Row: {
     id: string;
@@ -7,7 +5,7 @@ export interface EmailTemplatesTable {
     name: string;
     subject: string | null;
     content: string;
-    variables: Json | null;
+    variables: Record<string, any> | null;
     category: string | null;
     usage_count: number | null;
     last_used_at: string | null;
@@ -20,7 +18,7 @@ export interface EmailTemplatesTable {
     name: string;
     subject?: string | null;
     content: string;
-    variables?: Json | null;
+    variables?: Record<string, any> | null;
     category?: string | null;
     usage_count?: number | null;
     last_used_at?: string | null;
@@ -33,7 +31,7 @@ export interface EmailTemplatesTable {
     name?: string;
     subject?: string | null;
     content?: string;
-    variables?: Json | null;
+    variables?: Record<string, any> | null;
     category?: string | null;
     usage_count?: number | null;
     last_used_at?: string | null;
