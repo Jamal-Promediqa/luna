@@ -7,11 +7,9 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Function to generate random string for code verifier
 const generateCodeVerifier = () => {
-  const array = new Uint8Array(32);
-  crypto.getRandomValues(array);
-  return Array.from(array, byte => 
-    String.fromCharCode(byte % 26 + 97)
-  ).join('').slice(0, 43); // Ensure length is exactly 43 characters
+  const array = new Uint32Array(32);
+  window.crypto.getRandomValues(array);
+  return Array.from(array, dec => ('0' + dec.toString(16)).substr(-2)).join('');
 };
 
 // Function to generate code challenge from verifier
@@ -20,11 +18,12 @@ const generateCodeChallenge = async (verifier: string) => {
   const data = encoder.encode(verifier);
   const hash = await crypto.subtle.digest('SHA-256', data);
   const hashArray = Array.from(new Uint8Array(hash));
-  const base64 = btoa(String.fromCharCode(...hashArray));
-  return base64
+  const hashString = hashArray.map(byte => String.fromCharCode(byte)).join('');
+  const base64 = btoa(hashString)
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=/g, '');
+  return base64;
 };
 
 export const EmailLinkAccount = () => {
