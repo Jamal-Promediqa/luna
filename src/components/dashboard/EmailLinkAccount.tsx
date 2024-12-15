@@ -5,6 +5,24 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
+// Function to generate random string for code verifier
+const generateCodeVerifier = () => {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+};
+
+// Function to generate code challenge from verifier
+const generateCodeChallenge = async (verifier: string) => {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(verifier);
+  const hash = await crypto.subtle.digest('SHA-256', data);
+  return btoa(String.fromCharCode(...new Uint8Array(hash)))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+};
+
 export const EmailLinkAccount = () => {
   const [isLinking, setIsLinking] = useState(false);
   const [showError, setShowError] = useState(false);
@@ -36,6 +54,13 @@ export const EmailLinkAccount = () => {
     try {
       console.log("1. Starting Microsoft authentication...");
       
+      // Generate PKCE values
+      const codeVerifier = generateCodeVerifier();
+      const codeChallenge = await generateCodeChallenge(codeVerifier);
+      
+      // Store code verifier in session storage for the callback
+      sessionStorage.setItem('pkce_code_verifier', codeVerifier);
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'azure',
         options: {
@@ -43,9 +68,9 @@ export const EmailLinkAccount = () => {
           queryParams: {
             prompt: 'consent',
             response_type: 'code',
+            code_challenge: codeChallenge,
             code_challenge_method: 'S256'
-          },
-          skipBrowserRedirect: false
+          }
         }
       });
 
@@ -61,7 +86,7 @@ export const EmailLinkAccount = () => {
         let userMessage = "Failed to connect to Microsoft. ";
         
         if (error.message.includes("AADSTS9002325")) {
-          userMessage += "There was an issue with the authentication configuration. Please try again or contact support.";
+          userMessage += "There was an issue with the PKCE configuration. Please try again.";
         } else if (error.message.includes("redirect_uri_mismatch")) {
           userMessage += "There's a configuration issue with the redirect URL. Please contact support.";
         } else if (error.message.includes("refused to connect")) {
