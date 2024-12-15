@@ -232,6 +232,8 @@ ${email.preview}
         open={showAIResponseDialog}
         onOpenChange={setShowAIResponseDialog}
         onInsert={handleInsertAIResponse}
+        emailContent={email.preview}
+        sender={email.sender}
       />
     </>
   );

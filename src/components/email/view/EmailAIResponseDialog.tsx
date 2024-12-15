@@ -1,48 +1,51 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { Copy, Edit2, Send, X } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
 
 interface EmailAIResponseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onInsert: (content: string) => void;
+  emailContent: string;
+  sender: string;
 }
 
 export const EmailAIResponseDialog = ({
   open,
   onOpenChange,
   onInsert,
+  emailContent,
+  sender,
 }: EmailAIResponseDialogProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [response, setResponse] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const sampleResponse = `Hej team!
+  const generateResponse = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-email-response', {
+        body: { emailContent, sender },
+      });
 
-Tack för ett bra projektmöte igår. Här är en sammanfattning av de viktigaste punkterna vi diskuterade:
+      if (error) throw error;
+      setResponse(data.response);
+    } catch (error) {
+      console.error('Error generating AI response:', error);
+      toast.error("Kunde inte generera AI-svar");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-1. Tidplanen för lansering är fastställd till den 15:e nästa månad
-2. Sara tar huvudansvaret för användartest-fasen
-3. Vi behöver slutföra dokumentationen senast nästa vecka
-4. Nästa avstämning är på tisdag kl 10:00
-
-Återkom gärna om ni har några frågor eller funderingar.
-
-Med vänliga hälsningar,
-AI Assistenten`;
-
-  useEffect(() => {
+  React.useEffect(() => {
     if (open) {
-      setIsLoading(true);
-      // Simulate API call
-      setTimeout(() => {
-        setResponse(sampleResponse);
-        setIsLoading(false);
-      }, 1500);
+      generateResponse();
     } else {
       setIsEditing(false);
       setResponse("");
