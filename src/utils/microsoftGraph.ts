@@ -75,10 +75,11 @@ export const syncEmailsToSupabase = async (userId: string, emails: OutlookEmail[
 
     console.log("First email to sync:", JSON.stringify(emailsToSync[0], null, 2));
 
+    // Using ON CONFLICT with the new unique constraint
     const { error } = await supabase.from('outlook_emails').upsert(
       emailsToSync,
       { 
-        onConflict: 'message_id',
+        onConflict: 'message_id,user_id',
         ignoreDuplicates: false
       }
     );
