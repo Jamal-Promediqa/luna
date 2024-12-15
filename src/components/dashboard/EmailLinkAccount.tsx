@@ -146,7 +146,8 @@ export const EmailLinkAccount = () => {
         provider: azureIdentity.provider,
         created_at: azureIdentity.created_at,
         updated_at: azureIdentity.updated_at,
-        last_sign_in_at: azureIdentity.last_sign_in_at
+        last_sign_in_at: azureIdentity.last_sign_in_at,
+        identity_id: azureIdentity.id  // Add the missing identity_id property
       };
 
       const { error } = await supabase.auth.unlinkIdentity(userIdentity);
