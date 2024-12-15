@@ -27,7 +27,8 @@ export const EmailSection = () => {
         return null;
       }
 
-      const hasMicrosoftProvider = session?.user?.app_metadata?.provider === 'azure';
+      // Check if user has Microsoft (Azure) in their providers list
+      const hasMicrosoftProvider = session?.user?.app_metadata?.providers?.includes('azure');
       console.log("Has Microsoft provider:", hasMicrosoftProvider);
       setIsMicrosoftLinked(!!hasMicrosoftProvider);
       return session;
