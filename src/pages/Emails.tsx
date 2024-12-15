@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { EmailSection } from "@/components/dashboard/EmailSection";
+import { EmailDashboard } from "@/components/dashboard/EmailDashboard";
 
 const Emails = () => {
   const navigate = useNavigate();
@@ -19,8 +19,7 @@ const Emails = () => {
 
   return (
     <div className="container mx-auto p-4 space-y-6">
-      <h1 className="text-2xl font-bold">Email</h1>
-      <EmailSection />
+      <EmailDashboard />
     </div>
   );
 };
