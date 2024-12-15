@@ -22,9 +22,6 @@ export const LogoutButton = () => {
       queryClient.clear();
       localStorage.clear();
       
-      // Ensure we're properly signed out from Supabase
-      await supabase.auth.clearSession();
-      
       toast.success('Du har loggats ut');
       navigate('/login');
     } catch (error) {
