@@ -126,7 +126,22 @@ export const EmailLinkAccount = () => {
 
   const handleMicrosoftUnlink = async () => {
     try {
-      const { error } = await supabase.auth.unlinkIdentity('azure');
+      const { data: { session } } = await supabase.auth.getSession();
+      const azureIdentity = session?.user?.identities?.find(
+        identity => identity.provider === 'azure'
+      );
+
+      if (!azureIdentity) {
+        console.error('No Azure identity found');
+        toast.error('Microsoft account not found');
+        return;
+      }
+
+      const { error } = await supabase.auth.unlinkIdentity({
+        id: azureIdentity.id,
+        provider: azureIdentity.provider,
+        email: azureIdentity.email
+      });
       
       if (error) {
         console.error('Error unlinking Microsoft account:', error);
