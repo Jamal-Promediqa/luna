@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,27 +11,32 @@ import { useEmailAuth } from "@/components/email/hooks/useEmailAuth";
 
 const Settings = () => {
   const navigate = useNavigate();
-  const session = useSession();
   const { isConnected, isInitialized } = useEmailAuth();
   const [givenName, setGivenName] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!session?.user?.id) {
-      navigate("/login");
-      return;
-    }
+    const checkSession = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error || !session) {
+        console.error("Session error:", error);
+        navigate("/login");
+        return;
+      }
 
-    const fetchProfile = async () => {
+      setUserEmail(session.user.email);
+
       try {
-        const { data: profile, error } = await supabase
+        const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("given_name, full_name")
           .eq("user_id", session.user.id)
           .single();
 
-        if (error) throw error;
+        if (profileError) throw profileError;
 
         if (profile) {
           setGivenName(profile.given_name || "");
@@ -44,14 +48,18 @@ const Settings = () => {
       }
     };
 
-    fetchProfile();
-  }, [session?.user?.id, navigate]);
+    checkSession();
+  }, [navigate]);
 
   const handleUpdateProfile = async () => {
-    if (!session?.user?.id) return;
-
     setLoading(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.id) {
+        toast.error("No active session found");
+        return;
+      }
+
       const { error } = await supabase
         .from("profiles")
         .upsert({
@@ -147,7 +155,7 @@ const Settings = () => {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <p className="text-sm text-muted-foreground">
-              Email: {session?.user?.email}
+              Email: {userEmail}
             </p>
           </div>
           <Separator className="my-4" />
