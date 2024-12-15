@@ -9,10 +9,12 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 const generateCodeVerifier = () => {
   const array = new Uint8Array(32);
   crypto.getRandomValues(array);
+  // Convert to base64URL format
   return btoa(String.fromCharCode.apply(null, Array.from(array)))
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
-    .replace(/=+$/, '');
+    .replace(/=+$/, '')
+    .substring(0, 128); // Ensure length is within valid range
 };
 
 // Function to generate code challenge from verifier
@@ -20,11 +22,11 @@ const generateCodeChallenge = async (verifier: string) => {
   const encoder = new TextEncoder();
   const data = encoder.encode(verifier);
   const hash = await crypto.subtle.digest('SHA-256', data);
-  const base64Hash = btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(hash))))
+  // Convert to base64URL format
+  return btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(hash))))
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=+$/, '');
-  return base64Hash;
 };
 
 export const EmailLinkAccount = () => {
