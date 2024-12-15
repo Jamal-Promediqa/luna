@@ -135,6 +135,48 @@ export type Database = {
         }
         Relationships: []
       }
+      outlook_emails: {
+        Row: {
+          body_preview: string | null
+          created_at: string | null
+          from_address: string | null
+          id: string
+          is_read: boolean | null
+          is_starred: boolean | null
+          message_id: string
+          received_at: string | null
+          subject: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          body_preview?: string | null
+          created_at?: string | null
+          from_address?: string | null
+          id?: string
+          is_read?: boolean | null
+          is_starred?: boolean | null
+          message_id: string
+          received_at?: string | null
+          subject?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          body_preview?: string | null
+          created_at?: string | null
+          from_address?: string | null
+          id?: string
+          is_read?: boolean | null
+          is_starred?: boolean | null
+          message_id?: string
+          received_at?: string | null
+          subject?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string | null
