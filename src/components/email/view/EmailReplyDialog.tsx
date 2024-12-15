@@ -40,18 +40,25 @@ export const EmailReplyDialog = ({
         <DialogHeader>
           <DialogTitle>Svara på mail</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="space-y-6">
           <div className="space-y-2">
-            <Input
-              value={toAddress}
-              onChange={(e) => onToAddressChange(e.target.value)}
-              placeholder="Till"
-              disabled={isLoading}
-            />
-            <div className="text-sm text-muted-foreground">
-              Ämne: Re: {subject}
+            <div className="flex items-center gap-2">
+              <span className="w-12 text-sm font-medium">Till:</span>
+              <Input
+                value={toAddress}
+                onChange={(e) => onToAddressChange(e.target.value)}
+                className="flex-1"
+                disabled={isLoading}
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-12 text-sm font-medium">Ämne:</span>
+              <div className="text-sm text-muted-foreground">
+                Re: {subject}
+              </div>
             </div>
           </div>
+          
           <Textarea
             value={emailContent}
             onChange={(e) => onEmailContentChange(e.target.value)}
@@ -59,6 +66,7 @@ export const EmailReplyDialog = ({
             placeholder="Skriv ditt svar här..."
             disabled={isLoading}
           />
+          
           {originalEmail && (
             <EmailThread
               sender={originalEmail.sender}
@@ -67,6 +75,7 @@ export const EmailReplyDialog = ({
               preview={originalEmail.preview}
             />
           )}
+          
           <div className="flex justify-end pt-2">
             <Button onClick={onSend} disabled={isLoading}>
               {isLoading ? "Skickar..." : "Skicka"}

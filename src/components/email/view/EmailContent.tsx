@@ -17,15 +17,19 @@ export const EmailContent = ({
   formatDate,
   preview
 }: EmailContentProps) => {
+  // Extract display name or email part before @ for avatar
+  const senderInitial = sender.match(/^([^<]+)/)?.[1]?.trim()?.[0] || 
+                       sender.split('@')[0][0].toUpperCase();
+
   return (
     <div className="space-y-6">
       <div className="flex items-start gap-4">
-        <Avatar>
+        <Avatar className="h-10 w-10">
           <AvatarImage src="" />
-          <AvatarFallback>{sender[0]}</AvatarFallback>
+          <AvatarFallback>{senderInitial}</AvatarFallback>
         </Avatar>
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
             <span className="font-semibold">{sender}</span>
             {!isRead && <Badge variant="secondary">Ny</Badge>}
           </div>
@@ -38,7 +42,7 @@ export const EmailContent = ({
       <Separator />
 
       <div className="space-y-4">
-        <div className="whitespace-pre-wrap">{preview}</div>
+        <div className="text-base leading-relaxed whitespace-pre-wrap">{preview}</div>
       </div>
 
       <Separator />
