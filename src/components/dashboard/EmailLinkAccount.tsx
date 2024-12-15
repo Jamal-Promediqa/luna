@@ -90,7 +90,8 @@ export const EmailLinkAccount = () => {
             code_challenge: codeChallenge,
             code_challenge_method: 'S256',
             response_type: 'code',
-            prompt: 'login'
+            prompt: 'consent',
+            access_type: 'offline'  // Request refresh token
           }
         }
       });
