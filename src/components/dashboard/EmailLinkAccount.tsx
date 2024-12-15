@@ -22,7 +22,11 @@ export const EmailLinkAccount = () => {
         provider: 'azure',
         options: {
           scopes: 'email Mail.Read Mail.Send Mail.ReadWrite offline_access profile User.Read',
-          skipBrowserRedirect: false
+          queryParams: {
+            prompt: 'consent',
+            access_type: 'offline',
+            response_mode: 'query'
+          }
         }
       });
 
