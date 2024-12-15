@@ -1,7 +1,3 @@
-import { Database } from './database';
-
-export type OutlookEmail = Database['public']['Tables']['outlook_emails']['Row'];
-
 export type CallRecord = {
   id: string;
   user_id: string | null;
