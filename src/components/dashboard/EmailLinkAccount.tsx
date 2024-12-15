@@ -7,14 +7,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Function to generate random string for code verifier
 const generateCodeVerifier = () => {
-  const array = new Uint8Array(32);
+  const array = new Uint32Array(32);
   crypto.getRandomValues(array);
-  // Convert to base64URL format
-  return btoa(String.fromCharCode.apply(null, Array.from(array)))
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_')
-    .replace(/=+$/, '')
-    .substring(0, 128); // Ensure length is within valid range
+  const verifier = Array.from(array, dec => ('0' + dec.toString(16)).substr(-2)).join('');
+  // Ensure length is between 43 and 128 characters as per RFC 7636
+  return verifier.substring(0, 96); // 96 chars is safe and within spec
 };
 
 // Function to generate code challenge from verifier
@@ -22,8 +19,11 @@ const generateCodeChallenge = async (verifier: string) => {
   const encoder = new TextEncoder();
   const data = encoder.encode(verifier);
   const hash = await crypto.subtle.digest('SHA-256', data);
-  // Convert to base64URL format
-  return btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(hash))))
+  const hashArray = new Uint8Array(hash);
+  const hashString = Array.from(hashArray)
+    .map(byte => String.fromCharCode(byte))
+    .join('');
+  return btoa(hashString)
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=+$/, '');
@@ -78,10 +78,14 @@ export const EmailLinkAccount = () => {
       
       // Generate PKCE values
       const codeVerifier = generateCodeVerifier();
+      console.log("2. Generated code verifier:", codeVerifier);
+      
       const codeChallenge = await generateCodeChallenge(codeVerifier);
+      console.log("3. Generated code challenge:", codeChallenge);
       
       // Store code verifier in session storage for the callback
       sessionStorage.setItem('pkce_code_verifier', codeVerifier);
+      console.log("4. Stored code verifier in session storage");
 
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'azure',
@@ -95,10 +99,10 @@ export const EmailLinkAccount = () => {
         }
       });
 
-      console.log("2. Authentication response:", { data, error });
+      console.log("5. Authentication response:", { data, error });
 
       if (error) {
-        console.error('3. Azure OAuth error:', {
+        console.error('6. Azure OAuth error:', {
           message: error.message,
           status: error.status,
           stack: error.stack
@@ -125,7 +129,7 @@ export const EmailLinkAccount = () => {
       }
 
       if (!data) {
-        console.error('4. No response data received');
+        console.error('7. No response data received');
         setShowError(true);
         setErrorMessage('No response received from Microsoft. Please try again.');
         toast.error('Authentication failed. Please try again.');
@@ -133,17 +137,17 @@ export const EmailLinkAccount = () => {
       }
 
       if (data.url) {
-        console.log("5. Redirecting to:", data.url);
+        console.log("8. Redirecting to:", data.url);
         window.location.href = data.url;
       } else {
-        console.error('6. No redirect URL in response');
+        console.error('9. No redirect URL in response');
         setShowError(true);
         setErrorMessage('Invalid response from authentication service');
         toast.error('Authentication configuration error. Please try again later.');
       }
       
     } catch (error) {
-      console.error('7. Error linking Microsoft account:', {
+      console.error('10. Error linking Microsoft account:', {
         error,
         message: error.message,
         stack: error.stack
