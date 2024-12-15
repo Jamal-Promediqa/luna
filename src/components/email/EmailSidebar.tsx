@@ -21,6 +21,7 @@ export const EmailSidebar = ({ onGenerateAIResponse, onRefreshInbox }: EmailSide
   const checkMicrosoftConnection = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
+      console.log("Checking Microsoft connection, provider token:", !!session?.provider_token);
       setIsConnected(!!session?.provider_token);
     } catch (error) {
       console.error('Error checking Microsoft connection:', error);
@@ -31,6 +32,7 @@ export const EmailSidebar = ({ onGenerateAIResponse, onRefreshInbox }: EmailSide
 
   const handleMicrosoftConnect = async () => {
     try {
+      console.log("Initiating Microsoft connection");
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'azure',
         options: {
@@ -48,6 +50,7 @@ export const EmailSidebar = ({ onGenerateAIResponse, onRefreshInbox }: EmailSide
 
   const handleMicrosoftDisconnect = async () => {
     try {
+      console.log("Disconnecting Microsoft account");
       await supabase.auth.signOut();
       setIsConnected(false);
       toast.success('Microsoft account disconnected');

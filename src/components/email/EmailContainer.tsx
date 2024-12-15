@@ -6,29 +6,42 @@ import { fetchEmails, syncEmailsToSupabase } from "@/utils/microsoftGraph";
 import { EmailList } from "./EmailList";
 import { EmailSidebar } from "./EmailSidebar";
 import { EmailHeader } from "./EmailHeader";
+import { EmailFilters } from "./EmailFilters";
 
 export const EmailContainer = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterValue, setFilterValue] = useState("alla");
   const [userId, setUserId] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
 
   useEffect(() => {
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (session?.user?.id) {
+        console.log("User session found:", session.user.id);
         setUserId(session.user.id);
-        setIsConnected(!!session.provider_token);
+        if (session.provider_token) {
+          console.log("Provider token found");
+          setAccessToken(session.provider_token);
+          setIsConnected(true);
+        } else {
+          console.log("No provider token found");
+          setIsConnected(false);
+        }
       }
     };
     getSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event);
       if (event === 'SIGNED_IN') {
         setUserId(session?.user?.id ?? null);
+        setAccessToken(session?.provider_token ?? null);
         setIsConnected(!!session?.provider_token);
       } else if (event === 'SIGNED_OUT') {
         setUserId(null);
+        setAccessToken(null);
         setIsConnected(false);
       }
     });
@@ -39,11 +52,15 @@ export const EmailContainer = () => {
   }, []);
 
   const { data: emails = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['emails', userId],
+    queryKey: ['emails', userId, accessToken],
     queryFn: async () => {
-      if (!userId) throw new Error("No user found");
+      if (!userId) {
+        console.log("No user ID found");
+        throw new Error("No user found");
+      }
       
       try {
+        console.log("Starting email fetch process");
         // First try to get cached emails
         const { data: cachedEmails, error: cacheError } = await supabase
           .from('outlook_emails')
@@ -57,12 +74,12 @@ export const EmailContainer = () => {
           throw cacheError;
         }
 
-        // Then fetch fresh emails from Microsoft Graph
-        const { data: { session } } = await supabase.auth.getSession();
-        const accessToken = session?.provider_token;
-        
+        console.log("Cached emails found:", cachedEmails?.length || 0);
+
+        // Then fetch fresh emails if we have an access token
         if (accessToken) {
           try {
+            console.log("Attempting to fetch fresh emails");
             const outlookEmails = await fetchEmails(accessToken);
             await syncEmailsToSupabase(userId, outlookEmails);
             
@@ -78,6 +95,8 @@ export const EmailContainer = () => {
               toast.error('Could not fetch new emails');
               throw freshError;
             }
+
+            console.log("Fresh emails synced and fetched:", freshEmails?.length || 0);
             
             return (freshEmails || []).map(email => ({
               id: email.id,
@@ -107,6 +126,7 @@ export const EmailContainer = () => {
 
         // Return cached emails if no Microsoft token
         if (!accessToken) {
+          console.log("No access token available");
           toast.error('Microsoft account not connected. Please connect your account.');
         }
 
@@ -222,24 +242,12 @@ export const EmailContainer = () => {
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <div className="flex items-center space-x-4">
-            <input
-              type="text"
-              placeholder="Sök i inkorgen..."
-              className="flex-1 px-4 py-2 border rounded-lg"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <select
-              className="px-4 py-2 border rounded-lg"
-              value={filterValue}
-              onChange={(e) => setFilterValue(e.target.value)}
-            >
-              <option value="alla">Alla</option>
-              <option value="olasta">Olästa</option>
-              <option value="stjarnmarkta">Stjärnmärkta</option>
-            </select>
-          </div>
+          <EmailFilters
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            filterValue={filterValue}
+            onFilterChange={setFilterValue}
+          />
           
           {isLoading ? (
             <div className="flex items-center justify-center p-8">
