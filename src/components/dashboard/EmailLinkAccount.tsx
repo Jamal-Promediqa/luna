@@ -93,9 +93,12 @@ export const EmailLinkAccount = () => {
         options: {
           scopes: 'email Mail.Read Mail.Send Mail.ReadWrite offline_access profile User.Read',
           queryParams: {
-            prompt: 'consent',
+            prompt: 'consent select_account',
             code_challenge: codeChallenge,
-            code_challenge_method: 'S256'
+            code_challenge_method: 'S256',
+            domain_hint: 'organizations',
+            response_mode: 'query',
+            amr_values: 'mfa'
           }
         }
       });
