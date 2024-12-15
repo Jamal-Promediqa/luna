@@ -27,6 +27,16 @@ export const EmailContainer = () => {
     });
   }, []);
 
+  // Filter emails based on search query
+  const filteredEmails = emails.filter(email => {
+    const searchLower = searchQuery.toLowerCase();
+    return (
+      email.subject.toLowerCase().includes(searchLower) ||
+      email.sender.toLowerCase().includes(searchLower) ||
+      email.preview.toLowerCase().includes(searchLower)
+    );
+  });
+
   const handleRefreshInbox = useCallback(async () => {
     try {
       await refetch();
@@ -132,7 +142,7 @@ export const EmailContainer = () => {
             </div>
           ) : (
             <EmailList
-              emails={emails}
+              emails={filteredEmails}
               onToggleStar={toggleStar}
               onArchive={handleArchive}
               onDelete={handleDelete}
