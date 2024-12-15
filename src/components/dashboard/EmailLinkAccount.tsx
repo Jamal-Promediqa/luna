@@ -4,7 +4,6 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { getMicrosoftAuthConfig } from "@/utils/microsoftAuth";
 
 export const EmailLinkAccount = () => {
   const [isLinking, setIsLinking] = useState(false);
@@ -27,9 +26,6 @@ export const EmailLinkAccount = () => {
       console.log("2. Base URL:", baseUrl);
       console.log("3. Redirect URL:", redirectUrl);
 
-      const authConfig = getMicrosoftAuthConfig(redirectUrl);
-      console.log("4. Auth configuration:", authConfig);
-
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'azure',
         options: {
@@ -37,7 +33,8 @@ export const EmailLinkAccount = () => {
           redirectTo: redirectUrl,
           skipBrowserRedirect: false,
           queryParams: {
-            prompt: 'consent'
+            prompt: 'consent',
+            redirect_uri: redirectUrl
           }
         }
       });
