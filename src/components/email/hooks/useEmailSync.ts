@@ -13,7 +13,7 @@ export const useEmailSync = (userId: string | null, accessToken: string | null, 
       }
       
       try {
-        console.log("Starting email fetch process");
+        console.log(`Starting email fetch process for folder: ${folder}`);
         // First try to get cached emails for the selected folder
         const { data: cachedEmails, error: cacheError } = await supabase
           .from('outlook_emails')
@@ -33,9 +33,9 @@ export const useEmailSync = (userId: string | null, accessToken: string | null, 
         // Then fetch fresh emails if we have an access token
         if (accessToken) {
           try {
-            console.log("Attempting to fetch fresh emails with token");
-            const outlookEmails = await fetchEmails(accessToken);
-            await syncEmailsToSupabase(userId, outlookEmails);
+            console.log(`Attempting to fetch fresh emails for folder ${folder} with token`);
+            const outlookEmails = await fetchEmails(accessToken, folder);
+            await syncEmailsToSupabase(userId, outlookEmails, folder);
             
             // Return fresh data for the selected folder
             const { data: freshEmails, error: freshError } = await supabase

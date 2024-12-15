@@ -1,28 +1,7 @@
 import { Client } from "@microsoft/microsoft-graph-client";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
 
-export interface OutlookEmail {
-  id: string;
-  subject: string | null;
-  bodyPreview: string | null;
-  from: {
-    emailAddress: {
-      address: string;
-      name: string;
-    };
-  };
-  isRead: boolean;
-  receivedDateTime: string;
-}
-
-export const initializeGraphClient = (accessToken: string) => {
-  if (!accessToken) {
-    console.error("No access token provided to initialize Graph client");
-    throw new Error("No access token provided");
-  }
-  
-  console.log("Initializing Microsoft Graph client with token:", accessToken.substring(0, 10) + "...");
+export const createGraphClient = (accessToken: string) => {
   return Client.init({
     authProvider: (done) => {
       done(null, accessToken);
@@ -30,75 +9,140 @@ export const initializeGraphClient = (accessToken: string) => {
   });
 };
 
-export const fetchEmails = async (accessToken: string) => {
+const getFolderEndpoint = (folder: string) => {
+  switch (folder.toLowerCase()) {
+    case 'archive':
+      return '/me/mailFolders/archive/messages';
+    case 'drafts':
+      return '/me/mailFolders/drafts/messages';
+    case 'sent':
+      return '/me/mailFolders/sentItems/messages';
+    case 'deleted':
+      return '/me/mailFolders/deletedItems/messages';
+    case 'junk':
+      return '/me/mailFolders/junkemail/messages';
+    default:
+      return '/me/mailFolders/inbox/messages';
+  }
+};
+
+export const fetchEmails = async (accessToken: string, folder: string = 'inbox') => {
   try {
-    console.log("Starting email fetch from Microsoft Graph API");
-    const client = initializeGraphClient(accessToken);
+    console.log(`Fetching emails from ${folder} folder`);
+    const client = createGraphClient(accessToken);
     
-    console.log("Making API request to /me/messages");
+    const endpoint = getFolderEndpoint(folder);
+    console.log(`Using endpoint: ${endpoint}`);
+
     const response = await client
-      .api('/me/messages')
-      .select('id,subject,bodyPreview,from,isRead,receivedDateTime')
+      .api(endpoint)
+      .select('id,subject,bodyPreview,from,receivedDateTime,isRead')
       .top(50)
-      .orderby('receivedDateTime desc')
+      .orderBy('receivedDateTime DESC')
       .get();
 
-    console.log("Successfully fetched emails:", response.value?.length || 0);
-    console.log("Sample email data:", response.value?.[0] ? JSON.stringify(response.value[0], null, 2) : "No emails found");
-    return response.value as OutlookEmail[];
+    return response.value;
   } catch (error) {
     console.error('Error fetching emails from Microsoft Graph:', error);
-    console.log('Error details:', {
-      message: error.message,
-      code: error.code,
-      statusCode: error.statusCode,
-    });
     throw error;
   }
 };
 
-export const syncEmailsToSupabase = async (userId: string, emails: OutlookEmail[]) => {
+export const syncEmailsToSupabase = async (userId: string, emails: any[], folder: string = 'inbox') => {
   try {
-    console.log("Starting email sync to Supabase for user:", userId);
-    console.log("Emails to sync:", emails.length);
-
-    const emailsToSync = emails.map(email => ({
-      user_id: userId,
-      message_id: email.id,
-      subject: email.subject,
-      body_preview: email.bodyPreview,
-      from_address: email.from.emailAddress.address,
-      is_read: email.isRead,
-      received_at: email.receivedDateTime,
-      is_starred: false,
-    }));
-
-    console.log("First email to sync:", JSON.stringify(emailsToSync[0], null, 2));
-
-    // Using ON CONFLICT with the new unique constraint
-    const { error } = await supabase.from('outlook_emails').upsert(
-      emailsToSync,
-      { 
-        onConflict: 'message_id,user_id',
-        ignoreDuplicates: false
-      }
+    console.log(`Syncing ${emails.length} emails to Supabase for folder: ${folder}`);
+    const { data, error } = await supabase.from('outlook_emails').upsert(
+      emails.map(email => ({
+        user_id: userId,
+        message_id: email.id,
+        subject: email.subject,
+        body_preview: email.bodyPreview,
+        from_address: email.from.emailAddress.address,
+        is_read: email.isRead,
+        received_at: email.receivedDateTime,
+        status: folder,
+      })),
+      { onConflict: 'message_id' }
     );
 
     if (error) {
       console.error('Error syncing emails to Supabase:', error);
-      console.log('Error details:', {
-        message: error.message,
-        code: error.code,
-        hint: error.hint,
-        details: error.details,
-      });
       throw error;
     }
 
-    console.log("Successfully synced emails to Supabase");
+    console.log(`Successfully synced emails to ${folder} folder`);
+    return data;
   } catch (error) {
     console.error('Error in syncEmailsToSupabase:', error);
-    console.log('Full error object:', JSON.stringify(error, null, 2));
+    throw error;
+  }
+};
+
+export const markEmailAsRead = async (accessToken: string, messageId: string) => {
+  try {
+    const client = createGraphClient(accessToken);
+    await client
+      .api(`/me/messages/${messageId}`)
+      .update({ isRead: true });
+    return true;
+  } catch (error) {
+    console.error('Error marking email as read:', error);
+    throw error;
+  }
+};
+
+export const moveEmailToFolder = async (accessToken: string, messageId: string, destinationFolder: string) => {
+  try {
+    const client = createGraphClient(accessToken);
+    const folderEndpoint = getFolderEndpoint(destinationFolder).replace('/messages', '');
+    
+    await client
+      .api(`/me/messages/${messageId}/move`)
+      .post({
+        destinationId: folderEndpoint
+      });
+    return true;
+  } catch (error) {
+    console.error('Error moving email:', error);
+    throw error;
+  }
+};
+
+export const deleteEmail = async (accessToken: string, messageId: string) => {
+  try {
+    const client = createGraphClient(accessToken);
+    await client
+      .api(`/me/messages/${messageId}`)
+      .delete();
+    return true;
+  } catch (error) {
+    console.error('Error deleting email:', error);
+    throw error;
+  }
+};
+
+export const sendEmail = async (accessToken: string, email: {
+  toRecipients: { emailAddress: { address: string } }[];
+  subject: string;
+  body: { content: string; contentType: 'Text' | 'HTML' };
+}) => {
+  try {
+    const client = createGraphClient(accessToken);
+    await client
+      .api('/me/sendMail')
+      .post({
+        message: {
+          ...email,
+          importance: "normal",
+          body: {
+            ...email.body,
+            contentType: email.body.contentType || "HTML"
+          }
+        }
+      });
+    return true;
+  } catch (error) {
+    console.error('Error sending email:', error);
     throw error;
   }
 };
