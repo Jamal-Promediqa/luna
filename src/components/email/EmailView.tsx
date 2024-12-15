@@ -123,16 +123,28 @@ ${email.preview}
   };
 
   const handleInsertAIResponse = (content: string) => {
-    setEmailContent((prev) => prev + "\n\n" + content);
+    setEmailContent((prev) => {
+      // If we're not already in reply mode, start a new reply
+      if (!showReplyDialog && !showForwardDialog) {
+        handleReply();
+        return `${content}
+
+Ursprungligt meddelande från ${email.sender}
+Skickat: ${formatDate(email.timestamp)}
+Ämne: ${email.subject}
+
+${email.preview}`;
+      }
+      // If we're already in reply mode, just append the AI response
+      return prev + "\n\n" + content;
+    });
+    
     if (showReplyDialog || showForwardDialog) {
       toast.success("AI-svar infogat i meddelandet");
     } else {
-      handleReply();
-      setTimeout(() => {
-        setEmailContent((prev) => prev + "\n\n" + content);
-        toast.success("AI-svar infogat i nytt svar");
-      }, 100);
+      toast.success("AI-svar infogat i nytt svar");
     }
+    setShowAIResponseDialog(false);
   };
 
   return (
