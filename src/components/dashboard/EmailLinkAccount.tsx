@@ -7,11 +7,13 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Function to generate random string for code verifier
 const generateCodeVerifier = () => {
-  const array = new Uint32Array(32);
+  const array = new Uint8Array(32);
   crypto.getRandomValues(array);
-  const verifier = Array.from(array, dec => ('0' + dec.toString(16)).substr(-2)).join('');
-  // Ensure length is between 43 and 128 characters as per RFC 7636
-  return verifier.substring(0, 96); // 96 chars is safe and within spec
+  const verifier = Array.from(array, byte => 
+    byte.toString(16).padStart(2, '0')
+  ).join('');
+  // RFC 7636 requires the code verifier to be between 43 and 128 characters
+  return verifier.padEnd(43, '0').substring(0, 128);
 };
 
 // Function to generate code challenge from verifier
@@ -19,11 +21,10 @@ const generateCodeChallenge = async (verifier: string) => {
   const encoder = new TextEncoder();
   const data = encoder.encode(verifier);
   const hash = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = new Uint8Array(hash);
-  const hashString = Array.from(hashArray)
-    .map(byte => String.fromCharCode(byte))
-    .join('');
-  return btoa(hashString)
+  const hashArray = Array.from(new Uint8Array(hash));
+  const hashBase64 = btoa(String.fromCharCode(...hashArray));
+  // Convert to base64URL format as required by OAuth 2.0
+  return hashBase64
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=+$/, '');
@@ -102,12 +103,7 @@ export const EmailLinkAccount = () => {
       console.log("5. Authentication response:", { data, error });
 
       if (error) {
-        console.error('6. Azure OAuth error:', {
-          message: error.message,
-          status: error.status,
-          stack: error.stack
-        });
-        
+        console.error('6. Azure OAuth error:', error);
         let userMessage = "Failed to connect to Microsoft. ";
         
         if (error.message.includes("AADSTS9002325")) {
@@ -147,11 +143,7 @@ export const EmailLinkAccount = () => {
       }
       
     } catch (error) {
-      console.error('10. Error linking Microsoft account:', {
-        error,
-        message: error.message,
-        stack: error.stack
-      });
+      console.error('10. Error linking Microsoft account:', error);
       setShowError(true);
       setErrorMessage(error.message || "Connection error occurred");
       toast.error(`Connection error: ${error.message}`);
