@@ -1,27 +1,96 @@
-import { Mail, Archive, RefreshCw, MessageSquare, Send } from "lucide-react";
+import { Mail, Archive, RefreshCw, MessageSquare, Send, Microsoft } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface EmailSidebarProps {
   onGenerateAIResponse: () => void;
 }
 
 export const EmailSidebar = ({ onGenerateAIResponse }: EmailSidebarProps) => {
+  const [isConnected, setIsConnected] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    checkMicrosoftConnection();
+  }, []);
+
+  const checkMicrosoftConnection = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsConnected(!!session?.provider_token);
+    } catch (error) {
+      console.error('Error checking Microsoft connection:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleMicrosoftConnect = async () => {
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'azure',
+        options: {
+          scopes: 'email Mail.Read Mail.Send Mail.ReadWrite offline_access profile User.Read',
+          redirectTo: `${window.location.origin}/email`
+        }
+      });
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error connecting to Microsoft:', error);
+      toast.error('Could not connect to Microsoft account');
+    }
+  };
+
+  const handleMicrosoftDisconnect = async () => {
+    try {
+      const { error } = await supabase.auth.unlinkIdentity('azure');
+      if (error) throw error;
+      
+      setIsConnected(false);
+      toast.success('Microsoft account disconnected');
+    } catch (error) {
+      console.error('Error disconnecting Microsoft account:', error);
+      toast.error('Could not disconnect Microsoft account');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card>
         <CardContent className="pt-6">
+          <h3 className="font-semibold mb-4">Microsoft Account</h3>
+          <div className="space-y-3">
+            {!isLoading && (
+              <Button 
+                className="w-full" 
+                variant={isConnected ? "destructive" : "default"}
+                onClick={isConnected ? handleMicrosoftDisconnect : handleMicrosoftConnect}
+              >
+                <Microsoft className="mr-2 h-4 w-4" />
+                {isConnected ? 'Disconnect Microsoft Account' : 'Connect Microsoft Account'}
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardContent className="pt-6">
           <h3 className="font-semibold mb-4">Snabbåtgärder</h3>
           <div className="space-y-3">
-            <Button className="w-full" variant="outline">
+            <Button className="w-full" variant="outline" disabled={!isConnected}>
               <Mail className="mr-2 h-4 w-4" />
               Skriv nytt mail
             </Button>
-            <Button className="w-full" variant="outline">
+            <Button className="w-full" variant="outline" disabled={!isConnected}>
               <Archive className="mr-2 h-4 w-4" />
               Arkivera alla
             </Button>
-            <Button className="w-full" variant="outline">
+            <Button className="w-full" variant="outline" disabled={!isConnected}>
               <RefreshCw className="mr-2 h-4 w-4" />
               Uppdatera inkorg
             </Button>
@@ -33,13 +102,13 @@ export const EmailSidebar = ({ onGenerateAIResponse }: EmailSidebarProps) => {
         <CardContent className="pt-6">
           <h3 className="font-semibold mb-4">Mallar</h3>
           <div className="space-y-3">
-            <Button className="w-full" variant="outline">
+            <Button className="w-full" variant="outline" disabled={!isConnected}>
               Mötesbokning
             </Button>
-            <Button className="w-full" variant="outline">
+            <Button className="w-full" variant="outline" disabled={!isConnected}>
               Projektuppdatering
             </Button>
-            <Button className="w-full" variant="outline">
+            <Button className="w-full" variant="outline" disabled={!isConnected}>
               Kunduppföljning
             </Button>
           </div>
@@ -54,11 +123,12 @@ export const EmailSidebar = ({ onGenerateAIResponse }: EmailSidebarProps) => {
               className="w-full"
               variant="outline"
               onClick={onGenerateAIResponse}
+              disabled={!isConnected}
             >
               <MessageSquare className="mr-2 h-4 w-4" />
               Generera svar
             </Button>
-            <Button className="w-full">
+            <Button className="w-full" disabled={!isConnected}>
               <Send className="mr-2 h-4 w-4" />
               Skicka AI-svar
             </Button>
