@@ -23,6 +23,22 @@ interface EmailListProps {
   formatDate: (date: string) => string;
 }
 
+const extractDisplayName = (sender: string): string => {
+  // Check if the sender contains a name part (e.g., "John Doe <john@example.com>")
+  const nameMatch = sender.match(/^([^<]+?)\s*<[^>]+>$/);
+  if (nameMatch && nameMatch[1]) {
+    return nameMatch[1].trim();
+  }
+  
+  // If no name part, extract the part before @ in the email
+  const emailPart = sender.split('@')[0];
+  // Capitalize first letter and replace dots/underscores with spaces
+  return emailPart
+    .split(/[._]/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
 export const EmailList = ({
   emails,
   onToggleStar,
@@ -74,7 +90,7 @@ export const EmailList = ({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="font-semibold truncate">
-                      {email.sender}
+                      {extractDisplayName(email.sender)}
                     </span>
                     {!email.isRead && (
                       <Badge variant="secondary" className="flex-shrink-0">
