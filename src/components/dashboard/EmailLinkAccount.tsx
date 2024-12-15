@@ -18,27 +18,19 @@ export const EmailLinkAccount = () => {
     try {
       console.log("1. Starting Microsoft authentication...");
       
-      // Use the production URL in production, fallback to localhost in development
-      const isProd = window.location.hostname !== 'localhost';
-      const baseUrl = isProd ? "https://luna-umber.vercel.app" : "http://localhost:5173";
-      const redirectUrl = `${baseUrl}/dashboard`;
-      
-      console.log("2. Base URL:", baseUrl);
-      console.log("3. Redirect URL:", redirectUrl);
-
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'azure',
         options: {
           scopes: 'email Mail.Read Mail.Send Mail.ReadWrite offline_access profile User.Read',
-          redirectTo: redirectUrl,
-          skipBrowserRedirect: false
+          skipBrowserRedirect: false,
+          flowType: 'pkce'
         }
       });
 
-      console.log("4. Authentication response:", { data, error });
+      console.log("2. Authentication response:", { data, error });
 
       if (error) {
-        console.error('5. Azure OAuth error:', {
+        console.error('3. Azure OAuth error:', {
           message: error.message,
           status: error.status,
           stack: error.stack
@@ -48,7 +40,6 @@ export const EmailLinkAccount = () => {
         
         if (error.message.includes("redirect_uri_mismatch")) {
           userMessage += "There's a configuration issue with the redirect URL. Please contact support.";
-          console.error("Redirect URI mismatch. Expected URI format: https://wxdtjeprsqttdxadfxlv.supabase.co/auth/v1/callback");
         } else if (error.message.includes("refused to connect")) {
           userMessage += "Please check if you have allowed pop-ups for this site and try again.";
         } else if (error.message.includes("invalid_scope")) {
@@ -64,7 +55,7 @@ export const EmailLinkAccount = () => {
       }
 
       if (!data) {
-        console.error('6. No response data received');
+        console.error('4. No response data received');
         setShowError(true);
         setErrorMessage('No response received from Microsoft. Please try again.');
         toast.error('Authentication failed. Please try again.');
@@ -72,17 +63,17 @@ export const EmailLinkAccount = () => {
       }
 
       if (data.url) {
-        console.log("7. Redirecting to:", data.url);
+        console.log("5. Redirecting to:", data.url);
         window.location.href = data.url;
       } else {
-        console.error('8. No redirect URL in response');
+        console.error('6. No redirect URL in response');
         setShowError(true);
         setErrorMessage('Invalid response from authentication service');
         toast.error('Authentication configuration error. Please try again later.');
       }
       
     } catch (error) {
-      console.error('9. Error linking Microsoft account:', {
+      console.error('7. Error linking Microsoft account:', {
         error,
         message: error.message,
         stack: error.stack
