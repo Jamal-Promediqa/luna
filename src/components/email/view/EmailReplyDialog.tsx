@@ -41,19 +41,22 @@ export const EmailReplyDialog = ({
           <DialogTitle>Svara på mail</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <Input
-            value={toAddress}
-            onChange={(e) => onToAddressChange(e.target.value)}
-            placeholder="Till"
-            disabled={isLoading}
-          />
-          <div className="text-sm text-muted-foreground">
-            Ämne: Re: {subject}
+          <div className="space-y-2">
+            <Input
+              value={toAddress}
+              onChange={(e) => onToAddressChange(e.target.value)}
+              placeholder="Till"
+              disabled={isLoading}
+            />
+            <div className="text-sm text-muted-foreground">
+              Ämne: Re: {subject}
+            </div>
           </div>
           <Textarea
             value={emailContent}
             onChange={(e) => onEmailContentChange(e.target.value)}
-            className="min-h-[200px]"
+            className="min-h-[200px] resize-y"
+            placeholder="Skriv ditt svar här..."
             disabled={isLoading}
           />
           {originalEmail && (
@@ -64,7 +67,7 @@ export const EmailReplyDialog = ({
               preview={originalEmail.preview}
             />
           )}
-          <div className="flex justify-end">
+          <div className="flex justify-end pt-2">
             <Button onClick={onSend} disabled={isLoading}>
               {isLoading ? "Skickar..." : "Skicka"}
             </Button>
