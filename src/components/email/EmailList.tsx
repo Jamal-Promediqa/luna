@@ -48,16 +48,20 @@ export const EmailList = ({
   return (
     <div className="space-y-4">
       {emails.map((email) => (
-        <Card key={email.id} className="cursor-pointer hover:bg-accent/50 transition-colors">
+        <Card 
+          key={email.id} 
+          className="cursor-pointer hover:bg-accent/50 transition-colors"
+        >
           <CardContent 
             className="p-4"
             onClick={() => setSelectedEmail(email)}
           >
-            <div className="flex justify-between items-start">
-              <div className="flex gap-4">
+            <div className="flex justify-between items-start gap-4">
+              <div className="flex gap-4 min-w-0 flex-1">
                 <Button
                   variant="ghost"
                   size="icon"
+                  className="flex-shrink-0"
                   onClick={(e) => {
                     e.stopPropagation();
                     onToggleStar(email.id);
@@ -67,50 +71,58 @@ export const EmailList = ({
                     className={email.isStarred ? "fill-yellow-400" : ""}
                   />
                 </Button>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold">{email.sender}</span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="font-semibold truncate">
+                      {email.sender}
+                    </span>
                     {!email.isRead && (
-                      <Badge variant="secondary">Ny</Badge>
+                      <Badge variant="secondary" className="flex-shrink-0">
+                        Ny
+                      </Badge>
                     )}
                   </div>
-                  <div>{email.subject}</div>
-                  <div className="text-sm text-muted-foreground line-clamp-1">
+                  <div className="text-base font-medium truncate mb-1">
+                    {email.subject}
+                  </div>
+                  <div className="text-sm text-muted-foreground truncate">
                     {email.preview}
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <span className="text-sm text-muted-foreground whitespace-nowrap">
                   {formatDate(email.timestamp)}
                 </span>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onArchive(email.id);
-                  }}
-                >
-                  <Archive className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete(email.id);
-                  }}
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onArchive(email.id);
+                    }}
+                  >
+                    <Archive className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete(email.id);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           </CardContent>
