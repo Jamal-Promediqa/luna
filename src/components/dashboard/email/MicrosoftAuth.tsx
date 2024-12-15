@@ -126,15 +126,11 @@ export const MicrosoftAuth = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
-      // First update the user's app_metadata to remove azure from providers
+      // Update the user's metadata to remove Microsoft connection
       const { error: updateError } = await supabase.auth.updateUser({
-        data: { 
-          microsoft_connected: false
-        },
-        options: {
-          data: {
-            providers: session?.user?.app_metadata?.providers?.filter(p => p !== 'azure') || []
-          }
+        data: {
+          microsoft_connected: false,
+          providers: session?.user?.app_metadata?.providers?.filter(p => p !== 'azure') || []
         }
       });
 
