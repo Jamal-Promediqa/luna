@@ -99,10 +99,12 @@ export interface Database {
           body_preview: string | null;
           from_address: string | null;
           is_read: boolean | null;
+          is_starred: boolean | null;
           received_at: string | null;
           created_at: string | null;
           updated_at: string | null;
           status: string | null;
+          message_id: string;
         };
         Insert: {
           id?: string;
@@ -111,10 +113,12 @@ export interface Database {
           body_preview?: string | null;
           from_address?: string | null;
           is_read?: boolean | null;
+          is_starred?: boolean | null;
           received_at?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
           status?: string | null;
+          message_id: string;
         };
         Update: {
           id?: string;
@@ -123,10 +127,12 @@ export interface Database {
           body_preview?: string | null;
           from_address?: string | null;
           is_read?: boolean | null;
+          is_starred?: boolean | null;
           received_at?: string | null;
           created_at?: string | null;
           updated_at?: string | null;
           status?: string | null;
+          message_id?: string;
         };
       };
       call_records: {
