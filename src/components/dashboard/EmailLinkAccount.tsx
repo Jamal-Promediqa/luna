@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 
 // Function to generate random string for code verifier
 const generateCodeVerifier = () => {
@@ -139,8 +140,7 @@ export const EmailLinkAccount = () => {
 
       const { error } = await supabase.auth.unlinkIdentity({
         id: azureIdentity.id,
-        provider: azureIdentity.provider,
-        email: azureIdentity.email
+        provider: azureIdentity.provider
       });
       
       if (error) {
@@ -161,39 +161,47 @@ export const EmailLinkAccount = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-6 space-y-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border rounded-lg">
-      <Mail className="h-12 w-12 text-muted-foreground" />
-      <h3 className="text-lg font-semibold">Connect Microsoft Account</h3>
-      <p className="text-sm text-muted-foreground text-center">
-        {isLinked 
-          ? "Your Microsoft account is connected to Luna"
-          : "Link your Microsoft account to view and send emails in Luna"
-        }
-      </p>
-      {showError && (
-        <Alert variant="destructive" className="mt-4">
-          <AlertDescription>
-            {errorMessage}
-          </AlertDescription>
-        </Alert>
-      )}
-      {isLinked ? (
-        <Button 
-          onClick={handleMicrosoftUnlink}
-          variant="destructive"
-          className="w-full"
-        >
-          Disconnect Microsoft Account
-        </Button>
-      ) : (
-        <Button 
-          onClick={handleMicrosoftLink} 
-          disabled={isLinking}
-          className="w-full bg-[#107C10] hover:bg-[#0B5C0B] text-white"
-        >
-          {isLinking ? 'Connecting...' : 'Connect Microsoft Account'}
-        </Button>
-      )}
-    </div>
+    <Card className="w-full max-w-md mx-auto">
+      <CardHeader className="space-y-1 flex flex-col items-center">
+        <Mail className="h-12 w-12 text-muted-foreground mb-2" />
+        <h3 className="text-2xl font-semibold tracking-tight">Email Connection</h3>
+        <p className="text-sm text-muted-foreground">
+          {isLinked 
+            ? "Your Microsoft account is connected to Luna"
+            : "Link your Microsoft account to view and send emails in Luna"
+          }
+        </p>
+      </CardHeader>
+      
+      <CardContent>
+        {showError && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertDescription>
+              {errorMessage}
+            </AlertDescription>
+          </Alert>
+        )}
+      </CardContent>
+
+      <CardFooter className="flex justify-center">
+        {isLinked ? (
+          <Button 
+            onClick={handleMicrosoftUnlink}
+            variant="destructive"
+            className="w-full"
+          >
+            Disconnect Microsoft Account
+          </Button>
+        ) : (
+          <Button 
+            onClick={handleMicrosoftLink} 
+            disabled={isLinking}
+            className="w-full bg-[#107C10] hover:bg-[#0B5C0B] text-white"
+          >
+            {isLinking ? 'Connecting...' : 'Connect Microsoft Account'}
+          </Button>
+        )}
+      </CardFooter>
+    </Card>
   );
 };
