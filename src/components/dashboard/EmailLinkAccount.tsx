@@ -21,7 +21,7 @@ export const EmailLinkAccount = () => {
       
       // Use the production URL in production, fallback to localhost in development
       const isProd = import.meta.env.PROD;
-      const baseUrl = isProd ? "https://luna-umber.vercel.app" : window.location.origin;
+      const baseUrl = isProd ? "https://luna-umber.vercel.app" : "http://localhost:5173";
       const redirectUrl = `${baseUrl}/dashboard`;
       
       console.log("2. Base URL:", baseUrl);
