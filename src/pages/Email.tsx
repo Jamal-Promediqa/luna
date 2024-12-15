@@ -42,10 +42,14 @@ export default function EmailDashboard() {
   });
 
   return (
-    <div className="space-y-6">
-      <UserWelcome givenName={profile?.given_name || 'Användare'} />
-      <DashboardNavigation navigate={navigate} />
-      <EmailContainer />
+    <div className="min-h-screen bg-background">
+      <div className="container py-6">
+        <div className="mb-8">
+          <UserWelcome givenName={profile?.given_name || 'Användare'} />
+        </div>
+        <DashboardNavigation navigate={navigate} />
+        <EmailContainer />
+      </div>
     </div>
   );
 }
