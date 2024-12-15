@@ -97,8 +97,7 @@ export const EmailLinkAccount = () => {
             code_challenge: codeChallenge,
             code_challenge_method: 'S256',
             domain_hint: 'organizations',
-            response_mode: 'query',
-            mfa: 'required'
+            response_mode: 'query'
           }
         }
       });
