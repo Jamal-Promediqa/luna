@@ -124,12 +124,17 @@ export const MicrosoftAuth = () => {
 
   const handleMicrosoftUnlink = async () => {
     try {
-      // Instead of trying to unlink the identity, we'll sign out completely
-      // This will remove all sessions and connections
-      const { error } = await supabase.auth.signOut();
+      const { data: { session } } = await supabase.auth.getSession();
       
-      if (error) {
-        console.error('Error signing out:', error);
+      // Update the user's metadata to remove Microsoft connection
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: { 
+          microsoft_connected: false 
+        }
+      });
+
+      if (updateError) {
+        console.error('Error updating user metadata:', updateError);
         toast.error('Failed to disconnect Microsoft account');
         return;
       }
@@ -137,8 +142,8 @@ export const MicrosoftAuth = () => {
       setIsLinked(false);
       toast.success('Microsoft account disconnected successfully');
       
-      // Refresh the page to update the UI state
-      window.location.reload();
+      // Refresh the component state without full page reload
+      window.location.href = '/emails';
     } catch (error) {
       console.error('Error during Microsoft account disconnect:', error);
       toast.error('Failed to disconnect Microsoft account');
