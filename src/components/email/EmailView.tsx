@@ -1,4 +1,5 @@
 import { ArrowLeft, Star, Archive, Trash2, MoreVertical, Reply, Forward, Sparkles } from "lucide-react";
+import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +33,24 @@ export const EmailView = ({
   onDelete,
   formatDate,
 }: EmailViewProps) => {
+  const handleReply = () => {
+    toast.success("Svarar på mail", {
+      description: "Funktionen kommer snart"
+    });
+  };
+
+  const handleForward = () => {
+    toast.success("Vidarebefordrar mail", {
+      description: "Funktionen kommer snart"
+    });
+  };
+
+  const handleAIResponse = () => {
+    toast.success("Genererar AI-svar", {
+      description: "Funktionen kommer snart"
+    });
+  };
+
   return (
     <Card>
       <CardContent className="p-6">
@@ -103,15 +122,15 @@ export const EmailView = ({
 
           {/* Action Buttons */}
           <div className="flex gap-4">
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleReply}>
               <Reply className="mr-2 h-4 w-4" />
               Svara
             </Button>
-            <Button variant="outline">
+            <Button variant="outline" onClick={handleForward}>
               <Forward className="mr-2 h-4 w-4" />
               Vidarebefordra
             </Button>
-            <Button>
+            <Button onClick={handleAIResponse}>
               <Sparkles className="mr-2 h-4 w-4" />
               AI Svar
             </Button>
