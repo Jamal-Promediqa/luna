@@ -11,10 +11,28 @@ export const LogoutButton = () => {
 
   const handleSignOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
+      // First check if we have a session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        // If no session, just clear everything and redirect
+        queryClient.clear();
+        localStorage.clear();
+        navigate('/login');
+        return;
+      }
+
+      // If we have a session, try to sign out
+      const { error } = await supabase.auth.signOut({
+        scope: 'local' // Use local scope instead of global to prevent the 403 error
+      });
+
       if (error) {
         console.error('Error signing out:', error);
-        toast.error('Ett fel uppstod vid utloggning');
+        // Even if there's an error, we should clean up the client state
+        queryClient.clear();
+        localStorage.clear();
+        navigate('/login');
         return;
       }
       
@@ -26,7 +44,10 @@ export const LogoutButton = () => {
       navigate('/login');
     } catch (error) {
       console.error('Error during sign out:', error);
-      toast.error('Ett fel uppstod vid utloggning');
+      // Even if there's an error, we should clean up the client state
+      queryClient.clear();
+      localStorage.clear();
+      navigate('/login');
     }
   };
 
