@@ -178,3 +178,6 @@ const Settings = () => {
       </Card>
     </div>
   );
+};
+
+export default Settings;
