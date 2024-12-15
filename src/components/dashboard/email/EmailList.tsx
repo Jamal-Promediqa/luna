@@ -1,58 +1,83 @@
-import { Mail } from "lucide-react";
 import { format } from "date-fns";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Star, Archive, Trash2, MoreVertical } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
-interface EmailListProps {
-  emails: any[];
-  isLoading: boolean;
+interface Email {
+  id: string;
+  from_address: string;
+  subject: string;
+  body_preview: string;
+  is_read: boolean;
+  received_at: string;
+  is_starred?: boolean;
 }
 
-export const EmailList = ({ emails, isLoading }: EmailListProps) => {
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-sm text-muted-foreground">Loading emails...</p>
-      </div>
-    );
-  }
+interface EmailListProps {
+  emails: Email[];
+  onArchive: (id: string) => void;
+  onDelete: (id: string) => void;
+  onStar?: (id: string) => void;
+}
 
-  if (!emails || emails.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full gap-2">
-        <Mail className="h-8 w-8 text-muted-foreground" />
-        <p className="text-sm text-muted-foreground">No emails to display</p>
-      </div>
-    );
-  }
-
+export const EmailList = ({ emails, onArchive, onDelete, onStar }: EmailListProps) => {
   return (
-    <ScrollArea className="h-[300px]">
-      <div className="space-y-4">
-        {emails.map((email) => (
-          <div
-            key={email.id}
-            className="flex items-start gap-4 p-3 rounded-lg hover:bg-accent/50 transition-colors"
-          >
-            <Mail className={`h-5 w-5 mt-0.5 ${email.is_read ? 'text-muted-foreground' : 'text-primary'}`} />
-            <div className="flex-1 space-y-1">
-              <p className={`text-sm leading-none ${!email.is_read && 'font-medium'}`}>
-                {email.subject || '(No subject)'}
-              </p>
-              <p className="text-xs text-muted-foreground line-clamp-2">
-                {email.body_preview}
-              </p>
+    <div className="space-y-4">
+      {emails.map((email) => (
+        <Card key={email.id}>
+          <CardContent className="p-4">
+            <div className="flex justify-between items-start">
+              <div className="flex gap-4">
+                {onStar && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="shrink-0"
+                    onClick={() => onStar(email.id)}
+                  >
+                    <Star className={`h-4 w-4 ${email.is_starred ? 'fill-yellow-400' : ''}`} />
+                  </Button>
+                )}
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold">{email.from_address}</span>
+                    {!email.is_read && (
+                      <Badge variant="secondary">New</Badge>
+                    )}
+                  </div>
+                  <div>{email.subject}</div>
+                  <div className="text-sm text-muted-foreground line-clamp-1">
+                    {email.body_preview}
+                  </div>
+                </div>
+              </div>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">
-                  From: {email.from_address}
-                </span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-sm text-muted-foreground">
                   {format(new Date(email.received_at), 'MMM d, HH:mm')}
                 </span>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onArchive(email.id)}
+                >
+                  <Archive className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onDelete(email.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon">
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
               </div>
             </div>
-          </div>
-        ))}
-      </div>
-    </ScrollArea>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
   );
 };
