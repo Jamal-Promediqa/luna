@@ -31,7 +31,6 @@ export const EmailSidebar = ({ onGenerateAIResponse, onRefreshInbox }: EmailSide
       console.log("Session data:", {
         hasSession: !!session,
         hasProviderToken: !!session?.provider_token,
-        provider: session?.provider,
         user: session?.user?.email
       });
 
