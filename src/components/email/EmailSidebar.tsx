@@ -1,17 +1,37 @@
-import { Mail, Archive, RefreshCw, MessageSquare, Send, Mail as MailIcon } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { MicrosoftAccount } from "./sidebar/MicrosoftAccount";
+import { QuickActions } from "./sidebar/QuickActions";
+import { EmailTemplates } from "./sidebar/EmailTemplates";
+import { AIAssistant } from "./sidebar/AIAssistant";
 
 interface EmailSidebarProps {
   onGenerateAIResponse: () => void;
   onRefreshInbox: () => void;
 }
+
+const templates = {
+  "Mötesbokning": `Hej,
+
+Jag skulle vilja boka ett möte med dig för att diskutera...
+
+Med vänliga hälsningar`,
+  "Projektuppdatering": `Hej teamet,
+
+Här kommer en uppdatering om projektet...
+
+Med vänliga hälsningar`,
+  "Kunduppföljning": `Hej,
+
+Jag följer upp vårt tidigare samtal...
+
+Med vänliga hälsningar`
+};
 
 export const EmailSidebar = ({ onGenerateAIResponse, onRefreshInbox }: EmailSidebarProps) => {
   const [isConnected, setIsConnected] = useState(false);
@@ -22,7 +42,6 @@ export const EmailSidebar = ({ onGenerateAIResponse, onRefreshInbox }: EmailSide
     subject: "",
     body: ""
   });
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
 
   useEffect(() => {
     checkMicrosoftConnection();
@@ -53,55 +72,20 @@ export const EmailSidebar = ({ onGenerateAIResponse, onRefreshInbox }: EmailSide
     }
   };
 
-  const handleMicrosoftConnect = async () => {
-    try {
-      console.log("Starting Microsoft OAuth flow...");
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'azure',
-        options: {
-          scopes: 'email Mail.Read Mail.Send Mail.ReadWrite offline_access profile User.Read',
-          redirectTo: window.location.origin,
-        }
-      });
-
-      if (error) throw error;
-    } catch (error) {
-      console.error('Error connecting to Microsoft:', error);
-      toast.error('Could not connect to Microsoft account. Please try again.');
-    }
-  };
-
-  const handleMicrosoftDisconnect = async () => {
-    try {
-      console.log("Starting Microsoft disconnect...");
-      const { error } = await supabase.auth.signOut();
-      
-      if (error) throw error;
-
-      setIsConnected(false);
-      toast.success('Microsoft account disconnected');
-    } catch (error) {
-      console.error('Error disconnecting Microsoft account:', error);
-      toast.error('Could not disconnect Microsoft account');
-    }
-  };
-
-  const handleArchiveAll = async () => {
-    try {
-      // In a real implementation, this would archive all emails
-      toast.success("Alla mail arkiverade");
-    } catch (error) {
-      console.error('Error archiving all emails:', error);
-      toast.error('Kunde inte arkivera alla mail');
-    }
-  };
-
   const handleCompose = () => {
+    if (!isConnected) {
+      toast.error("Please connect your Microsoft account first");
+      return;
+    }
     setShowComposeDialog(true);
   };
 
   const handleSendEmail = async () => {
     try {
+      if (!emailData.to || !emailData.subject || !emailData.body) {
+        toast.error("Please fill in all fields");
+        return;
+      }
       // In a real implementation, this would send the email
       toast.success("Mail skickat");
       setShowComposeDialog(false);
@@ -112,26 +96,11 @@ export const EmailSidebar = ({ onGenerateAIResponse, onRefreshInbox }: EmailSide
     }
   };
 
-  const templates = {
-    "Mötesbokning": `Hej,
-
-Jag skulle vilja boka ett möte med dig för att diskutera...
-
-Med vänliga hälsningar`,
-    "Projektuppdatering": `Hej teamet,
-
-Här kommer en uppdatering om projektet...
-
-Med vänliga hälsningar`,
-    "Kunduppföljning": `Hej,
-
-Jag följer upp vårt tidigare samtal...
-
-Med vänliga hälsningar`
-  };
-
   const handleTemplateSelect = (template: string) => {
-    setSelectedTemplate(template);
+    if (!isConnected) {
+      toast.error("Please connect your Microsoft account first");
+      return;
+    }
     setEmailData(prev => ({
       ...prev,
       body: templates[template as keyof typeof templates]
@@ -141,114 +110,20 @@ Med vänliga hälsningar`
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardContent className="pt-6">
-          <h3 className="font-semibold mb-4">Microsoft Account</h3>
-          <div className="space-y-3">
-            {!isLoading && (
-              <Button 
-                className="w-full" 
-                variant={isConnected ? "destructive" : "default"}
-                onClick={isConnected ? handleMicrosoftDisconnect : handleMicrosoftConnect}
-              >
-                <MailIcon className="mr-2 h-4 w-4" />
-                {isConnected ? 'Disconnect Microsoft Account' : 'Connect Microsoft Account'}
-              </Button>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="pt-6">
-          <h3 className="font-semibold mb-4">Snabbåtgärder</h3>
-          <div className="space-y-3">
-            <Button 
-              className="w-full" 
-              variant="outline" 
-              disabled={!isConnected}
-              onClick={handleCompose}
-            >
-              <Mail className="mr-2 h-4 w-4" />
-              Skriv nytt mail
-            </Button>
-            <Button 
-              className="w-full" 
-              variant="outline" 
-              disabled={!isConnected}
-              onClick={handleArchiveAll}
-            >
-              <Archive className="mr-2 h-4 w-4" />
-              Arkivera alla
-            </Button>
-            <Button 
-              className="w-full" 
-              variant="outline" 
-              disabled={!isConnected}
-              onClick={onRefreshInbox}
-            >
-              <RefreshCw className="mr-2 h-4 w-4" />
-              Uppdatera inkorg
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="pt-6">
-          <h3 className="font-semibold mb-4">Mallar</h3>
-          <div className="space-y-3">
-            <Button 
-              className="w-full" 
-              variant="outline" 
-              disabled={!isConnected}
-              onClick={() => handleTemplateSelect("Mötesbokning")}
-            >
-              Mötesbokning
-            </Button>
-            <Button 
-              className="w-full" 
-              variant="outline" 
-              disabled={!isConnected}
-              onClick={() => handleTemplateSelect("Projektuppdatering")}
-            >
-              Projektuppdatering
-            </Button>
-            <Button 
-              className="w-full" 
-              variant="outline" 
-              disabled={!isConnected}
-              onClick={() => handleTemplateSelect("Kunduppföljning")}
-            >
-              Kunduppföljning
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardContent className="pt-6">
-          <h3 className="font-semibold mb-4">AI-Assistent</h3>
-          <div className="space-y-3">
-            <Button
-              className="w-full"
-              variant="outline"
-              onClick={onGenerateAIResponse}
-              disabled={!isConnected}
-            >
-              <MessageSquare className="mr-2 h-4 w-4" />
-              Generera svar
-            </Button>
-            <Button 
-              className="w-full" 
-              disabled={!isConnected}
-            >
-              <Send className="mr-2 h-4 w-4" />
-              Skicka AI-svar
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <MicrosoftAccount isConnected={isConnected} isLoading={isLoading} />
+      <QuickActions 
+        isConnected={isConnected} 
+        onCompose={handleCompose}
+        onRefreshInbox={onRefreshInbox}
+      />
+      <EmailTemplates 
+        isConnected={isConnected}
+        onSelectTemplate={handleTemplateSelect}
+      />
+      <AIAssistant 
+        isConnected={isConnected}
+        onGenerateAIResponse={onGenerateAIResponse}
+      />
 
       <Dialog open={showComposeDialog} onOpenChange={setShowComposeDialog}>
         <DialogContent className="sm:max-w-[500px]">
