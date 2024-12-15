@@ -20,7 +20,7 @@ export const EmailLinkAccount = () => {
       console.log("1. Starting Microsoft authentication...");
       
       // Use the production URL in production, fallback to localhost in development
-      const isProd = import.meta.env.PROD;
+      const isProd = window.location.hostname !== 'localhost';
       const baseUrl = isProd ? "https://luna-umber.vercel.app" : "http://localhost:5173";
       const redirectUrl = `${baseUrl}/dashboard`;
       
@@ -35,6 +35,7 @@ export const EmailLinkAccount = () => {
         options: {
           ...authConfig.options,
           redirectTo: redirectUrl,
+          skipBrowserRedirect: false
         }
       });
 
@@ -75,10 +76,7 @@ export const EmailLinkAccount = () => {
 
       if (data.url) {
         console.log("8. Redirecting to:", data.url);
-        // Add a small delay to ensure logs are sent
-        setTimeout(() => {
-          window.location.href = data.url;
-        }, 100);
+        window.location.href = data.url;
       } else {
         console.error('9. No redirect URL in response');
         setShowError(true);
