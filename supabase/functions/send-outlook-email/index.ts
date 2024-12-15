@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -8,66 +9,56 @@ const corsHeaders = {
 };
 
 interface EmailRequest {
-  to: string;
+  to: string[];
   subject: string;
-  content: string;
-  accessToken: string;
+  html: string;
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { to, subject, content, accessToken }: EmailRequest = await req.json();
-    console.log("Sending email via Microsoft Graph API");
+    const emailRequest: EmailRequest = await req.json();
+    console.log("Sending email:", emailRequest);
 
-    const graphResponse = await fetch('https://graph.microsoft.com/v1.0/me/sendMail', {
-      method: 'POST',
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        message: {
-          subject,
-          body: {
-            contentType: "HTML",
-            content: content
-          },
-          toRecipients: [
-            {
-              emailAddress: {
-                address: to
-              }
-            }
-          ]
-        },
-        saveToSentItems: true
-      })
+        from: "Luna <onboarding@resend.dev>",
+        to: emailRequest.to,
+        subject: emailRequest.subject,
+        html: emailRequest.html,
+      }),
     });
 
-    if (!graphResponse.ok) {
-      const errorData = await graphResponse.text();
-      console.error("Microsoft Graph API error:", errorData);
-      throw new Error(`Failed to send email: ${errorData}`);
+    if (res.ok) {
+      const data = await res.json();
+      console.log("Email sent successfully:", data);
+      return new Response(JSON.stringify(data), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    } else {
+      const error = await res.text();
+      console.error("Error sending email:", error);
+      return new Response(JSON.stringify({ error }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
-
-    console.log("Email sent successfully via Microsoft Graph API");
-    return new Response(JSON.stringify({ success: true }), {
+  } catch (error: any) {
+    console.error("Error in send-email function:", error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
-
-  } catch (error) {
-    console.error("Error in send-outlook-email function:", error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
   }
 };
 

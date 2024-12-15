@@ -72,6 +72,15 @@ ${email.preview}
     setShowForwardDialog(true);
   };
 
+  const formatEmailContent = (content: string) => {
+    // Convert line breaks to HTML paragraphs
+    return content
+      .split('\n')
+      .map(line => line.trim())
+      .map(line => line ? `<p>${line}</p>` : '<p><br></p>')
+      .join('');
+  };
+
   const handleSendEmail = async (isReply: boolean) => {
     if (!accessToken) {
       toast.error("Du måste vara ansluten till Microsoft för att skicka mail");
@@ -91,11 +100,13 @@ ${email.preview}
     setIsLoading(true);
 
     try {
+      const formattedContent = formatEmailContent(emailContent);
+      
       const { data, error } = await supabase.functions.invoke('send-outlook-email', {
         body: {
           to: toAddress,
           subject: isReply ? `Re: ${email.subject}` : `Fwd: ${email.subject}`,
-          content: emailContent,
+          content: formattedContent,
           accessToken
         },
       });

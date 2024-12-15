@@ -34,6 +34,12 @@ export const EmailReplyDialog = ({
   onSend,
   originalEmail,
 }: EmailReplyDialogProps) => {
+  const handleContentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    // Convert line breaks to HTML paragraphs
+    const content = e.target.value;
+    onEmailContentChange(content);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
@@ -61,7 +67,7 @@ export const EmailReplyDialog = ({
           
           <Textarea
             value={emailContent}
-            onChange={(e) => onEmailContentChange(e.target.value)}
+            onChange={handleContentChange}
             className="min-h-[200px] resize-y"
             placeholder="Skriv ditt svar här..."
             disabled={isLoading}
