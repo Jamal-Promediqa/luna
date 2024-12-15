@@ -12,39 +12,46 @@ export const LogoutButton = () => {
   const handleSignOut = async () => {
     try {
       // First check if we have a session
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      if (!session) {
-        // If no session, just clear everything and redirect
+      if (sessionError) {
+        console.error('Error checking session:', sessionError);
+        // Clean up and redirect on session error
         queryClient.clear();
         localStorage.clear();
         navigate('/login');
         return;
       }
 
-      // If we have a session, try to sign out
-      const { error } = await supabase.auth.signOut({
-        scope: 'local' // Use local scope instead of global to prevent the 403 error
+      // If no active session, just clean up and redirect
+      if (!session) {
+        queryClient.clear();
+        localStorage.clear();
+        navigate('/login');
+        return;
+      }
+
+      // Try to sign out locally first
+      const { error: signOutError } = await supabase.auth.signOut({
+        scope: 'local'
       });
 
-      if (error) {
-        console.error('Error signing out:', error);
-        // Even if there's an error, we should clean up the client state
-        queryClient.clear();
-        localStorage.clear();
+      // Clean up client state regardless of sign out success
+      queryClient.clear();
+      localStorage.clear();
+
+      if (signOutError) {
+        console.error('Error signing out:', signOutError);
+        // Just redirect on error since we've already cleaned up
         navigate('/login');
         return;
       }
-      
-      // Clear all React Query caches and local storage
-      queryClient.clear();
-      localStorage.clear();
       
       toast.success('Du har loggats ut');
       navigate('/login');
     } catch (error) {
       console.error('Error during sign out:', error);
-      // Even if there's an error, we should clean up the client state
+      // Ensure cleanup happens even on unexpected errors
       queryClient.clear();
       localStorage.clear();
       navigate('/login');

@@ -16,14 +16,19 @@ const Login = () => {
         console.log("Checking session...");
         const { data: { session }, error } = await supabase.auth.getSession();
         
-        if (error) throw error;
+        if (error) {
+          console.error("Session check error:", error);
+          // Clear any stale session data
+          await supabase.auth.signOut({ scope: 'local' });
+          return;
+        }
         
         if (!mounted) {
           console.log("Component unmounted, skipping session check");
           return;
         }
 
-        if (session) {
+        if (session?.user) {
           console.log("Session found, navigating to dashboard");
           navigate("/dashboard");
         } else {
