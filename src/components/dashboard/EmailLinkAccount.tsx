@@ -28,7 +28,13 @@ export const EmailLinkAccount = () => {
       const authConfig = getMicrosoftAuthConfig(redirectUrl);
       console.log("4. Auth configuration:", authConfig);
 
-      const { data, error } = await supabase.auth.signInWithOAuth(authConfig);
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        ...authConfig,
+        options: {
+          ...authConfig.options,
+          redirectTo: redirectUrl,
+        }
+      });
 
       console.log("5. Authentication response:", { data, error });
 
@@ -97,7 +103,7 @@ export const EmailLinkAccount = () => {
       <Mail className="h-12 w-12 text-muted-foreground" />
       <h3 className="text-lg font-semibold">Connect Microsoft Account</h3>
       <p className="text-sm text-muted-foreground text-center">
-        Link your Microsoft account to view and send emails in Co-Pilot
+        Link your Microsoft account to view and send emails in Luna
       </p>
       {showError && (
         <Alert variant="destructive" className="mt-4">
