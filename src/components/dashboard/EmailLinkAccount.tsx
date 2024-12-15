@@ -9,7 +9,10 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 const generateCodeVerifier = () => {
   const array = new Uint8Array(32);
   crypto.getRandomValues(array);
-  return Array.from(array, byte => byte.toString(16).padStart(2, '0')).join('');
+  return btoa(String.fromCharCode.apply(null, Array.from(array)))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
 };
 
 // Function to generate code challenge from verifier
@@ -17,10 +20,11 @@ const generateCodeChallenge = async (verifier: string) => {
   const encoder = new TextEncoder();
   const data = encoder.encode(verifier);
   const hash = await crypto.subtle.digest('SHA-256', data);
-  return btoa(String.fromCharCode(...new Uint8Array(hash)))
+  const base64Hash = btoa(String.fromCharCode.apply(null, Array.from(new Uint8Array(hash))))
     .replace(/\+/g, '-')
     .replace(/\//g, '_')
     .replace(/=+$/, '');
+  return base64Hash;
 };
 
 export const EmailLinkAccount = () => {
@@ -35,14 +39,13 @@ export const EmailLinkAccount = () => {
         const { data: { session } } = await supabase.auth.getSession();
         console.log("Current session:", session);
         
-        // Check both provider_token and that the provider is azure
         if (session?.provider_token && session?.user?.app_metadata?.provider === 'azure') {
           console.log("Microsoft account is connected:", {
             provider: session.user.app_metadata.provider,
             token: session.provider_token
           });
           setIsLinked(true);
-          toast.success("Microsoft account already connected!");
+          toast.success("Microsoft account connected!");
         } else {
           console.log("Microsoft account is not connected:", {
             provider: session?.user?.app_metadata?.provider,
@@ -84,7 +87,6 @@ export const EmailLinkAccount = () => {
           scopes: 'email Mail.Read Mail.Send Mail.ReadWrite offline_access profile User.Read',
           queryParams: {
             prompt: 'consent',
-            response_type: 'code',
             code_challenge: codeChallenge,
             code_challenge_method: 'S256'
           }
