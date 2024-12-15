@@ -10,15 +10,21 @@ export const ensureUserProfile = async (userId: string) => {
       .eq("user_id", userId)
       .maybeSingle();
 
-    if (checkError) throw checkError;
+    if (checkError) {
+      console.error("Error checking profile:", checkError);
+      toast.error("Could not check user profile");
+      return false;
+    }
 
     // If profile exists, return true
-    if (existingProfile) return true;
+    if (existingProfile) {
+      return true;
+    }
 
-    // Profile doesn't exist, create it with default preferences
+    // Profile doesn't exist, try to create it with default preferences
     const { error: insertError } = await supabase
       .from("profiles")
-      .insert({
+      .upsert({
         user_id: userId,
         given_name: "",
         full_name: "",
@@ -37,6 +43,8 @@ export const ensureUserProfile = async (userId: string) => {
           timezone: "UTC",
           dateFormat: "YYYY-MM-DD"
         }
+      }, {
+        onConflict: 'user_id'
       });
 
     if (insertError) {
