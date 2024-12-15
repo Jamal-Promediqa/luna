@@ -8,30 +8,22 @@ import { EmailFilters } from "@/components/email/EmailFilters";
 import { EmailList } from "@/components/email/EmailList";
 import { EmailSidebar } from "@/components/email/EmailSidebar";
 
-interface Email {
-  id: string;
-  sender: string;
-  subject: string;
-  preview: string;
-  timestamp: string;
-  isStarred: boolean;
-  isRead: boolean;
-}
-
 export default function EmailDashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterValue, setFilterValue] = useState("alla");
   const [userId, setUserId] = useState<string | null>(null);
+  const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setUserId(session?.user?.id ?? null);
+      setIsConnected(!!session?.provider_token);
     };
     getSession();
   }, []);
 
-  const { data: emails = [], isLoading } = useQuery({
+  const { data: emails = [], isLoading, refetch } = useQuery({
     queryKey: ['emails', userId],
     queryFn: async () => {
       if (!userId) return [];
@@ -47,24 +39,29 @@ export default function EmailDashboard() {
       const accessToken = session?.provider_token;
       
       if (accessToken) {
-        const outlookEmails = await fetchEmails(accessToken);
-        await syncEmailsToSupabase(userId, outlookEmails);
-        
-        // Return fresh data
-        const { data: freshEmails } = await supabase
-          .from('outlook_emails')
-          .select('*')
-          .order('received_at', { ascending: false });
+        try {
+          const outlookEmails = await fetchEmails(accessToken);
+          await syncEmailsToSupabase(userId, outlookEmails);
           
-        return freshEmails?.map(email => ({
-          id: email.id,
-          sender: email.from_address || '',
-          subject: email.subject || '',
-          preview: email.body_preview || '',
-          timestamp: email.received_at || '',
-          isStarred: false, // Default value since is_starred doesn't exist in DB
-          isRead: email.is_read || false
-        })) || [];
+          // Return fresh data
+          const { data: freshEmails } = await supabase
+            .from('outlook_emails')
+            .select('*')
+            .order('received_at', { ascending: false });
+            
+          return freshEmails?.map(email => ({
+            id: email.id,
+            sender: email.from_address || '',
+            subject: email.subject || '',
+            preview: email.body_preview || '',
+            timestamp: email.received_at || '',
+            isStarred: email.is_starred || false,
+            isRead: email.is_read || false
+          })) || [];
+        } catch (error) {
+          console.error('Error fetching emails:', error);
+          toast.error('Could not fetch new emails');
+        }
       }
 
       return (cachedEmails || []).map(email => ({
@@ -73,11 +70,11 @@ export default function EmailDashboard() {
         subject: email.subject || '',
         preview: email.body_preview || '',
         timestamp: email.received_at || '',
-        isStarred: false, // Default value since is_starred doesn't exist in DB
+        isStarred: email.is_starred || false,
         isRead: email.is_read || false
       }));
     },
-    enabled: !!userId,
+    enabled: !!userId && isConnected,
   });
 
   const formatDate = (dateString: string) => {
@@ -90,12 +87,30 @@ export default function EmailDashboard() {
     });
   };
 
+  const handleRefreshInbox = useCallback(async () => {
+    await refetch();
+    toast.success("Inkorgen uppdaterad");
+  }, [refetch]);
+
   const toggleStar = useCallback(async (id: string) => {
     if (!userId) return;
 
-    // Since is_starred doesn't exist in DB yet, we'll just show a toast
-    toast.success("E-post stjärnmärkt");
-  }, [userId]);
+    const email = emails.find(e => e.id === id);
+    if (!email) return;
+
+    const { error } = await supabase
+      .from('outlook_emails')
+      .update({ is_starred: !email.isStarred })
+      .eq('id', id);
+
+    if (error) {
+      toast.error("Kunde inte stjärnmärka e-post");
+      return;
+    }
+
+    await refetch();
+    toast.success(email.isStarred ? "Stjärnmärkning borttagen" : "E-post stjärnmärkt");
+  }, [userId, emails, refetch]);
 
   const handleDelete = useCallback(async (id: string) => {
     if (!userId) return;
@@ -110,13 +125,15 @@ export default function EmailDashboard() {
       return;
     }
 
+    await refetch();
     toast.success("E-post borttagen");
-  }, [userId]);
+  }, [userId, refetch]);
 
   const handleArchive = useCallback(async (id: string) => {
     // In a real implementation, we would call Microsoft Graph API to archive the email
     toast.success("E-post arkiverad");
-  }, []);
+    await refetch();
+  }, [refetch]);
 
   const generateAIResponse = useCallback(() => {
     toast.success("AI-svar genererat", {
@@ -124,8 +141,8 @@ export default function EmailDashboard() {
     });
   }, []);
 
-  if (isLoading) {
-    return <div>Laddar...</div>;
+  if (!userId) {
+    return <div>Loading...</div>;
   }
 
   return (
@@ -141,17 +158,24 @@ export default function EmailDashboard() {
             onFilterChange={setFilterValue}
           />
           
-          <EmailList
-            emails={emails}
-            onToggleStar={toggleStar}
-            onArchive={handleArchive}
-            onDelete={handleDelete}
-            formatDate={formatDate}
-          />
+          {isLoading ? (
+            <div>Laddar e-post...</div>
+          ) : (
+            <EmailList
+              emails={emails}
+              onToggleStar={toggleStar}
+              onArchive={handleArchive}
+              onDelete={handleDelete}
+              formatDate={formatDate}
+            />
+          )}
         </div>
 
         <div>
-          <EmailSidebar onGenerateAIResponse={generateAIResponse} />
+          <EmailSidebar 
+            onGenerateAIResponse={generateAIResponse}
+            onRefreshInbox={handleRefreshInbox}
+          />
         </div>
       </div>
     </div>

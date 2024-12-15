@@ -7,9 +7,10 @@ import { toast } from "sonner";
 
 interface EmailSidebarProps {
   onGenerateAIResponse: () => void;
+  onRefreshInbox: () => void;
 }
 
-export const EmailSidebar = ({ onGenerateAIResponse }: EmailSidebarProps) => {
+export const EmailSidebar = ({ onGenerateAIResponse, onRefreshInbox }: EmailSidebarProps) => {
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -88,7 +89,12 @@ export const EmailSidebar = ({ onGenerateAIResponse }: EmailSidebarProps) => {
               <Archive className="mr-2 h-4 w-4" />
               Arkivera alla
             </Button>
-            <Button className="w-full" variant="outline" disabled={!isConnected}>
+            <Button 
+              className="w-full" 
+              variant="outline" 
+              disabled={!isConnected}
+              onClick={onRefreshInbox}
+            >
               <RefreshCw className="mr-2 h-4 w-4" />
               Uppdatera inkorg
             </Button>
