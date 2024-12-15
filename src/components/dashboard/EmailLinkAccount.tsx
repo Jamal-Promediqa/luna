@@ -27,6 +27,7 @@ export const EmailLinkAccount = () => {
   const [isLinking, setIsLinking] = useState(false);
   const [showError, setShowError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [isLinked, setIsLinked] = useState(false);
 
   useEffect(() => {
     const checkMicrosoftStatus = async () => {
@@ -36,7 +37,8 @@ export const EmailLinkAccount = () => {
         
         if (session?.provider_token) {
           console.log("Provider token found:", session.provider_token);
-          toast.success("Microsoft account connected successfully!");
+          setIsLinked(true);
+          toast.success("Microsoft account already connected!");
         }
       } catch (error) {
         console.error("Error checking Microsoft status:", error);
@@ -47,6 +49,11 @@ export const EmailLinkAccount = () => {
   }, []);
 
   const handleMicrosoftLink = async () => {
+    if (isLinked) {
+      toast.info("Microsoft account is already connected!");
+      return;
+    }
+
     setIsLinking(true);
     setShowError(false);
     setErrorMessage("");
@@ -140,7 +147,10 @@ export const EmailLinkAccount = () => {
       <Mail className="h-12 w-12 text-muted-foreground" />
       <h3 className="text-lg font-semibold">Connect Microsoft Account</h3>
       <p className="text-sm text-muted-foreground text-center">
-        Link your Microsoft account to view and send emails in Luna
+        {isLinked 
+          ? "Your Microsoft account is connected to Luna"
+          : "Link your Microsoft account to view and send emails in Luna"
+        }
       </p>
       {showError && (
         <Alert variant="destructive" className="mt-4">
@@ -151,10 +161,15 @@ export const EmailLinkAccount = () => {
       )}
       <Button 
         onClick={handleMicrosoftLink} 
-        disabled={isLinking}
+        disabled={isLinking || isLinked}
         className="w-full bg-[#107C10] hover:bg-[#0B5C0B] text-white"
       >
-        {isLinking ? 'Connecting...' : 'Connect Microsoft Account'}
+        {isLinked 
+          ? 'Microsoft Account Connected' 
+          : isLinking 
+            ? 'Connecting...' 
+            : 'Connect Microsoft Account'
+        }
       </Button>
     </div>
   );
