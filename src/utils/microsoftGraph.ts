@@ -38,7 +38,7 @@ export const fetchEmails = async (accessToken: string, folder: string = 'inbox')
       .api(endpoint)
       .select('id,subject,bodyPreview,from,receivedDateTime,isRead')
       .top(50)
-      .orderBy('receivedDateTime DESC')
+      .orderby('receivedDateTime DESC')
       .get();
 
     return response.value;
