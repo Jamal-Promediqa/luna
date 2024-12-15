@@ -2,15 +2,12 @@ import { ArrowLeft, Star, Archive, Trash2, MoreVertical, Reply, Forward, Sparkle
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useEmailAuth } from "./hooks/useEmailAuth";
+import { EmailContent } from "./view/EmailContent";
+import { EmailReplyDialog } from "./view/EmailReplyDialog";
+import { EmailForwardDialog } from "./view/EmailForwardDialog";
 
 interface Email {
   id: string;
@@ -47,6 +44,10 @@ export const EmailView = ({
   const { accessToken } = useEmailAuth();
 
   const handleReply = () => {
+    if (!accessToken) {
+      toast.error("Du måste vara ansluten till Microsoft för att svara på mail");
+      return;
+    }
     setToAddress(email.sender);
     setEmailContent(`
 
@@ -60,6 +61,10 @@ ${email.preview}
   };
 
   const handleForward = () => {
+    if (!accessToken) {
+      toast.error("Du måste vara ansluten till Microsoft för att vidarebefordra mail");
+      return;
+    }
     setToAddress("");
     setEmailContent(`
 ---------- Vidarebefordrat meddelande ----------
@@ -162,28 +167,15 @@ ${email.preview}
                 </Button>
               </div>
             </div>
-            {/* Email Details */}
-            <div className="flex items-start gap-4">
-              <Avatar>
-                <AvatarImage src="" />
-                <AvatarFallback>{email.sender[0]}</AvatarFallback>
-              </Avatar>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold">{email.sender}</span>
-                  {!email.isRead && (
-                    <Badge variant="secondary">Ny</Badge>
-                  )}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {formatDate(email.timestamp)}
-                </div>
-              </div>
-            </div>
-            {/* Email Content */}
-            <div className="space-y-4">
-              <div className="whitespace-pre-wrap">{email.preview}</div>
-            </div>
+
+            <EmailContent
+              sender={email.sender}
+              isRead={email.isRead}
+              timestamp={email.timestamp}
+              formatDate={formatDate}
+              preview={email.preview}
+            />
+
             {/* Action Buttons */}
             <div className="flex gap-4">
               <Button variant="outline" onClick={handleReply}>
@@ -203,73 +195,29 @@ ${email.preview}
         </CardContent>
       </Card>
 
-      {/* Reply Dialog */}
-      <Dialog open={showReplyDialog} onOpenChange={setShowReplyDialog}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Svara på mail</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Input
-              value={toAddress}
-              onChange={(e) => setToAddress(e.target.value)}
-              placeholder="Till"
-              disabled={isLoading}
-            />
-            <div className="text-sm text-muted-foreground">
-              Ämne: Re: {email.subject}
-            </div>
-            <Textarea
-              value={emailContent}
-              onChange={(e) => setEmailContent(e.target.value)}
-              className="min-h-[200px]"
-              disabled={isLoading}
-            />
-            <div className="flex justify-end">
-              <Button 
-                onClick={() => handleSendEmail(true)}
-                disabled={isLoading}
-              >
-                {isLoading ? "Skickar..." : "Skicka"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <EmailReplyDialog
+        open={showReplyDialog}
+        onOpenChange={setShowReplyDialog}
+        toAddress={toAddress}
+        onToAddressChange={setToAddress}
+        emailContent={emailContent}
+        onEmailContentChange={setEmailContent}
+        subject={email.subject}
+        isLoading={isLoading}
+        onSend={() => handleSendEmail(true)}
+      />
 
-      {/* Forward Dialog */}
-      <Dialog open={showForwardDialog} onOpenChange={setShowForwardDialog}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Vidarebefordra mail</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Input
-              value={toAddress}
-              onChange={(e) => setToAddress(e.target.value)}
-              placeholder="Till"
-              disabled={isLoading}
-            />
-            <div className="text-sm text-muted-foreground">
-              Ämne: Fwd: {email.subject}
-            </div>
-            <Textarea
-              value={emailContent}
-              onChange={(e) => setEmailContent(e.target.value)}
-              className="min-h-[200px]"
-              disabled={isLoading}
-            />
-            <div className="flex justify-end">
-              <Button 
-                onClick={() => handleSendEmail(false)}
-                disabled={isLoading}
-              >
-                {isLoading ? "Skickar..." : "Skicka"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <EmailForwardDialog
+        open={showForwardDialog}
+        onOpenChange={setShowForwardDialog}
+        toAddress={toAddress}
+        onToAddressChange={setToAddress}
+        emailContent={emailContent}
+        onEmailContentChange={setEmailContent}
+        subject={email.subject}
+        isLoading={isLoading}
+        onSend={() => handleSendEmail(false)}
+      />
     </>
   );
 };
