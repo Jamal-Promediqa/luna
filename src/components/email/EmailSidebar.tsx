@@ -34,7 +34,7 @@ export const EmailSidebar = ({ onGenerateAIResponse }: EmailSidebarProps) => {
         provider: 'azure',
         options: {
           scopes: 'email Mail.Read Mail.Send Mail.ReadWrite offline_access profile User.Read',
-          redirectTo: `${window.location.origin}/email`
+          redirectTo: window.location.origin
         }
       });
 
