@@ -42,8 +42,10 @@ export const EmailLinkAccount = () => {
           scopes: 'email Mail.Read Mail.Send Mail.ReadWrite offline_access profile User.Read',
           queryParams: {
             prompt: 'consent',
-            access_type: 'offline'
-          }
+            response_type: 'code',
+            code_challenge_method: 'S256'
+          },
+          skipBrowserRedirect: false
         }
       });
 
@@ -58,7 +60,9 @@ export const EmailLinkAccount = () => {
         
         let userMessage = "Failed to connect to Microsoft. ";
         
-        if (error.message.includes("redirect_uri_mismatch")) {
+        if (error.message.includes("AADSTS9002325")) {
+          userMessage += "There was an issue with the authentication configuration. Please try again or contact support.";
+        } else if (error.message.includes("redirect_uri_mismatch")) {
           userMessage += "There's a configuration issue with the redirect URL. Please contact support.";
         } else if (error.message.includes("refused to connect")) {
           userMessage += "Please check if you have allowed pop-ups for this site and try again.";
