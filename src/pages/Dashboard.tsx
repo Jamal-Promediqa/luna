@@ -14,6 +14,7 @@ import { TaskNotifications } from "@/components/tasks/TaskNotifications";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation";
 import { DashboardMetrics } from "@/components/dashboard/DashboardMetrics";
+import { EmailCompose } from "@/components/dashboard/email/EmailCompose";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -133,39 +134,45 @@ const Dashboard = () => {
 
       {/* Main Content Area */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Tasks Section */}
-        <Card className="lg:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <CardTitle>Prioriterade uppgifter</CardTitle>
-            <Button 
-              variant="ghost" 
-              className="text-sm"
-              onClick={() => navigate('/tasks')}
-            >
-              Visa alla
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {tasksLoading ? (
-                <div className="text-center text-muted-foreground">Laddar uppgifter...</div>
-              ) : tasksError ? (
-                <div className="text-center text-muted-foreground">Kunde inte ladda uppgifter</div>
-              ) : tasks && tasks.length > 0 ? (
-                tasks.map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    onViewDetails={handleViewDetails}
-                  />
-                ))
-              ) : (
-                <div className="text-center text-muted-foreground">Inga uppgifter att visa</div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+        {/* Tasks and Email Section */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Tasks Card */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+              <CardTitle>Prioriterade uppgifter</CardTitle>
+              <Button 
+                variant="ghost" 
+                className="text-sm"
+                onClick={() => navigate('/tasks')}
+              >
+                Visa alla
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {tasksLoading ? (
+                  <div className="text-center text-muted-foreground">Laddar uppgifter...</div>
+                ) : tasksError ? (
+                  <div className="text-center text-muted-foreground">Kunde inte ladda uppgifter</div>
+                ) : tasks && tasks.length > 0 ? (
+                  tasks.map((task) => (
+                    <TaskCard
+                      key={task.id}
+                      task={task}
+                      onViewDetails={handleViewDetails}
+                    />
+                  ))
+                ) : (
+                  <div className="text-center text-muted-foreground">Inga uppgifter att visa</div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Email Compose Section */}
+          <EmailCompose />
+        </div>
 
         {/* Side Panel */}
         <div className="space-y-6">
