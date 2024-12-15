@@ -7,6 +7,6 @@ export type Updatable<T extends keyof Database['public']['Tables']> = Database['
 // Re-export all types
 export type { Task } from './task';
 export type { Profile } from './auth';
-export type { OutlookEmail, CallRecord } from './communication';
+export type { CallRecord } from './communication';
 export type { Assignment, Consultant } from './consultant';
 export type { KPI } from './metrics';
