@@ -15,24 +15,6 @@ interface EmailSidebarProps {
   onRefreshInbox: () => void;
 }
 
-const templates = {
-  "Mötesbokning": `Hej,
-
-Jag skulle vilja boka ett möte med dig för att diskutera...
-
-Med vänliga hälsningar`,
-  "Projektuppdatering": `Hej teamet,
-
-Här kommer en uppdatering om projektet...
-
-Med vänliga hälsningar`,
-  "Kunduppföljning": `Hej,
-
-Jag följer upp vårt tidigare samtal...
-
-Med vänliga hälsningar`
-};
-
 export const EmailSidebar = ({ onGenerateAIResponse, onRefreshInbox }: EmailSidebarProps) => {
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -96,14 +78,14 @@ export const EmailSidebar = ({ onGenerateAIResponse, onRefreshInbox }: EmailSide
     }
   };
 
-  const handleTemplateSelect = (template: string) => {
+  const handleTemplateSelect = (content: string) => {
     if (!isConnected) {
       toast.error("Please connect your Microsoft account first");
       return;
     }
     setEmailData(prev => ({
       ...prev,
-      body: templates[template as keyof typeof templates]
+      body: content
     }));
     setShowComposeDialog(true);
   };

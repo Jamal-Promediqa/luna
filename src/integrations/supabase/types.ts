@@ -105,6 +105,48 @@ export type Database = {
         }
         Relationships: []
       }
+      email_templates: {
+        Row: {
+          category: string | null
+          content: string
+          created_at: string | null
+          id: string
+          last_used_at: string | null
+          name: string
+          subject: string | null
+          updated_at: string | null
+          usage_count: number | null
+          user_id: string | null
+          variables: Json | null
+        }
+        Insert: {
+          category?: string | null
+          content: string
+          created_at?: string | null
+          id?: string
+          last_used_at?: string | null
+          name: string
+          subject?: string | null
+          updated_at?: string | null
+          usage_count?: number | null
+          user_id?: string | null
+          variables?: Json | null
+        }
+        Update: {
+          category?: string | null
+          content?: string
+          created_at?: string | null
+          id?: string
+          last_used_at?: string | null
+          name?: string
+          subject?: string | null
+          updated_at?: string | null
+          usage_count?: number | null
+          user_id?: string | null
+          variables?: Json | null
+        }
+        Relationships: []
+      }
       kpis: {
         Row: {
           booked_weeks: number | null
