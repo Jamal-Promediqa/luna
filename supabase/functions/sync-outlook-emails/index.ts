@@ -32,19 +32,30 @@ Deno.serve(async (req) => {
     const user = userResponse.user;
     if (!user) throw new Error('User not found');
 
-    // Get the Microsoft access token from the provider token
-    const provider_token = user.app_metadata?.provider_token;
-    if (!provider_token) {
-      console.error('No provider token found in app_metadata:', user.app_metadata);
-      throw new Error('No Microsoft access token found. Please reconnect your Microsoft account.');
+    // Find the Azure identity
+    const azureIdentity = user.identities?.find(identity => identity.provider === 'azure');
+    if (!azureIdentity) {
+      throw new Error('No Microsoft account linked');
+    }
+
+    // Get the access token from the identity data
+    const { data: { token }, error: tokenError } = await supabase.auth.admin.generateAccessToken(userId, {
+      properties: {
+        provider: 'azure'
+      }
+    });
+
+    if (tokenError || !token) {
+      console.error('Error getting access token:', tokenError);
+      throw new Error('Failed to get Microsoft access token');
     }
 
     console.log('Successfully retrieved access token');
 
     // Fetch emails using Microsoft Graph REST API
-    const response = await fetch('https://graph.microsoft.com/v1.0/me/messages?$top=50&$orderby=receivedDateTime desc&$select=id,subject,bodyPreview,body,from,toRecipients,receivedDateTime,isRead', {
+    const response = await fetch('https://graph.microsoft.com/v1.0/me/messages?$top=50&$orderby=receivedDateTime desc&$select=id,subject,bodyPreview,from,receivedDateTime,isRead', {
       headers: {
-        'Authorization': `Bearer ${provider_token}`,
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json'
       }
     });
@@ -60,21 +71,19 @@ Deno.serve(async (req) => {
 
     // Store emails in Supabase
     for (const email of emails) {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('outlook_emails')
         .upsert({
+          id: email.id,
           user_id: userId,
-          email_id: email.id,
           subject: email.subject,
-          from_address: email.from?.emailAddress?.address,
-          to_addresses: email.toRecipients?.map(r => r.emailAddress?.address),
           body_preview: email.bodyPreview,
-          body_content: email.body?.content,
+          from_address: email.from?.emailAddress?.address,
+          is_read: email.isRead,
           received_at: email.receivedDateTime,
-          is_read: email.isRead
+          status: 'inbox'
         }, {
-          onConflict: 'email_id',
-          ignoreDuplicates: false
+          onConflict: 'id'
         });
 
       if (error) {
