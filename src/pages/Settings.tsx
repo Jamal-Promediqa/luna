@@ -6,6 +6,7 @@ import { AccountSecuritySettings } from "@/components/settings/AccountSecuritySe
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { ThemeSettings } from "@/components/settings/ThemeSettings";
 import { RegionalSettings } from "@/components/settings/RegionalSettings";
+import { DashboardNavigation } from "@/components/dashboard/DashboardNavigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -113,78 +114,84 @@ const Settings = () => {
   };
 
   return (
-    <div className="container mx-auto p-4 space-y-6">
-      <h1 className="text-2xl font-bold mb-6">Settings</h1>
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto p-4">
+        <DashboardNavigation navigate={navigate} />
+        
+        <div className="space-y-6">
+          <h1 className="text-2xl font-bold">Settings</h1>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <UserRound className="h-5 w-5" />
-            Profile Settings
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="givenName">Given Name</Label>
-            <Input
-              id="givenName"
-              value={givenName}
-              onChange={(e) => setGivenName(e.target.value)}
-              placeholder="Enter your given name"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="fullName">Full Name</Label>
-            <Input
-              id="fullName"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              placeholder="Enter your full name"
-            />
-          </div>
-          <Button
-            onClick={handleUpdateProfile}
-            disabled={loading}
-            className="w-full"
-          >
-            {loading ? "Updating..." : "Update Profile"}
-          </Button>
-        </CardContent>
-      </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <UserRound className="h-5 w-5" />
+                Profile Settings
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="givenName">Given Name</Label>
+                <Input
+                  id="givenName"
+                  value={givenName}
+                  onChange={(e) => setGivenName(e.target.value)}
+                  placeholder="Enter your given name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="fullName">Full Name</Label>
+                <Input
+                  id="fullName"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Enter your full name"
+                />
+              </div>
+              <Button
+                onClick={handleUpdateProfile}
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? "Updating..." : "Update Profile"}
+              </Button>
+            </CardContent>
+          </Card>
 
-      <AccountSecuritySettings />
-      <NotificationSettings />
-      <ThemeSettings />
-      <RegionalSettings />
+          <AccountSecuritySettings />
+          <NotificationSettings />
+          <ThemeSettings />
+          <RegionalSettings />
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-destructive flex items-center gap-2">
-            <Trash2 className="h-5 w-5" />
-            Danger Zone
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <Separator className="my-4" />
-          <div className="space-y-4">
-            <Button
-              onClick={handleSignOut}
-              variant="destructive"
-              className="w-full"
-            >
-              Sign Out
-            </Button>
-            <Button
-              onClick={handleDeleteAccount}
-              variant="outline"
-              className="w-full text-destructive"
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete Account
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-destructive flex items-center gap-2">
+                <Trash2 className="h-5 w-5" />
+                Danger Zone
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <Separator className="my-4" />
+              <div className="space-y-4">
+                <Button
+                  onClick={handleSignOut}
+                  variant="destructive"
+                  className="w-full"
+                >
+                  Sign Out
+                </Button>
+                <Button
+                  onClick={handleDeleteAccount}
+                  variant="outline"
+                  className="w-full text-destructive"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete Account
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 };
