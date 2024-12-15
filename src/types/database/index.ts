@@ -5,6 +5,7 @@ import { ConsultantsTable } from "./consultants";
 import { KPIsTable } from "./metrics";
 import { CallRecordsTable } from "./communication";
 import { AssignmentsTable } from "./assignments";
+import { Json } from "@/integrations/supabase/types";
 
 export interface Database {
   public: {

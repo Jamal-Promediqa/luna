@@ -53,9 +53,9 @@ export interface OutlookEmailsTable {
     is_read: boolean | null;
     is_starred: boolean | null;
     received_at: string | null;
+    status: string | null;
     created_at: string | null;
     updated_at: string | null;
-    status: string | null;
   };
   Insert: {
     id?: string;
@@ -67,9 +67,9 @@ export interface OutlookEmailsTable {
     is_read?: boolean | null;
     is_starred?: boolean | null;
     received_at?: string | null;
+    status?: string | null;
     created_at?: string | null;
     updated_at?: string | null;
-    status?: string | null;
   };
   Update: {
     id?: string;
@@ -81,8 +81,8 @@ export interface OutlookEmailsTable {
     is_read?: boolean | null;
     is_starred?: boolean | null;
     received_at?: string | null;
+    status?: string | null;
     created_at?: string | null;
     updated_at?: string | null;
-    status?: string | null;
   };
 }
