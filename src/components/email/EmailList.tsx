@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 interface Email {
-  id: number;
+  id: string;
   sender: string;
   subject: string;
   preview: string;
@@ -15,9 +15,9 @@ interface Email {
 
 interface EmailListProps {
   emails: Email[];
-  onToggleStar: (id: number) => void;
-  onArchive: (id: number) => void;
-  onDelete: (id: number) => void;
+  onToggleStar: (id: string) => void;
+  onArchive: (id: string) => void;
+  onDelete: (id: string) => void;
   formatDate: (date: string) => string;
 }
 
