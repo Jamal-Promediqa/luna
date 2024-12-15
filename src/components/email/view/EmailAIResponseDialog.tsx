@@ -64,6 +64,7 @@ AI Assistenten`;
   const handleInsert = () => {
     onInsert(response);
     onOpenChange(false);
+    toast.success("AI-svar infogat i meddelandet");
   };
 
   return (
