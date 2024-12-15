@@ -77,9 +77,14 @@ export const EmailLinkAccount = () => {
       // Store code verifier in session storage
       sessionStorage.setItem('pkce_code_verifier', codeVerifier);
 
+      // Get the current origin for the redirect URL
+      const redirectTo = `${window.location.origin}/dashboard`;
+      console.log("Redirect URL:", redirectTo);
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'azure',
         options: {
+          redirectTo,
           scopes: 'email Mail.Read Mail.Send Mail.ReadWrite offline_access profile User.Read',
           queryParams: {
             code_challenge: codeChallenge,
