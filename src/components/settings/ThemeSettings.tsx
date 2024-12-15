@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Palette } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ensureUserProfile } from "@/utils/profileUtils";
 
 export const ThemeSettings = () => {
   const [darkMode, setDarkMode] = useState(false);
@@ -14,14 +15,16 @@ export const ThemeSettings = () => {
 
   useEffect(() => {
     loadThemePreferences();
-    // Apply dark mode on initial load
-    document.documentElement.classList.toggle("dark", darkMode);
   }, []);
 
   const loadThemePreferences = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user?.id) return;
+
+      // Ensure profile exists before loading preferences
+      const profileExists = await ensureUserProfile(session.user.id);
+      if (!profileExists) return;
 
       const { data: profile, error } = await supabase
         .from('profiles')

@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { UserRound, Trash2 } from "lucide-react";
+import { ensureUserProfile } from "@/utils/profileUtils";
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -33,45 +34,25 @@ const Settings = () => {
       setUserEmail(session.user.email);
 
       try {
-        // First, try to get the profile
+        // Ensure profile exists before loading data
+        const profileExists = await ensureUserProfile(session.user.id);
+        if (!profileExists) return;
+
+        // Load profile data
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("given_name, full_name")
           .eq("user_id", session.user.id)
           .single();
 
-        if (profileError) {
-          // If profile doesn't exist, create it with default preferences
-          const { error: insertError } = await supabase
-            .from("profiles")
-            .insert([{
-              user_id: session.user.id,
-              given_name: "",
-              full_name: "",
-              notification_preferences: {
-                email: true,
-                inApp: true,
-                schedule: "always"
-              },
-              theme_preferences: {
-                darkMode: false,
-                uiDensity: "comfortable",
-                colorScheme: "default"
-              },
-              regional_preferences: {
-                language: "en",
-                timezone: "UTC",
-                dateFormat: "YYYY-MM-DD"
-              }
-            }]);
+        if (profileError) throw profileError;
 
-          if (insertError) throw insertError;
-        } else if (profile) {
+        if (profile) {
           setGivenName(profile.given_name || "");
           setFullName(profile.full_name || "");
         }
       } catch (error) {
-        console.error("Error fetching/creating profile:", error);
+        console.error("Error loading profile:", error);
         toast.error("Could not load profile information");
       }
     };
@@ -197,6 +178,3 @@ const Settings = () => {
       </Card>
     </div>
   );
-};
-
-export default Settings;

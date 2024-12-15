@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Bell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { ensureUserProfile } from "@/utils/profileUtils";
 
 export const NotificationSettings = () => {
   const [emailNotifications, setEmailNotifications] = useState(true);
@@ -20,6 +21,10 @@ export const NotificationSettings = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.user?.id) return;
+
+      // Ensure profile exists before loading preferences
+      const profileExists = await ensureUserProfile(session.user.id);
+      if (!profileExists) return;
 
       const { data: profile, error } = await supabase
         .from('profiles')
