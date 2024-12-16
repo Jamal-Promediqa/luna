@@ -29,12 +29,19 @@ const getFolderEndpoint = (folder: string) => {
 export const fetchEmails = async (accessToken: string, folder: string = 'inbox') => {
   try {
     console.log(`Fetching emails from ${folder} folder`);
+    
+    if (!accessToken) {
+      throw new Error('No access token provided');
+    }
+
     const client = createGraphClient(accessToken);
     
-    // Validate token by making a small request first
+    // Validate token and connection by making a small request first
     try {
-      await client.api('/me').get();
+      const meResponse = await client.api('/me').get();
+      console.log('Successfully validated token with user:', meResponse.userPrincipalName);
     } catch (error: any) {
+      console.error('Token validation failed:', error);
       if (error.statusCode === 401) {
         throw new Error('authentication_failed');
       }
@@ -51,8 +58,14 @@ export const fetchEmails = async (accessToken: string, folder: string = 'inbox')
       .orderby('receivedDateTime DESC')
       .get();
 
+    if (!response || !response.value) {
+      console.error('Invalid response from Microsoft Graph:', response);
+      throw new Error('invalid_response');
+    }
+
+    console.log(`Successfully fetched ${response.value.length} emails`);
     return response.value;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching emails from Microsoft Graph:', error);
     throw error;
   }
@@ -60,18 +73,31 @@ export const fetchEmails = async (accessToken: string, folder: string = 'inbox')
 
 export const syncEmailsToSupabase = async (userId: string, emails: any[], folder: string = 'inbox') => {
   try {
+    if (!emails || !Array.isArray(emails)) {
+      console.error('Invalid emails data:', emails);
+      throw new Error('invalid_emails_data');
+    }
+
     console.log(`Syncing ${emails.length} emails to Supabase for folder: ${folder}`);
+    
+    const emailsToSync = emails.map(email => ({
+      user_id: userId,
+      message_id: email.id,
+      subject: email.subject,
+      body_preview: email.bodyPreview,
+      from_address: email.from?.emailAddress?.address,
+      is_read: email.isRead,
+      received_at: email.receivedDateTime,
+      status: folder,
+    })).filter(email => email.message_id && email.from_address); // Filter out invalid entries
+
+    if (emailsToSync.length === 0) {
+      console.log('No valid emails to sync');
+      return null;
+    }
+
     const { data, error } = await supabase.from('outlook_emails').upsert(
-      emails.map(email => ({
-        user_id: userId,
-        message_id: email.id,
-        subject: email.subject,
-        body_preview: email.bodyPreview,
-        from_address: email.from.emailAddress.address,
-        is_read: email.isRead,
-        received_at: email.receivedDateTime,
-        status: folder,
-      })),
+      emailsToSync,
       { onConflict: 'message_id' }
     );
 
@@ -80,7 +106,7 @@ export const syncEmailsToSupabase = async (userId: string, emails: any[], folder
       throw error;
     }
 
-    console.log(`Successfully synced emails to ${folder} folder`);
+    console.log(`Successfully synced ${emailsToSync.length} emails to ${folder} folder`);
     return data;
   } catch (error) {
     console.error('Error in syncEmailsToSupabase:', error);

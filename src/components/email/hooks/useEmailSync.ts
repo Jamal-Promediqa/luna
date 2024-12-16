@@ -22,14 +22,14 @@ export const useEmailSync = (userId: string | null, accessToken: string | null, 
             description: 'Please connect your Microsoft account in the sidebar to sync your emails.',
             duration: 7000,
             action: {
-              label: 'Retry',
+              label: 'Connect',
               onClick: () => window.location.reload()
             }
           });
           return [];
         }
 
-        // Then try to get cached emails for the selected folder
+        // Try to get cached emails first
         const { data: cachedEmails, error: cacheError } = await supabase
           .from('outlook_emails')
           .select('*')
@@ -39,66 +39,63 @@ export const useEmailSync = (userId: string | null, accessToken: string | null, 
 
         if (cacheError) {
           console.error('Cache error:', cacheError);
-          toast.error('Could not fetch cached emails', {
-            description: cacheError.message,
-            duration: 5000
-          });
           throw cacheError;
         }
 
         console.log(`Found ${cachedEmails?.length || 0} cached emails for folder ${folder}`);
 
         try {
-          console.log(`Attempting to fetch fresh emails for folder ${folder} with token`);
+          console.log('Attempting to sync with Microsoft...');
           const outlookEmails = await fetchEmails(accessToken, folder);
-          console.log(`Successfully fetched ${outlookEmails.length} emails from Microsoft`);
           
-          if (outlookEmails.length > 0) {
+          if (outlookEmails && outlookEmails.length > 0) {
             await syncEmailsToSupabase(userId, outlookEmails, folder);
-            console.log('Successfully synced emails to Supabase');
-          }
-          
-          // Return fresh data for the selected folder
-          const { data: freshEmails, error: freshError } = await supabase
-            .from('outlook_emails')
-            .select('*')
-            .eq('user_id', userId)
-            .eq('status', folder)
-            .order('received_at', { ascending: false });
+            console.log('Successfully synced emails with Microsoft');
             
-          if (freshError) {
-            console.error('Fresh emails error:', freshError);
-            toast.error('Could not fetch new emails', {
-              description: freshError.message,
-              duration: 5000
-            });
-            throw freshError;
-          }
+            // Get fresh data after sync
+            const { data: freshEmails, error: freshError } = await supabase
+              .from('outlook_emails')
+              .select('*')
+              .eq('user_id', userId)
+              .eq('status', folder)
+              .order('received_at', { ascending: false });
 
-          if (freshEmails && freshEmails.length === 0) {
-            toast.warning('No emails found', {
-              description: 'Your inbox appears to be empty. Try refreshing or checking your Microsoft connection.',
-              duration: 5000
-            });
-          }
+            if (freshError) throw freshError;
 
-          console.log(`Returning ${freshEmails?.length || 0} fresh emails`);
-          return freshEmails?.map(email => ({
-            id: email.id,
-            sender: email.from_address || '',
-            subject: email.subject || '',
-            preview: email.body_preview || '',
-            timestamp: email.received_at || '',
-            isStarred: email.is_starred || false,
-            isRead: email.is_read || false
-          })) || [];
+            if (freshEmails && freshEmails.length === 0) {
+              toast.warning('No emails found', {
+                description: 'Your inbox appears to be empty.',
+                duration: 5000
+              });
+            }
+
+            return freshEmails?.map(email => ({
+              id: email.id,
+              sender: email.from_address || '',
+              subject: email.subject || '',
+              preview: email.body_preview || '',
+              timestamp: email.received_at || '',
+              isStarred: email.is_starred || false,
+              isRead: email.is_read || false
+            })) || [];
+          } else {
+            console.log('No new emails to sync');
+            return cachedEmails?.map(email => ({
+              id: email.id,
+              sender: email.from_address || '',
+              subject: email.subject || '',
+              preview: email.body_preview || '',
+              timestamp: email.received_at || '',
+              isStarred: email.is_starred || false,
+              isRead: email.is_read || false
+            })) || [];
+          }
         } catch (error: any) {
           console.error('Error syncing with Microsoft:', error);
           
-          // Check if it's an authentication error
-          if (error.message?.includes('401') || error.message?.includes('authentication')) {
+          if (error.message === 'authentication_failed' || error.message?.includes('401')) {
             toast.error('Microsoft authentication expired', {
-              description: 'Please disconnect and reconnect your Microsoft account in the sidebar.',
+              description: 'Please disconnect and reconnect your Microsoft account.',
               duration: 7000,
               action: {
                 label: 'Retry',
@@ -110,16 +107,16 @@ export const useEmailSync = (userId: string | null, accessToken: string | null, 
           
           if (error.message?.includes('400')) {
             toast.error('Connection error', {
-              description: 'Please disconnect and reconnect your Microsoft account to refresh the connection.',
+              description: 'Please check your Microsoft account connection.',
               duration: 7000,
               action: {
-                label: 'Retry',
+                label: 'Reconnect',
                 onClick: () => window.location.reload()
               }
             });
             return [];
           }
-          
+
           // For other errors, use cached emails as fallback
           toast.error('Could not sync with Microsoft', {
             description: 'Using cached emails. Please check your connection.',
