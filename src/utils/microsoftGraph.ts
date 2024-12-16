@@ -31,6 +31,16 @@ export const fetchEmails = async (accessToken: string, folder: string = 'inbox')
     console.log(`Fetching emails from ${folder} folder`);
     const client = createGraphClient(accessToken);
     
+    // Validate token by making a small request first
+    try {
+      await client.api('/me').get();
+    } catch (error: any) {
+      if (error.statusCode === 401) {
+        throw new Error('authentication_failed');
+      }
+      throw error;
+    }
+    
     const endpoint = getFolderEndpoint(folder);
     console.log(`Using endpoint: ${endpoint}`);
 

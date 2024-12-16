@@ -17,10 +17,14 @@ export const useEmailSync = (userId: string | null, accessToken: string | null, 
         
         // First check if we have a valid access token
         if (!accessToken) {
-          console.log("No access token available - please connect Microsoft account");
+          console.log("No access token available");
           toast.error('Microsoft account not connected', {
             description: 'Please connect your Microsoft account in the sidebar to sync your emails.',
-            duration: 7000
+            duration: 7000,
+            action: {
+              label: 'Retry',
+              onClick: () => window.location.reload()
+            }
           });
           return [];
         }
@@ -42,15 +46,17 @@ export const useEmailSync = (userId: string | null, accessToken: string | null, 
           throw cacheError;
         }
 
-        console.log(`Cached emails found for folder ${folder}:`, cachedEmails?.length || 0);
+        console.log(`Found ${cachedEmails?.length || 0} cached emails for folder ${folder}`);
 
         try {
-          console.log(`Attempting to fetch fresh emails for folder ${folder}`);
+          console.log(`Attempting to fetch fresh emails for folder ${folder} with token`);
           const outlookEmails = await fetchEmails(accessToken, folder);
           console.log(`Successfully fetched ${outlookEmails.length} emails from Microsoft`);
           
-          await syncEmailsToSupabase(userId, outlookEmails, folder);
-          console.log('Successfully synced emails to Supabase');
+          if (outlookEmails.length > 0) {
+            await syncEmailsToSupabase(userId, outlookEmails, folder);
+            console.log('Successfully synced emails to Supabase');
+          }
           
           // Return fresh data for the selected folder
           const { data: freshEmails, error: freshError } = await supabase
@@ -69,6 +75,13 @@ export const useEmailSync = (userId: string | null, accessToken: string | null, 
             throw freshError;
           }
 
+          if (freshEmails && freshEmails.length === 0) {
+            toast.warning('No emails found', {
+              description: 'Your inbox appears to be empty. Try refreshing or checking your Microsoft connection.',
+              duration: 5000
+            });
+          }
+
           console.log(`Returning ${freshEmails?.length || 0} fresh emails`);
           return freshEmails?.map(email => ({
             id: email.id,
@@ -85,8 +98,24 @@ export const useEmailSync = (userId: string | null, accessToken: string | null, 
           // Check if it's an authentication error
           if (error.message?.includes('401') || error.message?.includes('authentication')) {
             toast.error('Microsoft authentication expired', {
-              description: 'Please reconnect your Microsoft account in the sidebar.',
-              duration: 7000
+              description: 'Please disconnect and reconnect your Microsoft account in the sidebar.',
+              duration: 7000,
+              action: {
+                label: 'Retry',
+                onClick: () => window.location.reload()
+              }
+            });
+            return [];
+          }
+          
+          if (error.message?.includes('400')) {
+            toast.error('Connection error', {
+              description: 'Please disconnect and reconnect your Microsoft account to refresh the connection.',
+              duration: 7000,
+              action: {
+                label: 'Retry',
+                onClick: () => window.location.reload()
+              }
             });
             return [];
           }
@@ -119,5 +148,7 @@ export const useEmailSync = (userId: string | null, accessToken: string | null, 
     enabled: !!userId,
     retry: 1,
     refetchInterval: 30000, // Refresh every 30 seconds
+    refetchOnWindowFocus: true,
+    refetchOnMount: true
   });
 };
