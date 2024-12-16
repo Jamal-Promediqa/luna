@@ -61,9 +61,12 @@ export const useEmailSync = (userId: string | null, accessToken: string | null, 
               isStarred: email.is_starred || false,
               isRead: email.is_read || false
             })) || [];
-          } catch (error) {
+          } catch (error: any) {
             console.error('Error fetching fresh emails:', error);
-            toast.error('Could not sync with Microsoft. Using cached emails.');
+            toast.error('Could not sync with Microsoft. Using cached emails.', {
+              description: error?.message || 'Please check your connection and try again.',
+              duration: 5000
+            });
             
             // Return cached emails as fallback
             return cachedEmails?.map(email => ({
@@ -81,7 +84,10 @@ export const useEmailSync = (userId: string | null, accessToken: string | null, 
         // Return cached emails if no Microsoft token
         if (!accessToken) {
           console.log("No access token available - using cached emails only");
-          toast.error('Microsoft account not connected. Please connect your account to sync emails.');
+          toast.error('Microsoft account not connected', {
+            description: 'Please connect your account to sync emails.',
+            duration: 5000
+          });
         }
 
         return cachedEmails?.map(email => ({
@@ -93,9 +99,12 @@ export const useEmailSync = (userId: string | null, accessToken: string | null, 
           isStarred: email.is_starred || false,
           isRead: email.is_read || false
         })) || [];
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error in email query:', error);
-        toast.error('Could not fetch emails. Please try again.');
+        toast.error('Could not fetch emails', {
+          description: error?.message || 'Please try again later.',
+          duration: 5000
+        });
         throw error;
       }
     },
